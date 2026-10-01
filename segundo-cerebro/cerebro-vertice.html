@@ -371,7 +371,7 @@ const mqMobile = matchMedia('(max-width: 760px)');
 const isMac = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent);
 
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-const norm = s => String(s ?? '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/\s+/g, ' ').trim();
+const norm = s => String(s ?? '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, ' ').trim();
 const escRe = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const uid = () => 'n' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 const LS = 'cerebro-vertice:';
@@ -438,7 +438,7 @@ function coerce(id, d) {
 function normWithMap(s) {
   let out = ''; const map = [];
   for (let i = 0; i < s.length; i++) {
-    const c = s[i].toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+    const c = s[i].toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
     for (let j = 0; j < c.length; j++) { out += c[j]; map.push(i); }
   }
   return { out, map };
@@ -615,13 +615,20 @@ function onNotesChanged() {
   refreshQueued = true;
   requestAnimationFrame(() => { refreshQueued = false; refresh(); });
 }
+function safe(step, fn) {
+  try { fn(); } catch (e) { reportError(step, e); }
+}
+function reportError(step, e) {
+  console.error(step, e);
+  showBanner(`Algo falhou ao ${step}: ${(e && e.message) || e}. Recarregue a página; se continuar, me mande esta mensagem.`);
+}
 function refresh() {
-  reindex();
-  updateGraph();
-  renderRail();
-  if (state.search.q.trim()) runSearch(state.search.q);
-  renderOverlay();
-  refreshDrawer();
+  safe('ler as notas', reindex);
+  safe('desenhar o grafo', updateGraph);
+  safe('montar a barra lateral', renderRail);
+  if (state.search.q.trim()) safe('buscar', () => runSearch(state.search.q));
+  safe('mostrar o estado', renderOverlay);
+  safe('abrir a nota', refreshDrawer);
 }
 
 /* ---------- graph ---------- */
@@ -722,7 +729,7 @@ function louvain(ids, edges) {
 }
 
 let clusters = [];
-const clusterName = t => t.replace(/^mapa\s+(?:d[aoe]s?\s+)?/i, '').replace(/^\p{Ll}/u, c => c.toUpperCase());
+const clusterName = t => t.replace(/^mapa\s+(?:d[aoe]s?\s+)?/i, '').replace(/^./, c => c.toUpperCase());
 function computeClusters(finalNodes, finalLinks) {
   const notes = finalNodes.filter(n => n.kind === 'note');
   const ids = notes.map(n => n.id).sort(), set = new Set(ids);
@@ -1232,9 +1239,21 @@ function renderOverlay(force = false) {
   const key = !state.loaded ? 'loading' : state.notes.size === 0 ? 'empty' + state.canWrite : 'none';
   if (key === overlayKey && !force) return;
   overlayKey = key;
-  if (key === 'loading') return;
+  if (key === 'loading') {
+    clearTimeout(renderOverlay.t);
+    renderOverlay.t = setTimeout(() => {
+      if (state.loaded) return;
+      ov.hidden = false;
+      ov.innerHTML = `<div class="box"><span class="eyebrow">Demorando mais que o normal</span><h2>Não consegui buscar suas notas</h2><p>A conexão com o banco de notas não respondeu. Recarregue a página. Se abriu por um link fora do claude.ai, abra pelo claude.ai com sua conta conectada.</p><div class="acts"><button class="btn primary" data-act="reload">Recarregar</button></div></div>`;
+    }, 12000);
+    return;
+  }
   if (key === 'none') { ov.hidden = true; return; }
   ov.hidden = false;
+  if (state.mode === 'local') {
+    ov.innerHTML = `<div class="box"><span class="eyebrow">Sem conexão com suas notas</span><h2>Abra pelo claude.ai para ver seu cérebro</h2><p>Esta visualização não tem acesso ao banco onde suas notas ficam salvas. Abra o link do Cérebro Vértice dentro do claude.ai (ou do app do Claude) com sua conta conectada. O que você criar aqui fica só neste navegador.</p>${state.canWrite ? `<div class="acts"><button class="btn primary" data-act="reload">Recarregar</button><button class="btn" data-act="new">${icon('plus')}Criar nota local</button></div>` : ''}</div>`;
+    return;
+  }
   ov.innerHTML = `<div class="box"><span class="eyebrow">Cérebro vazio</span><h2>Sua rede começa com uma nota</h2><p>Escreva uma ideia, um livro que você leu ou um projeto. Ligue notas escrevendo [[Título de outra nota]] e a rede vai aparecendo aqui.</p>${state.canWrite ? `<div class="acts"><button class="btn primary" data-act="new">${icon('plus')}Escrever a primeira nota</button><button class="btn" data-act="import">${icon('upload')}Importar do Obsidian</button></div>` : ''}</div>`;
 }
 function showBanner(text) { const b = $('#banner'); b.textContent = text; b.hidden = false; }
@@ -2054,7 +2073,7 @@ function wire() {
 
   $('#overlay').addEventListener('click', e => {
     const b = e.target.closest('[data-act]'); if (!b) return;
-    if (b.dataset.act === 'new') createDraft(); else if (b.dataset.act === 'import') $('#fileMd').click();
+    if (b.dataset.act === 'new') createDraft(); else if (b.dataset.act === 'import') $('#fileMd').click(); else if (b.dataset.act === 'reload') location.reload();
   });
 
   const saveS = () => lsSet('settings2', S);
@@ -2190,15 +2209,18 @@ function wire() {
 }
 
 /* ---------- boot ---------- */
+window.addEventListener('error', e => { if (e && e.message) reportError('carregar a página', e.error || e.message); });
+window.addEventListener('unhandledrejection', e => reportError('carregar os dados', e.reason));
 function boot() {
   if (lsGet('railCollapsed', false) && !mqMobile.matches) $('#app').classList.add('rail-collapsed');
-  wire();
-  applySettingsToUI();
-  renderMenu();
-  drawStars();
-  initGraph();
-  renderRail();
-  store.start();
+  safe('preparar a página', wire);
+  safe('aplicar as preferências', applySettingsToUI);
+  safe('montar o menu', renderMenu);
+  safe('desenhar o fundo', drawStars);
+  safe('iniciar o grafo', initGraph);
+  safe('montar a barra lateral', renderRail);
+  renderOverlay();
+  store.start().catch(e => reportError('conectar às notas', e));
   const use = name => (window.claude && typeof window.claude.use === 'function') ? window.claude.use(name).catch(() => null) : Promise.resolve(null);
   use('sample').then(s => { if (s) { state.sample = s; $('#btnAsk').hidden = false; if (!editor) refreshDrawer(); } });
   use('downloads').then(d => { if (d) { state.downloads = d; renderMenu(); } });
