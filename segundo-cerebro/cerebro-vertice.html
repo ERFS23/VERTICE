@@ -322,6 +322,7 @@ select.inp{appearance:auto}
     <section><h3>Tags</h3><div id="tags" class="chips"></div></section>
     <section><h3>Recentes</h3><div id="recent" class="stack"></div></section>
     <div class="stats" id="stats"></div>
+    <p class="muted-note" style="font:10.5px var(--f-mono);opacity:.6">Versão 6</p>
   </aside>
 
   <main class="stage" id="stage">
@@ -2349,18 +2350,21 @@ function wire() {
   });
 
   const saveS = () => lsSet('settings2', S);
+  document.addEventListener('click', e => {
+    if (!e.target.closest || !e.target.closest('#rail')) return;
+    const ly = e.target.closest('[data-layout]');
+    if (ly) { setLayout(ly.dataset.layout); { e.stopPropagation(); return; } }
+    const gt = e.target.closest('[data-grp-toggle]');
+    if (gt) { const h = hiddenGroups(), k = gt.dataset.grpToggle; h.has(k) ? h.delete(k) : h.add(k); setHiddenGroups(h); refresh(); { e.stopPropagation(); return; } }
+    const go = e.target.closest('[data-grp-only]');
+    if (go) { const k = go.dataset.grpOnly; setHiddenGroups(new Set(groups.map(g => g.key).filter(x => x !== k))); refresh(); setTimeout(() => fit(700), 500); { e.stopPropagation(); return; } }
+    if (e.target.closest('[data-grp-all]')) { setHiddenGroups(new Set()); refresh(); setTimeout(() => fit(700), 500); { e.stopPropagation(); return; } }
+  }, true);
   $('#rail').addEventListener('click', e => {
     const r = e.target.closest('[data-type]');
     if (r) { const k = r.dataset.type; state.hidden.has(k) ? state.hidden.delete(k) : state.hidden.add(k); lsSet('hidden', [...state.hidden]); refresh(); return; }
     const th = e.target.closest('[data-theme]');
     if (th) { fitCluster(th.dataset.theme); if (mqMobile.matches) closeRail(); return; }
-    const ly = e.target.closest('[data-layout]');
-    if (ly) { setLayout(ly.dataset.layout); return; }
-    const gt = e.target.closest('[data-grp-toggle]');
-    if (gt) { const h = hiddenGroups(), k = gt.dataset.grpToggle; h.has(k) ? h.delete(k) : h.add(k); setHiddenGroups(h); refresh(); return; }
-    const go = e.target.closest('[data-grp-only]');
-    if (go) { const k = go.dataset.grpOnly; setHiddenGroups(new Set(groups.map(g => g.key).filter(x => x !== k))); refresh(); setTimeout(() => fit(700), 500); return; }
-    if (e.target.closest('[data-grp-all]')) { setHiddenGroups(new Set()); refresh(); setTimeout(() => fit(700), 500); return; }
     const o = e.target.closest('[data-open]'); if (o) { openNote(o.dataset.open, { center: true }); return; }
     const t = e.target.closest('[data-tag]'); if (t) setSearch('#' + t.dataset.tag, true);
   });
