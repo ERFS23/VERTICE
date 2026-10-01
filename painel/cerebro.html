@@ -1,0 +1,595 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+</head>
+<body>
+<title>Cérebro do Elias</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: app de uma tela. Barra no topo, mapa do cérebro ocupando o resto,
+   leitor de documento deslizando à direita (de baixo, no celular).
+   Fontes e tom vêm da plataforma da Comunidade Vértice (Fraunces + Instrument Sans + JetBrains Mono). */
+:root{
+  --chao:#E7EAEF;
+  --papel:#F7F8FA;
+  --tinta:#151923;
+  --tinta-2:#586174;
+  --linha:#D0D6DF;
+  --sinapse:#9AA4B8;
+  --a-conteudo:#D4561A;
+  --a-sites:#2A6CC4;
+  --a-comunidade:#7A4BC8;
+  --a-juridico:#1D8460;
+  --a-vendas:#B33D6B;
+  --a-pessoal:#9E7C0E;
+  --a-sistema:#56627A;
+  --f-display:"Fraunces", Georgia, "Times New Roman", serif;
+  --f-texto:"Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono:"JetBrains Mono", ui-monospace, Consolas, monospace;
+  --raio:6px;
+  --sombra:0 10px 30px -12px rgb(20 25 40 / .25);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --chao:#0C1019; --papel:#141927; --tinta:#E6E9F0; --tinta-2:#97A0B4; --linha:#252C3D; --sinapse:#3C4560;
+    --a-conteudo:#F27A36; --a-sites:#5C9CEB; --a-comunidade:#A483E8; --a-juridico:#3EBD8E; --a-vendas:#E26A9A; --a-pessoal:#D8B23C; --a-sistema:#8A95AC;
+    --sombra:0 10px 30px -12px rgb(0 0 0 / .6);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --chao:#0C1019; --papel:#141927; --tinta:#E6E9F0; --tinta-2:#97A0B4; --linha:#252C3D; --sinapse:#3C4560;
+  --a-conteudo:#F27A36; --a-sites:#5C9CEB; --a-comunidade:#A483E8; --a-juridico:#3EBD8E; --a-vendas:#E26A9A; --a-pessoal:#D8B23C; --a-sistema:#8A95AC;
+  --sombra:0 10px 30px -12px rgb(0 0 0 / .6);
+  color-scheme:dark;
+}
+
+html,body{height:100%}
+body{background:var(--chao);color:var(--tinta);font:15px/1.5 var(--f-texto);margin:0}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+button,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--a-conteudo);outline-offset:2px}
+
+.app{height:100%;display:grid;grid-template-rows:auto 1fr;gap:12px;padding:14px 16px 16px}
+
+/* Barra superior */
+.barra{display:flex;flex-wrap:wrap;align-items:center;gap:12px 20px}
+.marca{display:flex;align-items:baseline;gap:12px;min-width:0;margin-right:auto}
+.marca h1{font:700 26px/1 var(--f-display);letter-spacing:-.02em;margin:0;white-space:nowrap}
+.marca h1 em{font-style:normal;color:var(--a-conteudo)}
+.marca .sub{font:12px/1.3 var(--f-mono);color:var(--tinta-2);margin:0}
+
+.alternador{display:inline-flex;border:1px solid var(--linha);border-radius:var(--raio);background:var(--papel);padding:2px}
+.alternador button{border:0;background:none;padding:5px 12px;border-radius:4px;cursor:pointer;color:var(--tinta-2);font-weight:500;font-size:14px}
+.alternador button[aria-pressed="true"],.alternador button[aria-selected="true"]{background:var(--tinta);color:var(--papel)}
+
+.busca{position:relative;flex:1 1 240px;max-width:360px}
+.busca input{width:100%;border:1px solid var(--linha);background:var(--papel);border-radius:var(--raio);padding:7px 12px 7px 34px}
+.busca::before{content:"";position:absolute;left:12px;top:50%;width:11px;height:11px;border:1.6px solid var(--tinta-2);border-radius:50%;transform:translateY(-62%)}
+.busca::after{content:"";position:absolute;left:22px;top:58%;width:6px;height:1.6px;background:var(--tinta-2);transform:rotate(45deg)}
+.resultados{position:absolute;z-index:20;top:calc(100% + 6px);left:0;right:0;list-style:none;margin:0;padding:6px;background:var(--papel);border:1px solid var(--linha);border-radius:var(--raio);box-shadow:var(--sombra);max-height:60vh;overflow:auto}
+.resultados li button{display:flex;align-items:center;gap:10px;width:100%;text-align:left;border:0;background:none;padding:7px 8px;border-radius:4px;cursor:pointer}
+.resultados li button:hover,.resultados li button.ativo{background:var(--chao)}
+.resultados .tit{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.resultados .vazio{padding:8px;color:var(--tinta-2);font-size:14px}
+
+/* Elementos compartilhados */
+.ponto{width:9px;height:9px;border-radius:50%;background:var(--cor);flex:none}
+.ponto.oco{background:transparent;border:1.6px solid var(--cor)}
+.etiqueta{font:500 11px/1 var(--f-mono);letter-spacing:.04em;text-transform:uppercase;color:var(--tinta-2)}
+.chip{display:inline-flex;align-items:center;gap:6px;font:500 12px/1 var(--f-texto);padding:4px 8px;border-radius:99px;border:1px solid var(--linha);background:var(--papel);color:var(--tinta)}
+
+/* Área principal */
+.palco{position:relative;min-height:0;display:grid}
+.vista{min-height:0;border:1px solid var(--linha);border-radius:10px;background:var(--papel);overflow:hidden;position:relative}
+#mapa{width:100%;height:100%;display:block;cursor:grab;touch-action:none}
+#mapa:active{cursor:grabbing}
+
+.ligacao{stroke:var(--sinapse);stroke-opacity:.6;stroke-width:1;transition:opacity .2s}
+.ligacao.forte{stroke:var(--tinta-2);stroke-opacity:.9;stroke-width:1.4}
+.no{cursor:pointer;transition:opacity .2s}
+.no circle{fill:var(--cor);stroke:var(--papel);stroke-width:1.5}
+.no[data-tipo="notion"] circle{fill:var(--papel);stroke:var(--cor);stroke-width:1.6}
+.no[data-tipo="centro"] circle{fill:var(--tinta);stroke:var(--a-conteudo);stroke-width:3}
+.no text{font:500 11.5px var(--f-texto);fill:var(--tinta);paint-order:stroke;stroke:var(--papel);stroke-width:3.5px;stroke-linejoin:round;pointer-events:none}
+.no[data-tipo="area"] text{font:600 13px var(--f-texto)}
+.no[data-tipo="centro"] text{font:700 17px var(--f-display)}
+.no[data-tipo="notion"] text{display:none;font-size:10.5px;fill:var(--tinta-2)}
+.no.vizinho[data-tipo="notion"] text,.no.achado[data-tipo="notion"] text,.no.selecionado[data-tipo="notion"] text{display:block}
+.no.selecionado circle{stroke:var(--tinta);stroke-width:2.5}
+.apagado{opacity:.1}
+.anel{fill:none;stroke:var(--linha);stroke-dasharray:3 5}
+.anel-rotulo{font:500 10.5px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;fill:var(--tinta-2)}
+.setor-rotulo{font:600 12px var(--f-texto);fill:var(--cor)}
+.camadas-extra{opacity:0;transition:opacity .4s}
+.modo-camadas .camadas-extra{opacity:1}
+.modo-camadas .ligacao{stroke-opacity:.28}
+.modo-camadas .no[data-tipo="area"] text{display:none}
+.modo-camadas .no[data-tipo="arquivo"] text{font-size:10.5px}
+
+.legenda{position:absolute;left:12px;bottom:12px;display:flex;flex-direction:column;gap:8px;background:color-mix(in srgb,var(--papel) 88%,transparent);backdrop-filter:blur(6px);border:1px solid var(--linha);border-radius:8px;padding:10px 12px;max-width:calc(100% - 24px)}
+.legenda ul{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:4px 12px}
+.legenda button{display:inline-flex;align-items:center;gap:6px;border:0;background:none;padding:2px 0;cursor:pointer;font-size:13px;color:var(--tinta)}
+.legenda button[aria-pressed="true"]{text-decoration:underline;text-underline-offset:3px;font-weight:600}
+.legenda .formas{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;color:var(--tinta-2)}
+.legenda .formas span{display:inline-flex;align-items:center;gap:6px}
+.dica{position:absolute;right:12px;top:12px;font:12px var(--f-mono);color:var(--tinta-2);background:var(--papel);padding:4px 8px;border-radius:4px;border:1px solid var(--linha)}
+
+/* Leitor */
+.leitor{position:absolute;top:0;right:0;bottom:0;width:min(460px,100%);background:var(--papel);border-left:1px solid var(--linha);box-shadow:var(--sombra);display:flex;flex-direction:column;z-index:10;border-radius:0 10px 10px 0}
+.leitor header{padding:16px 18px 12px;border-bottom:1px solid var(--linha);display:grid;gap:8px}
+.leitor .topo{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.leitor .fechar{margin-left:auto;border:1px solid var(--linha);background:none;border-radius:4px;width:30px;height:30px;cursor:pointer;font-size:18px;line-height:1}
+.leitor h2{font:700 24px/1.15 var(--f-display);letter-spacing:-.015em;margin:0;text-wrap:balance}
+.leitor .meta{font:12px/1.4 var(--f-mono);color:var(--tinta-2);word-break:break-all}
+.leitor .corpo{overflow:auto;padding:4px 18px 18px;min-height:0;flex:1}
+.leitor footer{border-top:1px solid var(--linha);padding:12px 18px;display:grid;gap:8px;max-height:30%;overflow:auto}
+.leitor footer .lista{display:flex;flex-wrap:wrap;gap:6px}
+.leitor footer button.chip{cursor:pointer}
+.md a.botao-externo,.botao-externo{display:inline-flex;align-items:center;gap:8px;justify-self:start;background:var(--tinta);color:var(--papel);text-decoration:none;padding:8px 14px;border-radius:var(--raio);font-weight:600;font-size:14px}
+
+.md{font-size:15px;line-height:1.6;max-width:65ch}
+.md h1{display:none}
+.md h2{font:700 18px/1.25 var(--f-display);margin:22px 0 6px}
+.md h3{font:600 15px/1.3 var(--f-texto);margin:16px 0 4px}
+.md p,.md ul,.md ol{margin:8px 0}
+.md ul,.md ol{padding-left:20px}
+.md li{margin:3px 0}
+.md a{color:var(--a-sites);text-underline-offset:2px}
+a.wiki{color:var(--tinta);text-decoration:none;border-bottom:1.5px solid var(--a-conteudo);cursor:pointer}
+.md code{font:13px var(--f-mono);background:var(--chao);padding:1px 5px;border-radius:3px;word-break:break-word}
+.md pre{background:var(--chao);padding:12px;border-radius:6px;overflow:auto;font-size:12.5px}
+.md pre code{background:none;padding:0;white-space:pre}
+.md blockquote{margin:10px 0;padding:6px 12px;border-left:3px solid var(--a-pessoal);background:var(--chao);border-radius:0 4px 4px 0}
+.md table{border-collapse:collapse;font-size:13.5px;display:block;overflow-x:auto}
+.md th,.md td{border:1px solid var(--linha);padding:5px 8px;text-align:left;vertical-align:top}
+.md input[type=checkbox]{margin-right:6px}
+
+/* Aba Hoje */
+#vista-hoje{overflow:auto}
+.hoje{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:16px;padding:20px;align-items:start}
+.hoje .coluna{display:grid;gap:16px;min-width:0}
+.bloco{border:1px solid var(--linha);border-radius:8px;padding:16px 18px;min-width:0;background:var(--papel)}
+.bloco h2{font:700 20px/1.2 var(--f-display);margin:0 0 4px;letter-spacing:-.01em}
+.bloco .etiqueta{display:block;margin-bottom:10px}
+.saudacao{grid-column:1/-1;display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 18px}
+.saudacao h2{font:700 30px/1.1 var(--f-display);margin:0;letter-spacing:-.02em}
+.saudacao p{margin:0;color:var(--tinta-2)}
+.tarefas{list-style:none;margin:0;padding:0;display:grid}
+.tarefas li{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 10px;padding:10px 0;border-top:1px solid var(--linha)}
+.tarefas li:first-child{border-top:0}
+.caixa{width:16px;height:16px;border:1.6px solid var(--tinta-2);border-radius:4px;margin-top:3px}
+.tarefas .feito .caixa{background:var(--a-juridico);border-color:var(--a-juridico)}
+.tarefas .feito .txt{text-decoration:line-through;color:var(--tinta-2)}
+.tarefas .info{grid-column:2;display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:12.5px;color:var(--tinta-2)}
+.tarefas .info button{border:0;background:none;padding:0;color:var(--tinta-2);text-decoration:underline;text-underline-offset:2px;cursor:pointer;font-size:12.5px}
+.prioridades{margin:0;padding-left:20px;display:grid;gap:6px}
+.prioridades li::marker{font-family:var(--f-mono);color:var(--tinta-2)}
+.link-abrir{border:0;background:none;padding:0;color:var(--tinta);font-weight:600;cursor:pointer;text-decoration:underline;text-decoration-color:var(--a-conteudo);text-underline-offset:3px}
+
+@media (max-width:760px){
+  .app{padding:10px 16px 12px;gap:10px}
+  .marca{width:100%}
+  .marca h1{font-size:22px}
+  .busca{max-width:none;flex-basis:100%;order:3}
+  .leitor{top:auto;left:0;width:100%;height:72%;border-left:0;border-top:1px solid var(--linha);border-radius:12px 12px 10px 10px}
+  .hoje{grid-template-columns:minmax(0,1fr);padding:14px}
+  .dica{display:none}
+  .legenda{font-size:12px;padding:8px 10px}
+}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+
+<div class="app">
+  <header class="barra">
+    <div class="marca">
+      <h1>Cérebro do <em>Elias</em></h1>
+      <p class="sub" id="resumo"></p>
+    </div>
+    <div class="alternador" role="tablist" aria-label="Seção">
+      <button id="aba-grafo" role="tab" aria-selected="true" aria-controls="vista-grafo">Mapa</button>
+      <button id="aba-hoje" role="tab" aria-selected="false" aria-controls="vista-hoje">Hoje</button>
+    </div>
+    <div class="busca">
+      <input id="busca" type="search" placeholder="Buscar no cérebro" autocomplete="off" aria-label="Buscar no cérebro">
+      <ul class="resultados" id="resultados" hidden></ul>
+    </div>
+    <div class="alternador" id="modos" aria-label="Forma do mapa">
+      <button id="modo-neural" aria-pressed="true">Neural</button>
+      <button id="modo-camadas" aria-pressed="false">Camadas</button>
+    </div>
+  </header>
+
+  <main class="palco">
+    <section class="vista" id="vista-grafo" role="tabpanel" aria-labelledby="aba-grafo">
+      <svg id="mapa" aria-label="Mapa do cérebro"></svg>
+      <div class="dica">arraste · role para zoom · clique para ler</div>
+      <div class="legenda">
+        <ul id="legenda-areas" aria-label="Filtrar por área"></ul>
+        <div class="formas">
+          <span><i class="ponto" style="--cor:var(--tinta-2)"></i>arquivo do cérebro</span>
+          <span><i class="ponto oco" style="--cor:var(--tinta-2)"></i>página do Notion</span>
+        </div>
+      </div>
+    </section>
+    <section class="vista" id="vista-hoje" role="tabpanel" aria-labelledby="aba-hoje" hidden>
+      <div class="hoje" id="hoje"></div>
+    </section>
+    <aside class="leitor" id="leitor" hidden aria-live="polite">
+      <header>
+        <div class="topo" id="leitor-chips">
+          <button class="fechar" id="leitor-fechar" aria-label="Fechar">×</button>
+        </div>
+        <h2 id="leitor-titulo"></h2>
+        <div class="meta" id="leitor-meta"></div>
+      </header>
+      <div class="corpo md" id="leitor-corpo"></div>
+      <footer id="leitor-rodape"></footer>
+    </aside>
+  </main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script>
+const DADOS = {"gerado_em": "2026-10-01T07:00", "nos": [{"id": "area-comunidade", "titulo": "Comunidade Vértice", "camada": "contexto", "area": "comunidade", "tipo": "area", "atualizado": "2026-10-01", "fonte": "", "caminho": "cerebro/1-contexto/area-comunidade.md", "texto": "# Área: Comunidade Vértice\n\nÁrea de membros do @serranoconteudo / Comunidade Vértice. Plano único **R$ 97/mês**.\n\n## Projetos ligados\n\n- [[projeto-plataforma-comunidade]]: a plataforma no ar em comunidade-serrano.vercel.app.\n\n## Materiais\n\n- Material premium **Roteirista RQC** (vem da skill `narrador-de-impacto`, ver [[area-conteudo]]).\n- Caso **Aquino pescador** (+10,3 mil seguidores em 2 semanas), escondido até ele autorizar. Ver [[tarefas]].\n\n## No Notion\n\n- [Aquino pescador](https://app.notion.com/p/3e230eaeef228096937eea838aa6b33b)\n"}, {"id": "area-conteudo", "titulo": "Conteúdo", "camada": "contexto", "area": "conteudo", "tipo": "area", "atualizado": "2026-10-01", "fonte": "", "caminho": "cerebro/1-contexto/area-conteudo.md", "texto": "# Área: Conteúdo\n\nPerfis **@serranoconteudo** (principal, quase todo dia) e **@elias.serrano.rfs**. Também produzo para **@a_jupteriana**.\n\n## Padrões que sempre valem\n\n- Carrosséis: [[padrao-carrosseis]]\n- Edição de vídeo: [[padrao-video-furion]]\n- Efeitos sonoros: [[padrao-video-sfx]]\n- Cortes de vídeo longo: [[padrao-video-cortes]]\n\n## Skills desta área\n\n`roteiro-viral-serrano`, `roteirista`, `narrador-de-impacto`, `corte-viral`, `motion-vox`, `video-use`, `watch`. Detalhes em [[skills]].\n\n## Projetos ligados\n\n- [[projeto-salvos-instagram]]: salvos do Instagram viram biblioteca no Notion.\n\n## No Notion\n\n- [Planejamento de Conteúdo @serranoconteudo](https://app.notion.com/p/34b30eaeef2281fab97fcacef1fdfcc3)\n- [📁 Conteúdo @serranoconteudo](https://app.notion.com/p/34f30eaeef22812d8ac5d0a972c5f1be)\n- [Arquivo de Conteúdo Postado](https://app.notion.com/p/34b30eaeef2281d1b53cfe814f638834)\n- [Ideias de Roteiros e Temas](https://app.notion.com/p/34b30eaeef22810f97b4c607b14f3562)\n- [Pasta de Ideias](https://app.notion.com/p/37230eaeef228139be81ea62dd138638)\n- [Roteiro](https://app.notion.com/p/3d330eaeef228032aa34e2b52280870e)\n- [Roteiros de Reels (base: ideias e postados)](https://app.notion.com/p/cf5f81442c974a828260ded0b252e547)\n- [Ganchos](https://app.notion.com/p/35e30eaeef2280c9aabff15e46e22849)\n- [Ganchos de Impacto](https://app.notion.com/p/37230eaeef2281ab9c51d1e764fa8b77)\n- [Biblioteca de Referências IG](https://app.notion.com/p/3e630eaeef2281e59baaecb389823ec5)\n- [REELS - ANALYTCS](https://app.notion.com/p/3e330eaeef2280659354c72c26ca72c6)\n- [Briefing de Conteúdo — 30/09/2026](https://app.notion.com/p/3eb30eaeef2281b59a14fadc4c555a4b)\n- [Esse ou aquele](https://app.notion.com/p/3e630eaeef2280698fc4c03435aa1fb2)\n- [Video 1️⃣](https://app.notion.com/p/3e430eaeef2280b4883bca8be345398d)\n- [Video 2️⃣](https://app.notion.com/p/3e530eaeef2280e0b755d3afb30234ac)\n- [Instagram -](https://app.notion.com/p/3c730eaeef22809a9281f96ba15654df)\n- [📁 Conteúdo @a_jupteriana](https://app.notion.com/p/34f30eaeef2281a0b6a8eb1e874db98c)\n- [🌪️ Estratégia Viral: @a_jupteriana](https://app.notion.com/p/34f30eaeef2281ec8563c16a4a67d140)\n- [🎬 Habilidade: Narrador de Impacto — Roteirista Viral](https://app.notion.com/p/3cf30eaeef2280ecb32fe8888eb1cc2e)\n- [Personalização de Roteirista - Skill](https://app.notion.com/p/3da30eaeef2280549307c2e3c6477cae)\n- [Complementos Master Narrador](https://app.notion.com/p/3e430eaeef228023b8d8ce36484fa804)\n- [Palestras — Áudios e Transcrições](https://app.notion.com/p/999de1fa0eea4ecdb75e27301bbb1a41)\n"}, {"id": "area-juridico", "titulo": "Jurídico", "camada": "contexto", "area": "juridico", "tipo": "area", "atualizado": "2026-10-01", "fonte": "", "caminho": "cerebro/1-contexto/area-juridico.md", "texto": "# Área: Jurídico\n\nAdvocacia, estudos de Direito e agentes de IA para escritório.\n\n## Skills desta área\n\n- Pack **Capi Advocacia** (18 skills `capi-*`): começa por `capi-socio`; onboarding `capi-comece-aqui`.\n- `adv-tech-complete-system`, `adv-tech-copywriter` (Legal Design, copy jurídica), `oab-simulados-premium`.\n\nDetalhes em [[skills]].\n\n## No Notion\n\n- [DIREITO](https://app.notion.com/p/9373b77966db4142a4eb9bdabdf95e77)\n- [TRIBUTÁRIO](https://app.notion.com/p/3cd30eaeef22800e9ed4e47220456a7c)\n- [Empresarial](https://app.notion.com/p/3c730eaeef2280cfb4c5ce5e0814b207)\n- [Ética](https://app.notion.com/p/3c030eaeef22804ea8dadc458ca942dd)\n- [TRABALHO](https://app.notion.com/p/3c830eaeef2280538066da4c549a4f65)\n- [INTERNACIONAL](https://app.notion.com/p/3c830eaeef2280708eaec55c24f4e52f)\n- [Internacional](https://app.notion.com/p/3cf30eaeef2280c2808bf11b4f329467)\n- [Anotações da aula](https://app.notion.com/p/07030eaeef2283cab81081bb0bd5a26c)\n- [CAPI AGENTES - ADV](https://app.notion.com/p/3e530eaeef228005889fe4036c34f7ee)\n"}, {"id": "area-pessoal", "titulo": "Pessoal", "camada": "contexto", "area": "pessoal", "tipo": "area", "atualizado": "2026-10-01", "fonte": "", "caminho": "cerebro/1-contexto/area-pessoal.md", "texto": "# Área: Pessoal\n\nFé, metas, organização da semana, estudos, trading e neuroaprendizagem.\n\n## Skills desta área\n\n- `neuroaprendizagem`\n- `binary-options-indicator` (indicadores Lua para IQ Option/Polarium)\n\nDetalhes em [[skills]].\n\n## No Notion\n\n- [Fundamento Espiritual](https://app.notion.com/p/35c30eaeef2280b487e7dfdd048cceb3)\n- [Espirito santo](https://app.notion.com/p/3c930eaeef2280fb8fe1c00b099278e5)\n- [Metas](https://app.notion.com/p/34a30eaeef228039853fe41c416b3e35)\n- [Plano](https://app.notion.com/p/35f30eaeef22801a80bac354a8f51f1b)\n- [Planejamento Semanal - Abril 2026](https://app.notion.com/p/34b30eaeef2281579778d730596fee17)\n- [Tarefas](https://app.notion.com/p/3ce30eaeef2280258a95cbaa089e0266)\n- [TAREFAS](https://app.notion.com/p/3dd30eaeef2280628cb5ee974b7c74e9)\n- [Planejamento para estudantes](https://app.notion.com/p/e5930eaeef2283efb5d081cb4249540e)\n- [ROTEIRO DE ESTUDOS PRÓ 1](https://app.notion.com/p/3da30eaeef22804fb5eece811838e687)\n"}, {"id": "area-sites", "titulo": "Sites", "camada": "contexto", "area": "sites", "tipo": "area", "atualizado": "2026-10-01", "fonte": "", "caminho": "cerebro/1-contexto/area-sites.md", "texto": "# Área: Sites\n\nVendo sites e landing pages para clientes, no padrão **R$ 2.500+**.\n\n## Padrão que sempre vale\n\n- [[padrao-sites-premium]]\n\n## Skills desta área\n\n`site-premium`, `epic-paper`, `image-prompt-generator`. Detalhes em [[skills]].\n\n## Projetos ligados\n\n- [[projeto-plataforma-comunidade]] (também é da [[area-comunidade|Comunidade]]).\n\n## No Notion\n\n- [COPIAR SITES](https://app.notion.com/p/3da30eaeef2280768ce0c79b51578add)\n- [SKILS (links de design e skills)](https://app.notion.com/p/3e430eaeef22804ca374dcf09ac2cc06)\n"}, {"id": "area-vendas", "titulo": "Vendas e campanhas", "camada": "contexto", "area": "vendas", "tipo": "area", "atualizado": "2026-10-01", "fonte": "", "caminho": "cerebro/1-contexto/area-vendas.md", "texto": "# Área: Vendas e campanhas\n\nAbordagem comercial, indicação e campanhas de abertura de cidades.\n\n## Como trabalho nas campanhas\n\n- Chegar preparado: pesquisar cada cidade antes (cultura, economia, história, pontos estratégicos, lideranças).\n- Sequência de contatos: prefeitura, Brigada Militar, rádio e lideranças locais, conforme o contexto.\n- Priorizar recomendações qualificadas e aprovação social antes de acelerar ofertas.\n\nPrioridades atuais desta área em [[prioridades]].\n\n## Skills desta área\n\n`agente-estrategista` (vendas B2B), `alfredo-soares-advisor`, squad C-level (`cmo-architect`, `vision-chief` e outros). Detalhes em [[skills]].\n\n## No Notion\n\n- [Toolkit de Vendas](https://app.notion.com/p/b5230eaeef2283efa37281a81fefbd4e)\n- [Treinamento de indicação online 1 FURAÇÃO](https://app.notion.com/p/35b30eaeef2280d1b9eac0dde3ebc942)\n- [ALEX HORMOZI](https://app.notion.com/p/3da30eaeef2280fe99d7cca09e4edde2)\n"}, {"id": "como-trabalhar-comigo", "titulo": "Como trabalhar comigo", "camada": "contexto", "area": "sistema", "tipo": "", "atualizado": "2026-10-01", "fonte": "https://app.notion.com/p/3eb30eaeef2281e0a0b8eeb3ecd52fd5", "caminho": "cerebro/1-contexto/como-trabalhar-comigo.md", "texto": "# Como trabalhar comigo\n\nPreferências do [[elias|Elias]] para qualquer conversa.\n\n## Idioma e ritmo\n\n- **Sempre português do Brasil.** Não falo inglês (pedido explícito em 25/09/2026).\n- Passo a passo guiado, **um passo por vez**, com cliques concretos.\n- Posso cortar escopo no meio de uma tarefa: não adiantar fases seguintes.\n- Quero o resultado **entregue no chat**, não só salvo em disco.\n\n## Segurança\n\n- Segredos (senhas, tokens) **eu mesmo digito** nos scripts. Nunca pedir para colar no chat.\n\n## Economia de créditos\n\n- No começo de cada conversa, checar o uso semanal. Se estiver em **60% ou mais**, só me **lembrar** de usar `/compact`. Nunca executar sozinho. Avisar no máximo uma vez por conversa.\n\n## Dicas do meu PC (Windows)\n\n- Colar com Ctrl+V em terminais/getpass falha nesta máquina. Os scripts leem da área de transferência (copiar e apertar Enter).\n- O terminal do app não copia para a área de transferência do Windows. Usar a janela normal do PowerShell.\n- `python3` no Git Bash é o atalho falso da Microsoft Store. Usar `python`.\n- Pasta com `&` no nome quebra `npm`/`npx`. Rodar as ferramentas direto pelo `node` (ver [[aprendizados]]).\n"}, {"id": "elias", "titulo": "Elias", "camada": "centro", "area": "sistema", "tipo": "", "atualizado": "2026-10-01", "fonte": "", "caminho": "cerebro/1-contexto/elias.md", "texto": "# Elias\n\nCentro do cérebro. Todo o resto se liga aqui.\n\n## Quem sou\n\n- **Elias**, criador de conteúdo: **@serranoconteudo** (nicho criação de conteúdo/Reels, posta quase todo dia) e **@elias.serrano.rfs** (não salva mais conteúdo lá).\n- Vendo **sites para clientes** (padrão R$ 2.500+).\n- Dono da **Comunidade Vértice / Serrano** (área de membros, plano único R$ 97/mês).\n- Trabalho também com **advocacia/jurídico**, **trading** (opções binárias) e **neuroaprendizagem**.\n- Plano **Pro** do Claude.\n\n## Áreas (departamentos do cérebro)\n\n- [[area-conteudo|Conteúdo]]: Reels, carrosséis, roteiros, edição de vídeo.\n- [[area-sites|Sites]]: sites e landing pages para clientes.\n- [[area-comunidade|Comunidade Vértice]]: área de membros e materiais.\n- [[area-juridico|Jurídico]]: advocacia, estudos de Direito, agentes jurídicos.\n- [[area-vendas|Vendas e campanhas]]: abordagem, indicação, campanhas em cidades.\n- [[area-pessoal|Pessoal]]: fé, metas, estudos, trading, neuroaprendizagem.\n\n## Como falar comigo\n\nVer [[como-trabalhar-comigo]].\n\n## O que está acontecendo agora\n\n- Prioridades: [[prioridades]]\n- Tarefas: [[tarefas]]\n- Último registro do dia: pasta `2-memoria/diario/`\n"}, {"id": "mapa-notion", "titulo": "Mapa do Notion", "camada": "contexto", "area": "sistema", "tipo": "", "atualizado": "2026-10-01", "fonte": "", "caminho": "cerebro/1-contexto/mapa-notion.md", "texto": "# Mapa do Notion\n\nO Notion continua sendo onde ficam roteiros, bases de dados e materiais longos. O cérebro não copia essas páginas: **aponta** para elas. Cada link já está na área certa:\n\n- [[area-conteudo]] · [[area-sites]] · [[area-comunidade]] · [[area-juridico]] · [[area-vendas]] · [[area-pessoal]]\n- Prompts e agentes: [[skills]]\n\nA página **🧠 Memória** do Notion foi migrada inteira para o cérebro em 01/10/2026. A partir de agora, a versão que vale é a do cérebro. A [[rotina-intake-diario]] lê o que você editar no Notion.\n\n## A classificar\n\nPáginas que não deu para classificar só pelo título. A [[rotina-manutencao-semanal]] abre cada uma e move para a área certa.\n\n- [DIAGNÓSTICO AGRIL](https://app.notion.com/p/3da30eaeef2280a6bb8dd83492ed21ea)\n- [EMPRESAS](https://app.notion.com/p/3dc30eaeef2280f3932cebd76b49ddc8)\n- [Poema](https://app.notion.com/p/3e330eaeef22802ab3b3e468dbdb7a5c)\n- [Introdução](https://app.notion.com/p/3c030eaeef2280a7a47ad0f3c57a4191)\n- [12-08](https://app.notion.com/p/3ba30eaeef2280f29be8d009c27c8869)\n- [chec](https://app.notion.com/p/3ba30eaeef22808d81f2c6a2f8ef4316)\n"}, {"id": "padrao-carrosseis", "titulo": "Carrosséis — regras e estilo", "camada": "contexto", "area": "conteudo", "tipo": "", "atualizado": "2026-09-30", "fonte": "https://app.notion.com/p/3eb30eaeef2281f6be72c78179083577", "caminho": "cerebro/1-contexto/padrao-carrosseis.md", "texto": "# Carrosséis — regras e estilo\n\nAplicar em **todo** carrossel da [[area-conteudo|área de Conteúdo]].\n\n## Regras obrigatórias\n\nFonte: post \"Ugly vs Viral Carousel\" (@fizzaandalgorithm) — https://www.instagram.com/p/DcJXeZ4iP_L/\n\n1. **Tamanho:** orgânico **1080×1440 (3:4)**; área segura 180px em cima/embaixo e 50px nas laterais. Impulsionar/anúncio: **1080×1350**.\n2. **Leitura em F/Z:** o primeiro a ler é o MAIOR, no alto à esquerda; depois subtítulo; detalhes pequenos embaixo. Nunca título no canto direito com texto solto no meio.\n3. **Contraste:** legível em tela pequena/escura; ≥ 7:1 no texto principal; uma cor de destaque para palavras-chave.\n4. **Estrutura de 10 slides:** 1 parar o scroll · 2–3 interesse com exemplo · 4–5 diagrama/visual · 6–9 informação prática · 10 CTA simples.\n   - Proibido: gancho sem graça, slide sem motivo para arrastar, vender antes de entregar valor, informação aleatória, CTA de venda no fim.\n5. **Curiosidade entre slides:** loop aberto, \"arrasta →\".\n6. **Imagem integrada:** recorte com sombra no chão e luz coerente, interagindo com o texto. Nunca imagem colada chapada.\n\nSe um pedido explícito do Elias conflitar com as regras, o pedido vence, mas avisar.\n\n## Estilo visual @serranoconteudo\n\n- Fundo branco com quadriculado cinza bem claro.\n- Títulos em serifa pesada e condensada: aproximação com **Playfair Display 800–900** e letter-spacing negativo (a fonte real ainda não foi enviada, ver [[tarefas]]).\n- Ilustrações 3D (**Microsoft Fluent Emoji** via jsdelivr) + mockup de celular com cena de Reels.\n- Entrega: PNGs soltos + zip + legenda pronta (≤ 2200 caracteres).\n\n## Como gerar (pipeline que funcionou)\n\n- `gerar.py` monta o HTML → **Playwright com `channel=\"msedge\"`** → um slide por vez com `page.screenshot(clip=...)` (screenshot de elemento cortava os slides).\n- Projetos de exemplo: `E:\\SKILS\\carrossel-formatos-video`, `E:\\SKILS\\carrossel-ganchos`.\n- Alternativa: conector **CarrosseIA** (cria carrossel a partir de roteiro). Ver [[conectores]].\n"}, {"id": "padrao-sites-premium", "titulo": "Sites — padrão premium", "camada": "contexto", "area": "sites", "tipo": "", "atualizado": "2026-09-28", "fonte": "https://app.notion.com/p/3eb30eaeef2281cfa9b9e726ed10f634", "caminho": "cerebro/1-contexto/padrao-sites-premium.md", "texto": "# Sites — padrão premium\n\n## Regra\n\nTodo site/landing page da [[area-sites|área de Sites]] usa a skill **site-premium**: sem cara de IA, tipografia de agência, credibilidade, vendável por **R$ 2.500+**. Criada em 28/09/2026.\n\n- Fonte: `E:\\SKILS\\07-design-visual\\site-premium` → instalada em `~/.claude/skills/site-premium`.\n- Inclui: tipografia por nicho, SEO local, LGPD, performance, pacote de venda.\n\n## Método\n\n1. Brief do cliente.\n2. Tokens de design (cores, fontes, espaçamentos).\n3. Construir seção por seção.\n4. Nunca inventar prova social. Usar `[PREENCHER]`.\n5. Rodar o checklist de entrega (SEO local, LGPD, performance).\n\n**Por quê:** cara de template derruba a confiança e o preço.\n"}, {"id": "padrao-video-cortes", "titulo": "Vídeo — cortes com corte-viral", "camada": "contexto", "area": "conteudo", "tipo": "", "atualizado": "2026-09-15", "fonte": "https://app.notion.com/p/3eb30eaeef228191b9feef13760efd46", "caminho": "cerebro/1-contexto/padrao-video-cortes.md", "texto": "# Vídeo — cortes com corte-viral\n\nMemórias do Cowork (15/09/2026). Skill `corte-viral` (ver [[skills]]).\n\n## Como o Elias trabalha nos cortes\n\n- Usa a skill `corte-viral` para transformar vídeo longo em Reels/Shorts verticais.\n- Manda a **transcrição colada no chat** (formato `[00:02:19] texto`), não em arquivo.\n- Aponta só a pasta do vídeo: confirmar o arquivo pelo `duration` do ffprobe batendo com o último timestamp, sem perguntar.\n- **Corta escopo no meio da run** (ex.: aprovou 4 momentos e depois pediu só o 1 e o 4). Não adiantar trabalho das fases seguintes: cada portão existe porque ele muda de ideia ali.\n- Pergunta de custo no meio: responder pelas janelas de 5h e semanal do plano Pro.\n- Quer o resultado **entregue no chat**, não só salvo em disco.\n\n## Ambiente (Windows)\n\n- Fonte atual: `E:\\SKILS\\02-video-cortes\\corte-viral` (kit antigo em `C:\\Users\\Elias Rfs\\Downloads\\SKILS Claude\\corteviral\\corte-viral\\`).\n- Rodar com `python \"<kit>\\scripts\\vch.py\" <subcomando>` (o lançador de macOS do SKILL.md não vale aqui).\n- **ffmpeg** instalado via winget (`Gyan.FFmpeg` 9.0.1, com libass: queimar legenda funciona). Se não estiver no PATH, prefixar:\n\n```powershell\n$env:PATH = \"C:\\Users\\Elias Rfs\\AppData\\Local\\Microsoft\\WinGet\\Packages\\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\\ffmpeg-9.0.1-full_build\\bin;$env:PATH\"\n```\n\n- Instalados: `pyyaml`, `jsonschema`.\n\n## Lição: bordas do corte (erro que aconteceu 2x)\n\n- Transcrição colada **não tem tempo por palavra** (~2s de precisão). **Nunca** estimar borda pela cadência da linha: erra ~0,4s.\n- Medir com ffmpeg: `volumedetect` (calibrar), `silencedetect` (fronteira de frase), `volumedetect` numa janela (fala ou silêncio?).\n- Mas **gap de silêncio não é fronteira de palavra** (oclusivas criam quedas dentro da palavra). Quando o corte depende de cravar entre duas palavras, **gerar tempo por palavra primeiro** e conferir no arquivo **já renderizado**.\n- Caminho barato que funcionou: rodar **faster-whisper `medium`** (não `small`, que inventa palavras) só nos clipes já cortados, com `word_timestamps=True`, e alimentar `scripts.subtitles.build_caption_files`.\n- O Whisper corrige erros da legenda automática (rate→hate, plája→plágio), mas conferir.\n- Método completo gravado no kit: `docs/12-erros-registrados.md` §12.7 a §12.12.\n\nResumo desta lição também em [[aprendizados]].\n"}, {"id": "padrao-video-furion", "titulo": "Vídeo — edição padrão Furion", "camada": "contexto", "area": "conteudo", "tipo": "", "atualizado": "2026-09-23", "fonte": "https://app.notion.com/p/3eb30eaeef2281968f21d8d62a484f9a", "caminho": "cerebro/1-contexto/padrao-video-furion.md", "texto": "# Vídeo — edição padrão Furion\n\nPadrão ouro de edição do Elias, analisado quadro a quadro em 22–23/09/2026 a partir de `C:\\Users\\Elias Rfs\\Desktop\\Furion.ai.mp4`. Aplicar em **toda** edição e mostrar o plano de efeitos (EDL) antes de renderizar. Sons: ver [[padrao-video-sfx]].\n\nReferências secundárias (shorts de \"edição dinâmica\"): youtube.com/shorts/uUAkWb6Df-o, T_2dHvw-zJs, 9hGcm8njgR8, kIc-xZvQoLc, Ga8a5T-qxic.\n\n**Restrição nº 1 do Elias: dinâmico, mas NUNCA poluído. Um foco por vez.**\n\n## Filosofia em 5 linhas\n\n1. Um foco por vez. Texto grande entra, legenda sai.\n2. O efeito ilustra o que é dito (número, lista, produto, prova). Não enfeita.\n3. Densidade segue o roteiro: promessa/mecanismo/prova = muito gráfico; objeção/emoção/CTA = só rosto e legenda.\n4. Paleta única: preto quente + laranja **#F07018** + branco. Vermelho **#E03010** só para negação. Sem emoji, sem arco-íris.\n5. O som faz metade: trilha sobe quando o rosto sai, some antes da prova principal; um efeito por gráfico. Legenda e troca de câmera sem som.\n\n## Números medidos no Furion\n\n167 palavras/min · 43 cortes secos (1 a cada ~4,2s) · evento visual a cada ~2,1s · 12 flashes brancos · −21 LUFS · trilha ~16–20 dB abaixo da voz.\n\n## Estrutura de VSL (template)\n\nGancho numérico → Virada → Promessa em lista → Prova (com vácuo de trilha) → Objeção (limpa) → Prova massiva → Mecanismo (1 sistema gráfico por feature) → Diferencial → Para quem → Demonstração → CTA limpo.\n\n## Ritmo e câmera\n\n- Cortar toda pausa > ~0,15s, deixando 40–80ms de cauda.\n- 3 enquadramentos; trocar a cada 2–5s na fronteira de frase, corte seco e sem som. Com uma câmera só: alternar 100% ↔ 118–122%.\n- Punch-in 115–120% no quadro da palavra-chave. Push lento 100→106% só enquanto um gráfico se monta.\n- Rack focus (desfocado → nítido em ~6 quadros) para abrir frase.\n\n## Sistema visual\n\n- **Legenda base:** branca, sans bold (Manrope/Inter), ~3% da altura, 1–3 palavras, a ~80% da altura, sem caixa, sem som.\n- **Destaque médio:** frase ~5% da altura com 1 palavra laranja + sublinhado desenhando. Máx. 1 a cada 20–30s.\n- **Tipografia cinética:** 7–10% da altura, sobre o peito (nunca sobre os olhos), letra a letra 40–60ms com glow; sai em 150–250ms. ~1 a cada 10–15s nos blocos densos.\n- **HUD:** painel de vidro escuro com borda laranja de 1px, no terço vazio; itens entram no instante em que são falados. Diagramas de nós, contadores de views, logos na mão.\n- **Tela cheia:** UI do produto inclinada em 3D, 2–7s, sempre entrando/saindo com flash.\n- **Transições (só 3):** flash branco/light leak (mudança de seção), rack focus, glitch/RGB (só depoimento). Proibido: dissolve, cubo, zoom \"mola\".\n\n## Som\n\n| Visual | Som |\n|---|---|\n| Flash de seção | Whoosh + sub (discreto, ~+3 dB) |\n| Texto digitado, lista, contador | Ticks |\n| Logo, ícone, nó | Pop curto (0–30ms antes) |\n| Palavra-bomba | Impacto + flash vermelho |\n| Legenda, troca de câmera | **Nenhum** |\n\n- Trilha ~105 BPM, 16–20 dB sob a voz; +10–15 dB quando o rosto sai; **some sob a prova principal**; fade de ~7s no CTA.\n- Loudness: VSL −16 LUFS; Reels −14 LUFS; pico ≤ −1 dBTP.\n\n## Anti-poluição (checklist a cada 10s)\n\n- Pelo menos 1 mudança visual e no máximo ~6?\n- 2 elementos focais disputando? → remover um.\n- Gráfico cobrindo o rosto? → mover.\n- Todo gráfico corresponde à palavra falada naquele instante?\n- Legenda + texto grande juntos? → esconder a legenda.\n- Legenda ou troca de câmera com som? → remover.\n- Cor fora da paleta?\n\n**Proibido:** emoji, cada palavra de uma cor, karaokê gigante, tremor constante, zoom \"respirando\", SFX em toda legenda, dissolve, 3 fontes, B-roll genérico.\n\n## Reels 9:16\n\n- 1080×1920, 30 fps, 20–45s.\n- Área útil: **x 60–940, y 220–1480**. Rosto no terço superior; legenda em y ≈ 1180–1300 (~55–60px, ≤ 22 caracteres por linha); tipografia grande em y ≈ 900–1150.\n- Evento visual a cada 1,2–1,8s; troca de enquadramento a cada 1,5–3s; re-gancho a cada 5–7s.\n- Estrutura: 0–2s gancho · 2–6s tensão · 6–25s 2–3 blocos de prova/mecanismo · vácuo + frase-prova · CTA curto que liga ao início (loop).\n- Voz −14 LUFS; trilha 16–18 dB abaixo; primeiro SFX no primeiro quadro.\n\n## Fluxo de produção\n\n1. Ingestão (ffprobe + transcrição por palavra) → 2. Mapa de beats → 3. **Plano de efeitos (EDL), mostrar antes** → 4. Corte → 5. Câmera → 6. Grade quente/escura → 7. Gráficos (HTML → PNG com alpha via Playwright) → 8. Composição + legenda ASS → 9. Transições → 10. Som → 11. Loudness → 12. Revisão (folha de quadros + checklist).\n\n## O que o Elias precisa fornecer/autorizar\n\nVídeo bruto (ideal 2 ângulos), trilha, fontes (Manrope + Archivo Black), logos/prints/gravações de tela. Recorte da pessoa (texto atrás) precisa de modelo de segmentação: baixar só com autorização.\n\nManual completo original: memória `video-edit-playbook-furion` do Cowork.\n"}, {"id": "padrao-video-sfx", "titulo": "Vídeo — biblioteca de SFX", "camada": "contexto", "area": "conteudo", "tipo": "", "atualizado": "2026-09-24", "fonte": "https://app.notion.com/p/3eb30eaeef228150b97bcbc640e1f7a9", "caminho": "cerebro/1-contexto/padrao-video-sfx.md", "texto": "# Vídeo — biblioteca de SFX\n\nComplementa o [[padrao-video-furion]].\n\n## Onde está\n\n`E:/INSTAGRAM/sfx_library/`: 55 sons em 13 classes (extraídos em 24/09/2026 do YouTube 957Y50dLrhQ).\n\n- whoosh (7), glitch (5), riser_hit (6), sub_drop (6), drone (2), horn (2), click (5), reverse (2), button (3), camera (2), ui_popup (2), faaah (4), meme (9).\n- `index.json`: arquivo, duração, `peak_s` (alinhar: início = alvo − peak_s) e `gain_db`.\n- `README.md` = catálogo; `_preview_<classe>.wav` para ouvir.\n- **Regras completas:** `E:/INSTAGRAM/sfx_library/REGRAS_SFX.md`. Ler antes de mixar.\n\n## Regra principal\n\n**Nunca sintetizar SFX.** No primeiro Reel os sons sintetizados ficaram ruins. Sempre usar a biblioteca e aplicar o `gain_db` de cada clipe (os brutos são tão altos quanto a voz; foi por isso que a primeira edição estourou).\n\n## Níveis-alvo (voz em −14 LUFS)\n\nwhoosh −27 · click/button −28 · ui/camera −27 · glitch/reverse −26 · riser_hit −21 · sub_drop −22 · horn −22 · drone −34 · meme/faaah −21 (só humor; no máx. 1 em conteúdo de autoridade).\n\n## Densidade e sincronia\n\n- ~1 SFX a cada 3–4s; impactos no máx. 2 num Reel de 30–45s (3–4 em 80–90s).\n- Whoosh só em transição real, com o pico no corte. Riser hit na sílaba do payoff. Reverse termina no corte. Clicks 0–30ms antes do elemento.\n- Nunca o mesmo arquivo duas vezes seguidas. Sem SFX em legenda ou troca de ângulo. 5–15s sem SFX em objeção/emoção/CTA.\n- Filtro passa-alta 120 Hz nos SFX leves; −3 dB em 2–5 kHz nos risers/drones sob a fala.\n- Regras do próprio Elias sempre valem por cima destas.\n"}, {"id": "aprendizados", "titulo": "Aprendizados", "camada": "memoria", "area": "sistema", "tipo": "", "atualizado": "2026-09-30", "fonte": "https://app.notion.com/p/3eb30eaeef2281db8dcfe53685a4725c", "caminho": "cerebro/2-memoria/aprendizados.md", "texto": "# Aprendizados\n\nLições que valem para o futuro. Quando algo der errado e for resolvido, registrar aqui em uma linha, com link para o detalhe.\n\n- **Carrossel viral é design + roteiro:** 1080×1440, leitura em F, contraste alto e estrutura de 10 slides com loop aberto valem mais que enfeite. Ver [[padrao-carrosseis]].\n- **Print de slide:** tirar screenshot por área (`clip`) no Edge via Playwright; screenshot de elemento corta.\n- **Site vende pela confiança:** sem cara de template, tipografia de agência e nada de prova social inventada. Ver [[padrao-sites-premium]].\n- **Windows + `&` no nome da pasta** quebra npm/npx. Rodar as ferramentas direto pelo `node`.\n- **Skills instaladas são cópias:** editar a fonte não basta, tem que recopiar. Ver [[skills]].\n- **Instagram muda a API sem aviso:** manter anotado quais endpoints ainda funcionam. Ver [[projeto-salvos-instagram]].\n- **Automação pela assinatura** (claude.exe + setup-token) evita pagar API separada.\n- **Economia de créditos:** a partir de 60% do uso semanal, usar `/compact`.\n- **Borda de corte não se estima pela cadência:** gerar tempo por palavra (faster-whisper `medium`) e conferir no arquivo renderizado. Ver [[padrao-video-cortes]].\n- **SFX sintetizado fica ruim** e SFX bruto estoura a mix: usar a biblioteca com `gain_db`. Ver [[padrao-video-sfx]].\n"}, {"id": "decisoes", "titulo": "Decisões", "camada": "memoria", "area": "sistema", "tipo": "", "atualizado": "2026-10-01", "fonte": "", "caminho": "cerebro/2-memoria/decisoes.md", "texto": "# Decisões\n\nRegistro de decisões, da mais nova para a mais antiga. Formato: `AAAA-MM-DD · área · decisão · por quê`.\n\n- **2026-10-01** · sistema · O segundo cérebro passa a morar no repositório **VERTICE** (pasta `cerebro/`), organizado em Contexto, Memória e Ação. O Notion continua sendo onde ficam roteiros, bases e materiais longos; o cérebro aponta para eles. · Assim toda sessão do Claude Code lê o cérebro sozinha, sem colar contexto.\n- **2026-09-28** · sites · Todo site usa a skill `site-premium`. · Cara de template derruba confiança e preço. Ver [[padrao-sites-premium]].\n- **2026-09-28** · comunidade · Plano único de R$ 97/mês; sem botão \"copiar link\" para o visitante; caso do Aquino escondido (`SHOW_CASE=false`) até autorização. Ver [[projeto-plataforma-comunidade]].\n- **2026-09-25** · conteúdo · UM banco \"Vídeos analisados\" para as duas contas do Instagram, com campo \"Conta IG\". @elias.serrano.rfs: extração única; @serranoconteudo: sincronização diária de Viral + Publi. Ver [[projeto-salvos-instagram]].\n- **2026-09-25** · sistema · Conversas sempre em português do Brasil. Ver [[como-trabalhar-comigo]].\n- **2026-09-24** · conteúdo · Nunca sintetizar SFX; sempre usar a biblioteca com `gain_db`. Ver [[padrao-video-sfx]].\n- **2026-09-23** · conteúdo · Padrão Furion para toda edição, com EDL mostrado antes de renderizar. Ver [[padrao-video-furion]].\n"}, {"id": "2026-10-01", "titulo": "Diário 01/10/2026", "camada": "memoria", "area": "sistema", "tipo": "diario", "atualizado": "2026-10-01", "fonte": "", "caminho": "cerebro/2-memoria/diario/2026-10-01.md", "texto": "# Diário — 01/10/2026\n\n## O que aconteceu\n\n- O segundo cérebro foi criado no repositório VERTICE, nas 3 camadas do vídeo do Vittor (Playbook Lab): Contexto, Memória e Ação.\n- Todo o conteúdo da página **🧠 Memória** do Notion (atualizada em 30/09) foi migrado para a pasta `cerebro/`.\n- Os itens soltos do Notion foram distribuídos por área (Conteúdo, Sites, Comunidade, Jurídico, Vendas, Pessoal). Os que não deu para classificar ficaram em [[mapa-notion]].\n- Foi criado o painel visual (grafo neural + vista em camadas) em `painel/`.\n\n## Decisões\n\n- O cérebro mora no repositório; o Notion continua com os roteiros e bases. Ver [[decisoes]].\n\n## Tarefas que surgiram\n\n- Confirmar as [[prioridades]] de agosto.\n- Ligar as rotinas [[rotina-intake-diario]] e [[rotina-manutencao-semanal]].\n"}, {"id": "prioridades", "titulo": "Prioridades", "camada": "memoria", "area": "sistema", "tipo": "", "atualizado": "2026-10-01", "fonte": "https://app.notion.com/p/3ba30eaeef22811ba9ded24840f77ad5", "caminho": "cerebro/2-memoria/prioridades.md", "texto": "# Prioridades\n\n> **A confirmar.** Estas prioridades vêm da página do Notion de 12/08/2026, que já se baseava em materiais de abril e maio. Revise com o Elias e atualize a data acima.\n\n## 1. Preparação para a campanha e abertura de cidades\n\nÁrea: [[area-vendas]]. Chegar preparado, com estratégia, conhecimento local e uma abordagem clara para construir confiança desde o primeiro contato.\n\n- Pesquisar previamente cada cidade: cultura, economia, história, pontos estratégicos e lideranças.\n- Mapear prefeitura, rádio, igrejas e demais contatos relevantes.\n- Preparar uma apresentação objetiva do trabalho e materiais de apoio.\n\n## 2. Treinamento e aplicação prática\n\nTransformar os aprendizados em rotina de campo, com foco em excelência, relacionamento e execução intencional.\n\n- Participar dos treinamentos pendentes e do intensivo presencial.\n- Aplicar a sequência de contatos: prefeitura, Brigada Militar, rádio e lideranças locais.\n- Priorizar recomendações qualificadas e aprovação social antes de acelerar ofertas.\n\n## 3. Estrutura operacional para a campanha\n\n- Definir transporte e instalar/configurar o Blablacar, se ainda necessário.\n- Comprar passagem e programar chegada para o treinamento presencial.\n- Obter o material de orientação para abordagem ao prefeito.\n\n## 4. Conteúdo e posicionamento\n\nÁrea: [[area-conteudo]]. Linha de conteúdo voltada a direito, empreendedorismo, vendas e crescimento pessoal.\n\n- Selecionar os roteiros e carrosséis prioritários do planejamento de conteúdo.\n- Produzir conteúdos que reforcem autoridade, posicionamento e geração de oportunidades.\n- Organizar cadência semanal de publicação e follow-up.\n\nTarefas concretas ficam em [[tarefas]].\n"}, {"id": "projeto-plataforma-comunidade", "titulo": "Projeto — Plataforma da Comunidade", "camada": "memoria", "area": "comunidade", "tipo": "", "atualizado": "2026-09-28", "fonte": "https://app.notion.com/p/3eb30eaeef22812a8165efed1fcfc548", "caminho": "cerebro/2-memoria/projeto-plataforma-comunidade.md", "texto": "# Projeto — Plataforma da Comunidade\n\nÁrea de membros do @serranoconteudo / [[area-comunidade|Comunidade Vértice]]. Também é trabalho da [[area-sites|área de Sites]].\n\n## Onde está\n\n- Pasta: `E:\\SITES\\plataforma-da-comunidade---aulas-&-ferramentas`\n- No ar: https://comunidade-serrano.vercel.app (Vercel, conta verticewsoficial-4179)\n- Backup do código original: `E:\\SITES\\_backups\\plataforma-src-original-2026-09-28`\n- Brief e pendências: `CLAUDE.md` dentro do projeto.\n\n## Tecnologia e design\n\n- React 19 + Vite 8 + Tailwind v4 (gerada no Google AI Studio, redesenhada em 28/09/2026).\n- Direção \"caderno editorial\": papel quente, grade quadriculada, fontes Fraunces + Instrument Sans + JetBrains Mono, vermelhão **#B8391C** só em ação, raio 3px.\n- Tokens em `src/index.css`, componentes em `src/components/ui.tsx`.\n\n## O que foi feito\n\n- Cada material tem página própria `/materiais/<slug>` (roteador em `src/utils/routes.ts`).\n- Plano único R$ 97/mês (`src/config.ts`).\n- Material premium \"Roteirista RQC\" (vem da skill narrador-de-impacto) com bloqueio visual (sem login).\n- Página de caso `/casos/aquino-pescador` (+10,3 mil seguidores em 2 semanas), **escondida** com `SHOW_CASE=false` até o Aquino autorizar.\n- Sem botão \"copiar link\" para o visitante (decisão do Elias).\n\n## Cuidados técnicos\n\n- O `&` no nome da pasta quebra `npm run dev`/`npx` no Windows. Rodar: `node node_modules/vite/bin/vite.js` e `node node_modules/typescript/bin/tsc --noEmit`.\n- Não usar a classe `overline` (colide com Tailwind). Usar `eyebrow`.\n- Publicar atualização: `vercel deploy --prod --yes` na pasta do projeto.\n\n## Pendências\n\nEstão em [[tarefas]]: conteúdo fictício (vídeos placeholder, posts, preços) e autorização do Aquino.\n"}, {"id": "projeto-salvos-instagram", "titulo": "Projeto — Salvos do Instagram → Notion", "camada": "memoria", "area": "conteudo", "tipo": "", "atualizado": "2026-09-25", "fonte": "https://app.notion.com/p/3eb30eaeef22810db346ea2bc00a8461", "caminho": "cerebro/2-memoria/projeto-salvos-instagram.md", "texto": "# Projeto — Salvos do Instagram → Notion\n\nSistema que transforma os salvos do Instagram em biblioteca no Notion (baseado nos PDFs da @amandamoita_). Criado em 25/09/2026. Área: [[area-conteudo]].\n\n## Onde está\n\n- Código: `C:\\Users\\Elias Rfs\\salvos-notion` (venv próprio, Python 3.13; transcrição com faster-whisper small na CPU).\n- Página raiz no Notion: [Biblioteca de Referências IG](https://app.notion.com/p/3e630eaeef2281e59baaecb389823ec5).\n\n## Decisões\n\n- UM banco \"Vídeos analisados\" para as duas contas, com campo \"Conta IG\".\n- Hierarquia: Coleção → Tópico (detectado pela IA e reaproveitado) → página do vídeo (Resumo, Insights, gancho, estrutura, legenda, transcrição).\n- @elias.serrano.rfs: extração única (não é diária). Coleções: reflexão, vendas, direito, advogado, inteligência artificial.\n- @serranoconteudo: sincronização diária de Viral + Publi.\n- Coleções no Notion: Reflexão, Direito, Inteligência Artificial, Advogado, Viral, Vendas, Publi.\n\n## Fatos técnicos (Instagram web, 09/2026)\n\n- Não funcionam mais: `/collections/list/`, `/feed/collection/{id}/`; `/users/{id}/info/` dá erro 429.\n- Funcionam: `/feed/saved/posts/` (filtrar por `saved_collection_ids`) e `/accounts/edit/web_form_data/`.\n- O id da coleção vem da URL do navegador `/saved/<slug>/<id>/`.\n\n## Como roda\n\n- A análise usa a assinatura (não a API paga), via o `claude.exe` do app desktop. Precisa do token gerado por `claude setup-token` (o Elias configura sozinho em `configurar.py` / `importar-sessao.py`).\n- A tarefa agendada do Windows o próprio Elias cria.\n- Próximos passos (em [[tarefas]]): `salvos.py status` → `colecoes` → `importar --limite 1` → conferir Notion → lotes de 20.\n"}, {"id": "tarefas", "titulo": "Tarefas", "camada": "memoria", "area": "sistema", "tipo": "", "atualizado": "2026-10-01", "fonte": "", "caminho": "cerebro/2-memoria/tarefas.md", "texto": "# Tarefas\n\nLista viva. A rotina [[rotina-intake-diario]] acrescenta tarefas que surgem no Gmail, na agenda e no Notion. Cada tarefa diz de onde veio.\n\nFormato: `- [ ] tarefa · área · origem · prazo (se houver)`. Quando concluir, marcar `[x]`; a [[rotina-manutencao-semanal]] arquiva as concluídas.\n\n## Abertas\n\n- [ ] Confirmar se as [[prioridades]] de agosto ainda valem · sistema · criação do cérebro\n- [ ] Pedir ao Aquino autorização para mostrar o caso na plataforma · comunidade · [[projeto-plataforma-comunidade]]\n- [ ] Trocar o conteúdo fictício da plataforma (vídeos, posts, preços) · comunidade · [[projeto-plataforma-comunidade]]\n- [ ] Enviar a fonte real dos títulos dos carrosséis · conteúdo · [[padrao-carrosseis]]\n- [ ] Baixar o modelo `face_detection_yunet_2023mar.onnx` para o enquadramento automático do corte-viral · conteúdo · [[skills]]\n- [ ] Rodar o primeiro lote dos salvos do Instagram (`status` → `colecoes` → `importar --limite 1`) · conteúdo · [[projeto-salvos-instagram]]\n- [ ] Confirmar cidade-alvo e data da próxima campanha · vendas · [[prioridades]]\n- [ ] Resolver transporte, passagem e data de chegada do treinamento presencial · vendas · [[prioridades]]\n- [ ] Solicitar e revisar o PDF de abordagem ao prefeito · vendas · [[prioridades]]\n\n## Concluídas recentemente\n\n- [x] Criar o segundo cérebro no repositório VERTICE · sistema · 01/10/2026\n"}, {"id": "conectores", "titulo": "Conectores", "camada": "acao", "area": "sistema", "tipo": "", "atualizado": "2026-10-01", "fonte": "", "caminho": "cerebro/3-acao/conectores.md", "texto": "# Conectores\n\nOs \"braços\" do cérebro: aplicativos que o Claude consegue ler e onde consegue agir.\n\n| Conector | Lê para a memória | Age por mim |\n|---|---|---|\n| **Notion** | páginas editadas no dia, roteiros, bases | cria e atualiza páginas, roteiros, briefings |\n| **Gmail** | e-mails importantes do dia | rascunhos de resposta |\n| **Google Agenda** | reuniões e compromissos do dia | cria e move eventos |\n| **CarrosseIA** | | gera carrosséis a partir de roteiro (ver [[padrao-carrosseis]]) |\n| **vidIQ** | números do YouTube/Instagram, transcrições | pesquisa de títulos, ganchos, tendências |\n| **Vercel** (CLI no PC) | | publica sites (ver [[projeto-plataforma-comunidade]]) |\n| **GitHub** (repositório VERTICE) | o próprio cérebro | salva memória nova (commit) |\n\nQuem usa os conectores para alimentar o cérebro: [[rotina-intake-diario]].\n"}, {"id": "rotina-intake-diario", "titulo": "Rotina — intake diário", "camada": "acao", "area": "sistema", "tipo": "rotina", "atualizado": "2026-10-01", "fonte": "", "caminho": "cerebro/3-acao/rotina-intake-diario.md", "texto": "# Rotina — intake diário\n\nAutomação que **alimenta a memória** todo dia (no vídeo, é a \"automação de intake\"). Roda como uma Rotina do Claude Code (agendada), numa sessão nova com o repositório VERTICE.\n\n- **Quando:** todo dia às 20h (horário de Brasília).\n- **Lê:** Google Agenda, Gmail, Notion (ver [[conectores]]).\n- **Escreve:** `2-memoria/diario/AAAA-MM-DD.md`, [[tarefas]], [[decisoes]], [[aprendizados]].\n\n## Prompt da rotina\n\nCopiar exatamente o texto abaixo ao criar a rotina:\n\n```text\nVocê é o intake diário do segundo cérebro do Elias. Responda e escreva sempre em português do Brasil.\n\n1. Leia o CLAUDE.md do repositório e siga as regras dele.\n2. Colete o que aconteceu HOJE (fuso America/Sao_Paulo):\n   - Google Agenda: eventos de hoje (título, horário, participantes, descrição).\n   - Gmail: e-mails recebidos e enviados nas últimas 24h. Ignore promoções, newsletters e notificações automáticas.\n   - Notion: páginas criadas ou editadas nas últimas 24h.\n3. Crie cerebro/2-memoria/diario/AAAA-MM-DD.md usando o modelo do CLAUDE.md (seções: O que aconteceu, Decisões, Aprendizados, Tarefas que surgiram). Seja curto: só o que importa daqui a um mês. Use [[links]] para os arquivos de área e projeto citados.\n4. Para cada tarefa concreta que surgiu, acrescente em cerebro/2-memoria/tarefas.md, na seção \"Abertas\", no formato \"- [ ] tarefa · área · origem · prazo\". Não duplique tarefas que já existem.\n5. Decisões novas vão para o topo de cerebro/2-memoria/decisoes.md. Lições novas vão para cerebro/2-memoria/aprendizados.md.\n6. Se um fato novo muda algo da camada de contexto (preço, padrão, projeto), atualize o arquivo certo e a data \"atualizado\" dele.\n7. Rode: python painel/gerar.py\n8. Faça commit com a mensagem \"memória: intake AAAA-MM-DD\" e push para a branch main.\n9. Se não houve nada relevante hoje, crie o diário com uma linha dizendo isso e siga para o passo 7.\nNunca invente fatos. Nunca copie senhas, tokens ou dados bancários para o cérebro.\n```\n\nRotina irmã: [[rotina-manutencao-semanal]].\n"}, {"id": "rotina-manutencao-semanal", "titulo": "Rotina — manutenção semanal", "camada": "acao", "area": "sistema", "tipo": "rotina", "atualizado": "2026-10-01", "fonte": "", "caminho": "cerebro/3-acao/rotina-manutencao-semanal.md", "texto": "# Rotina — manutenção semanal\n\nAutomação que **limpa e organiza** o cérebro uma vez por semana (no vídeo, é a \"manutenção brain semanal\"). Complementa o [[rotina-intake-diario]].\n\n- **Quando:** todo domingo às 18h (horário de Brasília).\n- **Mexe em:** todo o `cerebro/`.\n\n## Prompt da rotina\n\nCopiar exatamente o texto abaixo ao criar a rotina:\n\n```text\nVocê faz a manutenção semanal do segundo cérebro do Elias. Responda e escreva sempre em português do Brasil.\n\n1. Leia o CLAUDE.md do repositório e siga as regras dele.\n2. Verifique cada arquivo .md em cerebro/:\n   - Tem o cabeçalho (titulo, camada, area, atualizado)? Corrija se faltar.\n   - Os [[links]] apontam para arquivos que existem? Corrija ou remova os quebrados.\n   - Está no lugar certo (contexto = coisas estáveis; memória = coisas que mudam; ação = skills, conectores, rotinas)? Mova se não estiver.\n3. Junte informações duplicadas num arquivo só e deixe um link no outro.\n4. Em cerebro/2-memoria/tarefas.md: mova as tarefas [x] com mais de 7 dias para cerebro/2-memoria/arquivo-tarefas.md (crie se não existir).\n5. Diários com mais de 30 dias: resuma cada mês fechado em cerebro/2-memoria/diario/resumo-AAAA-MM.md e mantenha os diários originais.\n6. Arquivos de contexto com \"atualizado\" de mais de 90 dias: liste no diário de hoje como \"a revisar com o Elias\". Não apague nada.\n7. Itens em \"A classificar\" no cerebro/1-contexto/mapa-notion.md: abra a página no Notion e mova o link para o arquivo da área certa.\n8. Rode: python painel/gerar.py\n9. Faça commit com a mensagem \"memória: manutenção semanal AAAA-MM-DD\" e push para a branch main.\nNunca apague informação que o Elias escreveu. Na dúvida, liste no diário como pergunta.\n```\n"}, {"id": "skills", "titulo": "Skills e ferramentas", "camada": "acao", "area": "sistema", "tipo": "", "atualizado": "2026-09-30", "fonte": "https://app.notion.com/p/3eb30eaeef2281e79f56cd913cc45053", "caminho": "cerebro/3-acao/skills.md", "texto": "# Skills e ferramentas\n\n## Onde ficam\n\n- Fonte: `E:\\SKILS` (organizada por área em 25/09/2026; índice completo em `E:\\SKILS\\INDEX.md`).\n- Instaladas: `C:\\Users\\Elias Rfs\\.claude\\skills\\`.\n- ⚠️ Editar em `E:\\SKILS` **não** atualiza a cópia instalada. Recopiar depois de editar (ver [[aprendizados]]).\n\n## Por área\n\n**01 · Jurídico/advocacia** ([[area-juridico]])\n- Pack **Capi Advocacia** (18 skills `capi-*`): começa por `capi-socio`; onboarding `capi-comece-aqui`. Também copiado para `~/.codex/skills`.\n- `adv-tech-complete-system`, `adv-tech-copywriter` (Legal Design, copy jurídica), `oab-simulados-premium`.\n\n**02 · Vídeo e cortes** ([[area-conteudo]])\n- `corte-viral`: corta vídeo longo em clipes verticais (agentes próprios; venv em `.venv`). Falta o modelo `face_detection_yunet_2023mar.onnx` (enquadramento automático). Após atualizar, recopiar `agentes\\*.md` para `~/.claude/agents/`. Ver [[padrao-video-cortes]].\n- `motion-vox`: motion graphics + legenda queimada (sem pasta `assets/` de PNGs).\n- `video-use`: edição de vídeo por conversa.\n- `watch`: assistir/analisar vídeos (link para `~/Developer/claude-video`; atualizar com `git pull`).\n\n**03 · Marketing e negócios** ([[area-vendas]])\n- C-level squad: `caio-architect`, `cio-engineer`, `cmo-architect`, `coo-orchestrator`, `cto-architect`, `vision-chief`.\n- `agente-estrategista` (vendas B2B), `alfredo-soares-advisor`.\n\n**04 · Conteúdo e roteiro** ([[area-conteudo]])\n- `roteiro-viral-serrano`, `roteirista`, `narrador-de-impacto` (base do Roteirista RQC).\n\n**05 · Neuroaprendizagem** ([[area-pessoal]]) — `neuroaprendizagem`.\n\n**06 · Trading** ([[area-pessoal]]) — `binary-options-indicator` (indicadores Lua para IQ Option/Polarium).\n\n**07 · Design** ([[area-sites]]) — `site-premium`, `epic-paper` (precisa do Paper Desktop + MCP), `image-prompt-generator`.\n\n**08 · Referência** — `engenharia-de-prompt`, prompts mestres, cheatsheet do Claude Code.\n\n## Detalhes técnicos do Windows\n\n- `corte-viral` e `motion-vox` têm venv próprio (`<skill>\\.venv\\Scripts\\python.exe`). O `vch` do corte-viral roda pelo Bash, não pelo PowerShell.\n- yt-dlp instalado via winget; chamar scripts com `python`.\n\n## Prompts e agentes no Notion\n\n- [BIBLIOTECA DE PROMPTS](https://app.notion.com/p/34f30eaeef228039b603d16f9d8636c9)\n- [PROMPTS](https://app.notion.com/p/3de30eaeef228063b78cd12c955115ec)\n- [OTIMIZADOR DE PROMPT](https://app.notion.com/p/3da30eaeef22800bb0e7efaa03d312e6)\n- [TEMPLATE PARA CRIAÇÃO DE IA ESPECIALIZADA](https://app.notion.com/p/3da30eaeef22801f9cbce88b6754ce3a)\n- [PERFIL COMUNICACIONAL PARA AGENTES](https://app.notion.com/p/3da30eaeef228065aec1cc3763dfaf31)\n\nConectores (Notion, Gmail etc.) estão em [[conectores]].\n"}, {"id": "notion:3e230eaeef228096937eea838aa6b33b", "titulo": "Aquino pescador", "camada": "notion", "area": "comunidade", "tipo": "notion", "atualizado": "", "fonte": "", "caminho": "", "texto": "", "url": "https://app.notion.com/p/3e230eaeef228096937eea838aa6b33b"}, {"id": "notion:34b30eaeef2281fab97fcacef1fdfcc3", "titulo": "Planejamento de Conteúdo @serranoconteudo", "camada": "notion", "area": "conteudo", "tipo": "notion", "atualizado": "", "fonte": "", "caminho": "", "texto": "", "url": "https://app.notion.com/p/34b30eaeef2281fab97fcacef1fdfcc3"}, {"id": "notion:34f30eaeef22812d8ac5d0a972c5f1be", "titulo": "📁 Conteúdo @serranoconteudo", "camada": "notion", "area": "conteudo", "tipo": "notion", "atualizado": "", "fonte": "", "caminho": "", "texto": "", "url": "https://app.notion.com/p/34f30eaeef22812d8ac5d0a972c5f1be"}, {"id": "notion:34b30eaeef2281d1b53cfe814f638834", "titulo": "Arquivo de Conteúdo Postado", "camada": "notion", "area": "conteudo", "tipo": "notion", "atualizado": "", "fonte": "", "caminho": "", "texto": "", "url": "https://app.notion.com/p/34b30eaeef2281d1b53cfe814f638834"}, {"id": "notion:34b30eaeef22810f97b4c607b14f3562", "titulo": "Ideias de Roteiros e Temas", "camada": "notion", "area": "conteudo", "tipo": "notion", "atualizado": "", "fonte": "", "caminho": "", "texto": "", "url": "https://app.notion.com/p/34b30eaeef22810f97b4c607b14f3562"}, {"id": "notion:37230eaeef228139be81ea62dd138638", "titulo": "Pasta de Ideias", "camada": "notion", "area": "conteudo", "tipo": "notion", "atualizado": "", "fonte": "", "caminho": "", "texto": "", "url": "https://app.notion.com/p/37230eaeef228139be81ea62dd138638"}, {"id": "notion:3d330eaeef228032aa34e2b52280870e", "titulo": "Roteiro", "camada": "notion", "area": "conteudo", "tipo": "notion", "atualizado": "", "fonte": "", "caminho": "", "texto": "", "url": "https://app.notion.com/p/3d330eaeef228032aa34e2b52280870e"}, {"id": "notion:cf5f81442c974a828260ded0b252e547", "titulo": "Roteiros de Reels (base: ideias e postados)", "camada": "notion", "area": "conteudo", "tipo": "notion", "atualizado": "", "fonte": "", "caminho": "", "texto": "", "url": "https://app.notion.com/p/cf5f81442c974a828260ded0b252e547"}, {"id": "notion:35e30eaeef2280c9aabff15e46e22849", "titulo": "Ganchos", "camada": "notion", "area": "conteudo", "tipo": "notion", "atualizado": "", "fonte": "", "caminho": "", "texto": "", "url": "https://app.notion.com/p/35e30eaeef2280c9aabff15e46e22849"}, {"id": "notion:37230eaeef2281ab9c51d1e764fa8b77", "titulo": "Ganchos de Impacto", "camada": "notion", "area": "conteudo", "tipo": "notion", "atualizado": "", "fonte": "", "caminho": "", "texto": "", "url": "https://app.notion.com/p/37230eaeef2281ab9c51d1e764fa8b77"}, {"id": "notion:3e630eaeef2281e59baaecb389823ec5", "titulo": "Biblioteca de Referências IG", "camada": "notion", "area": "conteudo", "tipo": "notion", "atualizado": "", "fonte": "", "caminho": "", "texto": "", "url": "https://app.notion.com/p/3e630eaeef2281e59baaecb389823ec5"}, {"id": "notion:3e330eaeef2280659354c72c26ca72c6", "titulo": "REELS - ANALYTCS", "camada": "notion", "area": "conteudo", "tipo": "notion", "atualizado": "", "fonte": "", "caminho": "", "texto": "", "url": "https://app.notion.com/p/3e330eaeef2280659354c72c26ca72c6"}, {"id": "notion:3eb30eaeef2281b59a14fadc4c555a4b", "titulo": "Briefing de Conteúdo — 30/09/2026", "camada": "notion", "area": "conteudo", "tipo": "notion", "atualizado": "", "fonte": "", "caminho": "", "texto": "", "url": "https://app.notion.com/p/3eb30eaeef2281b59a14fadc4c555a4b"}, {"id": "notion:3e630eaeef2280698fc4c03435aa1fb2", "titulo": "Esse ou aquele", "camada": "notion", "area": "conteudo", "tipo": "notion", "atualizado": "", "fonte": "", "caminho": "", "texto": "", "url": "https://app.notion.com/p/3e630eaeef2280698fc4c03435aa1fb2"}, {"id": "notion:3e430eaeef2280b4883bca8be345398d", "titulo": "Video 1️⃣", "camada": "notion", "area": "conteudo", "tipo": "notion", "atualizado": "", "fonte": "", "caminho": "", "texto": "", "url": "https://app.notion.com/p/3e430eaeef2280b4883bca8be345398d"}, {"id": "notion:3e530eaeef2280e0b755d3afb30234ac", "titulo": "Video 2️⃣", "camada": "notion", "area": "conteudo", "tipo": "notion", "atualizado": "", "fonte": "", "caminho": "", "texto": "", "url": "https://app.notion.com/p/3e530eaeef2280e0b755d3afb30234ac"}, {"id": "notion:3c730eaeef22809a9281f96ba15654df", "titulo": "Instagram -", "camada": "notion", "area": "conteudo", "tipo": "notion", "atualizado": "", "fonte": "", "caminho": "", "texto": "", "url": "https://app.notion.com/p/3c730eaeef22809a9281f96ba15654df"}, {"id": "notion:34f30eaeef2281a0b6a8eb1e874db98c", "titulo": "📁 Conteúdo @a_jupteriana", "camada": "notion", "area": "conteudo", "tipo": "notion", "atualizado": "", "fonte": "", "caminho": "", "texto": "", "url": "https://app.notion.com/p/34f30eaeef2281a0b6a8eb1e874db98c"}, {"id": "notion:34f30eaeef2281ec8563c16a4a67d140", "titulo": "🌪️ Estratégia Viral: @a_jupteriana", "camada": "notion", "area": "conteudo", "tipo": "notion", "atualizado": "", "fonte": "", "caminho": "", "texto": "", "url": "https://app.notion.com/p/34f30eaeef2281ec8563c16a4a67d140"}, {"id": "notion:3cf30eaeef2280ecb32fe8888eb1cc2e", "titulo": "🎬 Habilidade: Narrador de Impacto — Roteirista Viral", "camada": "notion", "area": "conteudo", "tipo": "notion", "atualizado": "", "fonte": "", "caminho": "", "texto": "", "url": "https://app.notion.com/p/3cf30eaeef2280ecb32fe8888eb1cc2e"}, {"id": "notion:3da30eaeef2280549307c2e3c6477cae", "titulo": "Personalização de Roteirista - Skill", "camada": "notion", "area": "conteudo", "tipo": "notion", "atualizado": "", "fonte": "", "caminho": "", "texto": "", "url": "https://app.notion.com/p/3da30eaeef2280549307c2e3c6477cae"}, {"id": "notion:3e430eaeef228023b8d8ce36484fa804", "titulo": "Complementos Master Narrador", "camada": "notion", "area": "conteudo", "tipo": "notion", "atualizado": "", "fonte": "", "caminho": "", "texto": "", "url": "https://app.notion.com/p/3e430eaeef228023b8d8ce36484fa804"}, {"id": "notion:999de1fa0eea4ecdb75e27301bbb1a41", "titulo": "Palestras — Áudios e Transcrições", "camada": "notion", "area": "conteudo", "tipo": "notion", "atualizado": "", "fonte": "", "caminho": "", "texto": "", "url": "https://app.notion.com/p/999de1fa0eea4ecdb75e27301bbb1a41"}, {"id": "notion:9373b77966db4142a4eb9bdabdf95e77", "titulo": "DIREITO", "camada": "notion", "area": "juridico", "tipo": "notion", "atualizado": "", "fonte": "", "caminho": "", "texto": "", "url": "https://app.notion.com/p/9373b77966db4142a4eb9bdabdf95e77"}, {"id": "notion:3cd30eaeef22800e9ed4e47220456a7c", "titulo": "TRIBUTÁRIO", "camada": "notion", "area": "juridico", "tipo": "notion", "atualizado": "", "fonte": "", "caminho": "", "texto": "", "url": "https://app.notion.com/p/3cd30eaeef22800e9ed4e47220456a7c"}, {"id": "notion:3c730eaeef2280cfb4c5ce5e0814b207", "titulo": "Empresarial", "camada": "notion", "area": "juridico", "tipo": "notion", "atualizado": "", "fonte": "", "caminho": "", "texto": "", "url": "https://app.notion.com/p/3c730eaeef2280cfb4c5ce5e0814b207"}, {"id": "notion:3c030eaeef22804ea8dadc458ca942dd", "titulo": "Ética", "camada": "notion", "area": "juridico", "tipo": "notion", "atualizado": "", "fonte": "", "caminho": "", "texto": "", "url": "https://app.notion.com/p/3c030eaeef22804ea8dadc458ca942dd"}, {"id": "notion:3c830eaeef2280538066da4c549a4f65", "titulo": "TRABALHO", "camada": "notion", "area": "juridico", "tipo": "notion", "atualizado": "", "fonte": "", "caminho": "", "texto": "", "url": "https://app.notion.com/p/3c830eaeef2280538066da4c549a4f65"}, {"id": "notion:3c830eaeef2280708eaec55c24f4e52f", "titulo": "INTERNACIONAL", "camada": "notion", "area": "juridico", "tipo": "notion", "atualizado": "", "fonte": "", "caminho": "", "texto": "", "url": "https://app.notion.com/p/3c830eaeef2280708eaec55c24f4e52f"}, {"id": "notion:3cf30eaeef2280c2808bf11b4f329467", "titulo": "Internacional", "camada": "notion", "area": "juridico", "tipo": "notion", "atualizado": "", "fonte": "", "caminho": "", "texto": "", "url": "https://app.notion.com/p/3cf30eaeef2280c2808bf11b4f329467"}, {"id": "notion:07030eaeef2283cab81081bb0bd5a26c", "titulo": "Anotações da aula", "camada": "notion", "area": "juridico", "tipo": "notion", "atualizado": "", "fonte": "", "caminho": "", "texto": "", "url": "https://app.notion.com/p/07030eaeef2283cab81081bb0bd5a26c"}, {"id": "notion:3e530eaeef228005889fe4036c34f7ee", "titulo": "CAPI AGENTES - ADV", "camada": "notion", "area": "juridico", "tipo": "notion", "atualizado": "", "fonte": "", "caminho": "", "texto": "", "url": "https://app.notion.com/p/3e530eaeef228005889fe4036c34f7ee"}, {"id": "notion:35c30eaeef2280b487e7dfdd048cceb3", "titulo": "Fundamento Espiritual", "camada": "notion", "area": "pessoal", "tipo": "notion", "atualizado": "", "fonte": "", "caminho": "", "texto": "", "url": "https://app.notion.com/p/35c30eaeef2280b487e7dfdd048cceb3"}, {"id": "notion:3c930eaeef2280fb8fe1c00b099278e5", "titulo": "Espirito santo", "camada": "notion", "area": "pessoal", "tipo": "notion", "atualizado": "", "fonte": "", "caminho": "", "texto": "", "url": "https://app.notion.com/p/3c930eaeef2280fb8fe1c00b099278e5"}, {"id": "notion:34a30eaeef228039853fe41c416b3e35", "titulo": "Metas", "camada": "notion", "area": "pessoal", "tipo": "notion", "atualizado": "", "fonte": "", "caminho": "", "texto": "", "url": "https://app.notion.com/p/34a30eaeef228039853fe41c416b3e35"}, {"id": "notion:35f30eaeef22801a80bac354a8f51f1b", "titulo": "Plano", "camada": "notion", "area": "pessoal", "tipo": "notion", "atualizado": "", "fonte": "", "caminho": "", "texto": "", "url": "https://app.notion.com/p/35f30eaeef22801a80bac354a8f51f1b"}, {"id": "notion:34b30eaeef2281579778d730596fee17", "titulo": "Planejamento Semanal - Abril 2026", "camada": "notion", "area": "pessoal", "tipo": "notion", "atualizado": "", "fonte": "", "caminho": "", "texto": "", "url": "https://app.notion.com/p/34b30eaeef2281579778d730596fee17"}, {"id": "notion:3ce30eaeef2280258a95cbaa089e0266", "titulo": "Tarefas", "camada": "notion", "area": "pessoal", "tipo": "notion", "atualizado": "", "fonte": "", "caminho": "", "texto": "", "url": "https://app.notion.com/p/3ce30eaeef2280258a95cbaa089e0266"}, {"id": "notion:3dd30eaeef2280628cb5ee974b7c74e9", "titulo": "TAREFAS", "camada": "notion", "area": "pessoal", "tipo": "notion", "atualizado": "", "fonte": "", "caminho": "", "texto": "", "url": "https://app.notion.com/p/3dd30eaeef2280628cb5ee974b7c74e9"}, {"id": "notion:e5930eaeef2283efb5d081cb4249540e", "titulo": "Planejamento para estudantes", "camada": "notion", "area": "pessoal", "tipo": "notion", "atualizado": "", "fonte": "", "caminho": "", "texto": "", "url": "https://app.notion.com/p/e5930eaeef2283efb5d081cb4249540e"}, {"id": "notion:3da30eaeef22804fb5eece811838e687", "titulo": "ROTEIRO DE ESTUDOS PRÓ 1", "camada": "notion", "area": "pessoal", "tipo": "notion", "atualizado": "", "fonte": "", "caminho": "", "texto": "", "url": "https://app.notion.com/p/3da30eaeef22804fb5eece811838e687"}, {"id": "notion:3da30eaeef2280768ce0c79b51578add", "titulo": "COPIAR SITES", "camada": "notion", "area": "sites", "tipo": "notion", "atualizado": "", "fonte": "", "caminho": "", "texto": "", "url": "https://app.notion.com/p/3da30eaeef2280768ce0c79b51578add"}, {"id": "notion:3e430eaeef22804ca374dcf09ac2cc06", "titulo": "SKILS (links de design e skills)", "camada": "notion", "area": "sites", "tipo": "notion", "atualizado": "", "fonte": "", "caminho": "", "texto": "", "url": "https://app.notion.com/p/3e430eaeef22804ca374dcf09ac2cc06"}, {"id": "notion:b5230eaeef2283efa37281a81fefbd4e", "titulo": "Toolkit de Vendas", "camada": "notion", "area": "vendas", "tipo": "notion", "atualizado": "", "fonte": "", "caminho": "", "texto": "", "url": "https://app.notion.com/p/b5230eaeef2283efa37281a81fefbd4e"}, {"id": "notion:35b30eaeef2280d1b9eac0dde3ebc942", "titulo": "Treinamento de indicação online 1 FURAÇÃO", "camada": "notion", "area": "vendas", "tipo": "notion", "atualizado": "", "fonte": "", "caminho": "", "texto": "", "url": "https://app.notion.com/p/35b30eaeef2280d1b9eac0dde3ebc942"}, {"id": "notion:3da30eaeef2280fe99d7cca09e4edde2", "titulo": "ALEX HORMOZI", "camada": "notion", "area": "vendas", "tipo": "notion", "atualizado": "", "fonte": "", "caminho": "", "texto": "", "url": "https://app.notion.com/p/3da30eaeef2280fe99d7cca09e4edde2"}, {"id": "notion:3da30eaeef2280a6bb8dd83492ed21ea", "titulo": "DIAGNÓSTICO AGRIL", "camada": "notion", "area": "sistema", "tipo": "notion", "atualizado": "", "fonte": "", "caminho": "", "texto": "", "url": "https://app.notion.com/p/3da30eaeef2280a6bb8dd83492ed21ea"}, {"id": "notion:3dc30eaeef2280f3932cebd76b49ddc8", "titulo": "EMPRESAS", "camada": "notion", "area": "sistema", "tipo": "notion", "atualizado": "", "fonte": "", "caminho": "", "texto": "", "url": "https://app.notion.com/p/3dc30eaeef2280f3932cebd76b49ddc8"}, {"id": "notion:3e330eaeef22802ab3b3e468dbdb7a5c", "titulo": "Poema", "camada": "notion", "area": "sistema", "tipo": "notion", "atualizado": "", "fonte": "", "caminho": "", "texto": "", "url": "https://app.notion.com/p/3e330eaeef22802ab3b3e468dbdb7a5c"}, {"id": "notion:3c030eaeef2280a7a47ad0f3c57a4191", "titulo": "Introdução", "camada": "notion", "area": "sistema", "tipo": "notion", "atualizado": "", "fonte": "", "caminho": "", "texto": "", "url": "https://app.notion.com/p/3c030eaeef2280a7a47ad0f3c57a4191"}, {"id": "notion:3ba30eaeef2280f29be8d009c27c8869", "titulo": "12-08", "camada": "notion", "area": "sistema", "tipo": "notion", "atualizado": "", "fonte": "", "caminho": "", "texto": "", "url": "https://app.notion.com/p/3ba30eaeef2280f29be8d009c27c8869"}, {"id": "notion:3ba30eaeef22808d81f2c6a2f8ef4316", "titulo": "chec", "camada": "notion", "area": "sistema", "tipo": "notion", "atualizado": "", "fonte": "", "caminho": "", "texto": "", "url": "https://app.notion.com/p/3ba30eaeef22808d81f2c6a2f8ef4316"}, {"id": "notion:34f30eaeef228039b603d16f9d8636c9", "titulo": "BIBLIOTECA DE PROMPTS", "camada": "notion", "area": "sistema", "tipo": "notion", "atualizado": "", "fonte": "", "caminho": "", "texto": "", "url": "https://app.notion.com/p/34f30eaeef228039b603d16f9d8636c9"}, {"id": "notion:3de30eaeef228063b78cd12c955115ec", "titulo": "PROMPTS", "camada": "notion", "area": "sistema", "tipo": "notion", "atualizado": "", "fonte": "", "caminho": "", "texto": "", "url": "https://app.notion.com/p/3de30eaeef228063b78cd12c955115ec"}, {"id": "notion:3da30eaeef22800bb0e7efaa03d312e6", "titulo": "OTIMIZADOR DE PROMPT", "camada": "notion", "area": "sistema", "tipo": "notion", "atualizado": "", "fonte": "", "caminho": "", "texto": "", "url": "https://app.notion.com/p/3da30eaeef22800bb0e7efaa03d312e6"}, {"id": "notion:3da30eaeef22801f9cbce88b6754ce3a", "titulo": "TEMPLATE PARA CRIAÇÃO DE IA ESPECIALIZADA", "camada": "notion", "area": "sistema", "tipo": "notion", "atualizado": "", "fonte": "", "caminho": "", "texto": "", "url": "https://app.notion.com/p/3da30eaeef22801f9cbce88b6754ce3a"}, {"id": "notion:3da30eaeef228065aec1cc3763dfaf31", "titulo": "PERFIL COMUNICACIONAL PARA AGENTES", "camada": "notion", "area": "sistema", "tipo": "notion", "atualizado": "", "fonte": "", "caminho": "", "texto": "", "url": "https://app.notion.com/p/3da30eaeef228065aec1cc3763dfaf31"}], "ligacoes": [{"source": "area-comunidade", "target": "projeto-plataforma-comunidade", "tipo": "wiki"}, {"source": "area-comunidade", "target": "area-conteudo", "tipo": "wiki"}, {"source": "area-comunidade", "target": "tarefas", "tipo": "wiki"}, {"source": "area-comunidade", "target": "notion:3e230eaeef228096937eea838aa6b33b", "tipo": "notion"}, {"source": "area-comunidade", "target": "elias", "tipo": "area"}, {"source": "area-conteudo", "target": "padrao-carrosseis", "tipo": "wiki"}, {"source": "area-conteudo", "target": "padrao-video-furion", "tipo": "wiki"}, {"source": "area-conteudo", "target": "padrao-video-sfx", "tipo": "wiki"}, {"source": "area-conteudo", "target": "padrao-video-cortes", "tipo": "wiki"}, {"source": "area-conteudo", "target": "skills", "tipo": "wiki"}, {"source": "area-conteudo", "target": "projeto-salvos-instagram", "tipo": "wiki"}, {"source": "area-conteudo", "target": "notion:34b30eaeef2281fab97fcacef1fdfcc3", "tipo": "notion"}, {"source": "area-conteudo", "target": "notion:34f30eaeef22812d8ac5d0a972c5f1be", "tipo": "notion"}, {"source": "area-conteudo", "target": "notion:34b30eaeef2281d1b53cfe814f638834", "tipo": "notion"}, {"source": "area-conteudo", "target": "notion:34b30eaeef22810f97b4c607b14f3562", "tipo": "notion"}, {"source": "area-conteudo", "target": "notion:37230eaeef228139be81ea62dd138638", "tipo": "notion"}, {"source": "area-conteudo", "target": "notion:3d330eaeef228032aa34e2b52280870e", "tipo": "notion"}, {"source": "area-conteudo", "target": "notion:cf5f81442c974a828260ded0b252e547", "tipo": "notion"}, {"source": "area-conteudo", "target": "notion:35e30eaeef2280c9aabff15e46e22849", "tipo": "notion"}, {"source": "area-conteudo", "target": "notion:37230eaeef2281ab9c51d1e764fa8b77", "tipo": "notion"}, {"source": "area-conteudo", "target": "notion:3e630eaeef2281e59baaecb389823ec5", "tipo": "notion"}, {"source": "area-conteudo", "target": "notion:3e330eaeef2280659354c72c26ca72c6", "tipo": "notion"}, {"source": "area-conteudo", "target": "notion:3eb30eaeef2281b59a14fadc4c555a4b", "tipo": "notion"}, {"source": "area-conteudo", "target": "notion:3e630eaeef2280698fc4c03435aa1fb2", "tipo": "notion"}, {"source": "area-conteudo", "target": "notion:3e430eaeef2280b4883bca8be345398d", "tipo": "notion"}, {"source": "area-conteudo", "target": "notion:3e530eaeef2280e0b755d3afb30234ac", "tipo": "notion"}, {"source": "area-conteudo", "target": "notion:3c730eaeef22809a9281f96ba15654df", "tipo": "notion"}, {"source": "area-conteudo", "target": "notion:34f30eaeef2281a0b6a8eb1e874db98c", "tipo": "notion"}, {"source": "area-conteudo", "target": "notion:34f30eaeef2281ec8563c16a4a67d140", "tipo": "notion"}, {"source": "area-conteudo", "target": "notion:3cf30eaeef2280ecb32fe8888eb1cc2e", "tipo": "notion"}, {"source": "area-conteudo", "target": "notion:3da30eaeef2280549307c2e3c6477cae", "tipo": "notion"}, {"source": "area-conteudo", "target": "notion:3e430eaeef228023b8d8ce36484fa804", "tipo": "notion"}, {"source": "area-conteudo", "target": "notion:999de1fa0eea4ecdb75e27301bbb1a41", "tipo": "notion"}, {"source": "area-conteudo", "target": "elias", "tipo": "area"}, {"source": "area-juridico", "target": "skills", "tipo": "wiki"}, {"source": "area-juridico", "target": "notion:9373b77966db4142a4eb9bdabdf95e77", "tipo": "notion"}, {"source": "area-juridico", "target": "notion:3cd30eaeef22800e9ed4e47220456a7c", "tipo": "notion"}, {"source": "area-juridico", "target": "notion:3c730eaeef2280cfb4c5ce5e0814b207", "tipo": "notion"}, {"source": "area-juridico", "target": "notion:3c030eaeef22804ea8dadc458ca942dd", "tipo": "notion"}, {"source": "area-juridico", "target": "notion:3c830eaeef2280538066da4c549a4f65", "tipo": "notion"}, {"source": "area-juridico", "target": "notion:3c830eaeef2280708eaec55c24f4e52f", "tipo": "notion"}, {"source": "area-juridico", "target": "notion:3cf30eaeef2280c2808bf11b4f329467", "tipo": "notion"}, {"source": "area-juridico", "target": "notion:07030eaeef2283cab81081bb0bd5a26c", "tipo": "notion"}, {"source": "area-juridico", "target": "notion:3e530eaeef228005889fe4036c34f7ee", "tipo": "notion"}, {"source": "area-juridico", "target": "elias", "tipo": "area"}, {"source": "area-pessoal", "target": "skills", "tipo": "wiki"}, {"source": "area-pessoal", "target": "notion:35c30eaeef2280b487e7dfdd048cceb3", "tipo": "notion"}, {"source": "area-pessoal", "target": "notion:3c930eaeef2280fb8fe1c00b099278e5", "tipo": "notion"}, {"source": "area-pessoal", "target": "notion:34a30eaeef228039853fe41c416b3e35", "tipo": "notion"}, {"source": "area-pessoal", "target": "notion:35f30eaeef22801a80bac354a8f51f1b", "tipo": "notion"}, {"source": "area-pessoal", "target": "notion:34b30eaeef2281579778d730596fee17", "tipo": "notion"}, {"source": "area-pessoal", "target": "notion:3ce30eaeef2280258a95cbaa089e0266", "tipo": "notion"}, {"source": "area-pessoal", "target": "notion:3dd30eaeef2280628cb5ee974b7c74e9", "tipo": "notion"}, {"source": "area-pessoal", "target": "notion:e5930eaeef2283efb5d081cb4249540e", "tipo": "notion"}, {"source": "area-pessoal", "target": "notion:3da30eaeef22804fb5eece811838e687", "tipo": "notion"}, {"source": "area-pessoal", "target": "elias", "tipo": "area"}, {"source": "area-sites", "target": "padrao-sites-premium", "tipo": "wiki"}, {"source": "area-sites", "target": "skills", "tipo": "wiki"}, {"source": "area-sites", "target": "projeto-plataforma-comunidade", "tipo": "wiki"}, {"source": "area-sites", "target": "area-comunidade", "tipo": "wiki"}, {"source": "area-sites", "target": "notion:3da30eaeef2280768ce0c79b51578add", "tipo": "notion"}, {"source": "area-sites", "target": "notion:3e430eaeef22804ca374dcf09ac2cc06", "tipo": "notion"}, {"source": "area-sites", "target": "elias", "tipo": "area"}, {"source": "area-vendas", "target": "prioridades", "tipo": "wiki"}, {"source": "area-vendas", "target": "skills", "tipo": "wiki"}, {"source": "area-vendas", "target": "notion:b5230eaeef2283efa37281a81fefbd4e", "tipo": "notion"}, {"source": "area-vendas", "target": "notion:35b30eaeef2280d1b9eac0dde3ebc942", "tipo": "notion"}, {"source": "area-vendas", "target": "notion:3da30eaeef2280fe99d7cca09e4edde2", "tipo": "notion"}, {"source": "area-vendas", "target": "elias", "tipo": "area"}, {"source": "como-trabalhar-comigo", "target": "elias", "tipo": "wiki"}, {"source": "como-trabalhar-comigo", "target": "aprendizados", "tipo": "wiki"}, {"source": "elias", "target": "prioridades", "tipo": "wiki"}, {"source": "elias", "target": "tarefas", "tipo": "wiki"}, {"source": "mapa-notion", "target": "area-conteudo", "tipo": "wiki"}, {"source": "mapa-notion", "target": "area-sites", "tipo": "wiki"}, {"source": "mapa-notion", "target": "area-comunidade", "tipo": "wiki"}, {"source": "mapa-notion", "target": "area-juridico", "tipo": "wiki"}, {"source": "mapa-notion", "target": "area-vendas", "tipo": "wiki"}, {"source": "mapa-notion", "target": "area-pessoal", "tipo": "wiki"}, {"source": "mapa-notion", "target": "skills", "tipo": "wiki"}, {"source": "mapa-notion", "target": "rotina-intake-diario", "tipo": "wiki"}, {"source": "mapa-notion", "target": "rotina-manutencao-semanal", "tipo": "wiki"}, {"source": "mapa-notion", "target": "notion:3da30eaeef2280a6bb8dd83492ed21ea", "tipo": "notion"}, {"source": "mapa-notion", "target": "notion:3dc30eaeef2280f3932cebd76b49ddc8", "tipo": "notion"}, {"source": "mapa-notion", "target": "notion:3e330eaeef22802ab3b3e468dbdb7a5c", "tipo": "notion"}, {"source": "mapa-notion", "target": "notion:3c030eaeef2280a7a47ad0f3c57a4191", "tipo": "notion"}, {"source": "mapa-notion", "target": "notion:3ba30eaeef2280f29be8d009c27c8869", "tipo": "notion"}, {"source": "mapa-notion", "target": "notion:3ba30eaeef22808d81f2c6a2f8ef4316", "tipo": "notion"}, {"source": "mapa-notion", "target": "elias", "tipo": "area"}, {"source": "padrao-carrosseis", "target": "tarefas", "tipo": "wiki"}, {"source": "padrao-carrosseis", "target": "conectores", "tipo": "wiki"}, {"source": "padrao-video-cortes", "target": "skills", "tipo": "wiki"}, {"source": "padrao-video-cortes", "target": "aprendizados", "tipo": "wiki"}, {"source": "padrao-video-furion", "target": "padrao-video-sfx", "tipo": "wiki"}, {"source": "aprendizados", "target": "padrao-carrosseis", "tipo": "wiki"}, {"source": "aprendizados", "target": "padrao-sites-premium", "tipo": "wiki"}, {"source": "aprendizados", "target": "skills", "tipo": "wiki"}, {"source": "aprendizados", "target": "projeto-salvos-instagram", "tipo": "wiki"}, {"source": "aprendizados", "target": "padrao-video-sfx", "tipo": "wiki"}, {"source": "aprendizados", "target": "elias", "tipo": "area"}, {"source": "decisoes", "target": "padrao-sites-premium", "tipo": "wiki"}, {"source": "decisoes", "target": "projeto-plataforma-comunidade", "tipo": "wiki"}, {"source": "decisoes", "target": "projeto-salvos-instagram", "tipo": "wiki"}, {"source": "decisoes", "target": "como-trabalhar-comigo", "tipo": "wiki"}, {"source": "decisoes", "target": "padrao-video-sfx", "tipo": "wiki"}, {"source": "decisoes", "target": "padrao-video-furion", "tipo": "wiki"}, {"source": "decisoes", "target": "elias", "tipo": "area"}, {"source": "2026-10-01", "target": "mapa-notion", "tipo": "wiki"}, {"source": "2026-10-01", "target": "decisoes", "tipo": "wiki"}, {"source": "2026-10-01", "target": "prioridades", "tipo": "wiki"}, {"source": "2026-10-01", "target": "rotina-intake-diario", "tipo": "wiki"}, {"source": "2026-10-01", "target": "rotina-manutencao-semanal", "tipo": "wiki"}, {"source": "2026-10-01", "target": "elias", "tipo": "area"}, {"source": "prioridades", "target": "area-conteudo", "tipo": "wiki"}, {"source": "prioridades", "target": "tarefas", "tipo": "wiki"}, {"source": "projeto-plataforma-comunidade", "target": "tarefas", "tipo": "wiki"}, {"source": "projeto-salvos-instagram", "target": "tarefas", "tipo": "wiki"}, {"source": "projeto-salvos-instagram", "target": "notion:3e630eaeef2281e59baaecb389823ec5", "tipo": "notion"}, {"source": "tarefas", "target": "rotina-intake-diario", "tipo": "wiki"}, {"source": "tarefas", "target": "rotina-manutencao-semanal", "tipo": "wiki"}, {"source": "tarefas", "target": "skills", "tipo": "wiki"}, {"source": "conectores", "target": "projeto-plataforma-comunidade", "tipo": "wiki"}, {"source": "conectores", "target": "rotina-intake-diario", "tipo": "wiki"}, {"source": "conectores", "target": "elias", "tipo": "area"}, {"source": "rotina-intake-diario", "target": "decisoes", "tipo": "wiki"}, {"source": "rotina-intake-diario", "target": "aprendizados", "tipo": "wiki"}, {"source": "rotina-intake-diario", "target": "rotina-manutencao-semanal", "tipo": "wiki"}, {"source": "rotina-intake-diario", "target": "elias", "tipo": "area"}, {"source": "rotina-manutencao-semanal", "target": "elias", "tipo": "area"}, {"source": "skills", "target": "conectores", "tipo": "wiki"}, {"source": "skills", "target": "notion:34f30eaeef228039b603d16f9d8636c9", "tipo": "notion"}, {"source": "skills", "target": "notion:3de30eaeef228063b78cd12c955115ec", "tipo": "notion"}, {"source": "skills", "target": "notion:3da30eaeef22800bb0e7efaa03d312e6", "tipo": "notion"}, {"source": "skills", "target": "notion:3da30eaeef22801f9cbce88b6754ce3a", "tipo": "notion"}, {"source": "skills", "target": "notion:3da30eaeef228065aec1cc3763dfaf31", "tipo": "notion"}, {"source": "skills", "target": "elias", "tipo": "area"}]};
+
+const AREAS = {
+  conteudo: "Conteúdo", sites: "Sites", comunidade: "Comunidade", juridico: "Jurídico",
+  vendas: "Vendas", pessoal: "Pessoal", sistema: "Sistema"
+};
+const ORDEM_AREAS = Object.keys(AREAS);
+const CAMADAS = { centro: "Centro", area: "Áreas", contexto: "Contexto", memoria: "Memória", acao: "Ação", notion: "Notion" };
+const anelDo = (n) => n.forma === "area" ? "area" : n.camada;
+const ANEIS = { centro: 0, area: 95, contexto: 190, memoria: 290, acao: 385, notion: 480 };
+const RAIO = { centro: 20, area: 11, arquivo: 7, notion: 4.5 };
+
+const guardar = (k, v) => { try { localStorage.setItem("cerebro:" + k, v); } catch (e) {} };
+const lembrar = (k) => { try { return localStorage.getItem("cerebro:" + k); } catch (e) { return null; } };
+const semAcento = (s) => (s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const corDa = (area) => `var(--a-${AREAS[area] ? area : "sistema"})`;
+const tipoDo = (n) => n.tipo === "centro" || n.camada === "centro" ? "centro" : n.camada === "notion" ? "notion" : n.tipo === "area" ? "area" : "arquivo";
+const fmtData = (iso) => { if (!iso) return ""; const [a, m, d] = iso.slice(0, 10).split("-"); return `${d}/${m}/${a}`; };
+
+const nos = DADOS.nos.map((n) => ({ ...n, forma: tipoDo(n) }));
+const porId = new Map(nos.map((n) => [n.id, n]));
+const ligacoes = DADOS.ligacoes.filter((l) => porId.has(l.source) && porId.has(l.target)).map((l) => ({ ...l }));
+const vizinhos = new Map(nos.map((n) => [n.id, new Set()]));
+ligacoes.forEach((l) => { vizinhos.get(l.source).add(l.target); vizinhos.get(l.target).add(l.source); });
+const centro = nos.find((n) => n.forma === "centro");
+
+/* ---------- resumo ---------- */
+const nArq = nos.filter((n) => n.forma !== "notion").length;
+const nNotion = nos.length - nArq;
+document.getElementById("resumo").textContent =
+  `${nArq} arquivos · ${nNotion} páginas do Notion · ${ligacoes.length} ligações · gerado ${fmtData(DADOS.gerado_em)} ${DADOS.gerado_em.slice(11, 16)}`;
+
+/* ---------- legenda ---------- */
+let areaFiltro = null;
+const legenda = document.getElementById("legenda-areas");
+ORDEM_AREAS.filter((a) => nos.some((n) => n.area === a)).forEach((a) => {
+  const li = document.createElement("li");
+  li.innerHTML = `<button aria-pressed="false" data-area="${a}"><i class="ponto" style="--cor:${corDa(a)}"></i>${AREAS[a]}</button>`;
+  legenda.appendChild(li);
+});
+legenda.addEventListener("click", (e) => {
+  const b = e.target.closest("button"); if (!b) return;
+  areaFiltro = areaFiltro === b.dataset.area ? null : b.dataset.area;
+  legenda.querySelectorAll("button").forEach((x) => x.setAttribute("aria-pressed", String(x.dataset.area === areaFiltro)));
+  realcar();
+});
+
+/* ---------- mapa ---------- */
+const svg = d3.select("#mapa");
+const raiz = svg.append("g");
+const extra = raiz.append("g").attr("class", "camadas-extra");
+const gLig = raiz.append("g");
+const gNos = raiz.append("g");
+
+// setores por área (vista em camadas): cada área ganha uma fatia proporcional ao seu tamanho
+const contagem = {}; nos.forEach((n) => { if (n.forma !== "centro") contagem[n.area] = (contagem[n.area] || 0) + 1; });
+const pesos = {}; Object.entries(contagem).forEach(([a, c]) => { pesos[a] = Math.max(c, 7); });
+const totalPesos = Object.values(pesos).reduce((a, b) => a + b, 0);
+const setores = {}; let ang = -Math.PI / 2;
+ORDEM_AREAS.forEach((a) => { if (!contagem[a]) return; const larg = (pesos[a] / totalPesos) * Math.PI * 2; setores[a] = [ang, ang + larg]; ang += larg; });
+Object.keys(ANEIS).forEach((c) => {
+  if (c === "centro") return;
+  const grupo = nos.filter((n) => anelDo(n) === c && n.forma !== "centro");
+  ORDEM_AREAS.forEach((a) => {
+    const doSetor = grupo.filter((n) => n.area === a).sort((x, y) => x.titulo.localeCompare(y.titulo));
+    const [i0, i1] = setores[a] || [0, 0];
+    doSetor.forEach((n, i) => {
+      const t = i0 + (i1 - i0) * (i + 0.5) / doSetor.length;
+      n.alvoX = Math.cos(t) * ANEIS[c]; n.alvoY = Math.sin(t) * ANEIS[c];
+    });
+  });
+});
+nos.forEach((n) => { if (n.alvoX === undefined) { n.alvoX = 0; n.alvoY = 0; } });
+
+Object.entries(ANEIS).forEach(([c, r]) => {
+  if (!r || c === "area") return;
+  extra.append("circle").attr("class", "anel").attr("r", r);
+  extra.append("text").attr("class", "anel-rotulo").attr("x", 6).attr("y", -r - 6).text(CAMADAS[c]);
+});
+Object.entries(setores).forEach(([a, [i0, i1]]) => {
+  const t = (i0 + i1) / 2, r = ANEIS.notion + 46;
+  extra.append("text").attr("class", "setor-rotulo").style("--cor", corDa(a))
+    .attr("x", Math.cos(t) * r).attr("y", Math.sin(t) * r)
+    .attr("text-anchor", Math.abs(Math.cos(t)) < 0.2 ? "middle" : Math.cos(t) > 0 ? "start" : "end")
+    .attr("dominant-baseline", "middle").text(AREAS[a]);
+  extra.append("line").attr("class", "anel").attr("x1", Math.cos(i0) * 40).attr("y1", Math.sin(i0) * 40)
+    .attr("x2", Math.cos(i0) * (ANEIS.notion + 20)).attr("y2", Math.sin(i0) * (ANEIS.notion + 20));
+});
+
+const linhas = gLig.selectAll("line").data(ligacoes).join("line").attr("class", "ligacao");
+const grupos = gNos.selectAll("g").data(nos, (d) => d.id).join("g")
+  .attr("class", "no").attr("data-tipo", (d) => d.forma).attr("tabindex", 0)
+  .attr("role", "button").attr("aria-label", (d) => d.titulo)
+  .style("--cor", (d) => corDa(d.area));
+grupos.append("circle").attr("r", (d) => RAIO[d.forma]);
+grupos.append("text").attr("x", (d) => RAIO[d.forma] + 5).attr("y", 4).text((d) => d.titulo);
+grupos.filter((d) => d.forma === "centro").select("text").attr("x", 0).attr("y", 40).attr("text-anchor", "middle");
+
+if (centro) { centro.fx = 0; centro.fy = 0; }
+nos.forEach((n, i) => { if (n.forma !== "centro") { const t = i * 2.4; n.x = Math.cos(t) * (60 + i * 3); n.y = Math.sin(t) * (60 + i * 3); } });
+
+const sim = d3.forceSimulation(nos)
+  .force("link", d3.forceLink(ligacoes).id((d) => d.id))
+  .force("carga", d3.forceManyBody())
+  .force("colisao", d3.forceCollide().radius((d) => RAIO[d.forma] + (d.forma === "notion" ? 4 : d.forma === "arquivo" ? 22 : 30)))
+  .force("x", d3.forceX())
+  .force("y", d3.forceY())
+  .on("tick", desenhar)
+  .on("end", () => { if (enquadrarNoFim && modo === "neural") enquadrar(true); enquadrarNoFim = false; });
+let enquadrarNoFim = false;
+
+function desenhar() {
+  linhas.attr("x1", (d) => d.source.x).attr("y1", (d) => d.source.y).attr("x2", (d) => d.target.x).attr("y2", (d) => d.target.y);
+  grupos.attr("transform", (d) => `translate(${d.x},${d.y})`);
+}
+
+let modo = lembrar("modo") === "camadas" ? "camadas" : "neural";
+const reduzido = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+function aplicarModo(m, animar = true) {
+  modo = m; guardar("modo", m);
+  document.getElementById("modo-neural").setAttribute("aria-pressed", String(m === "neural"));
+  document.getElementById("modo-camadas").setAttribute("aria-pressed", String(m === "camadas"));
+  document.getElementById("vista-grafo").classList.toggle("modo-camadas", m === "camadas");
+  if (m === "neural") {
+    sim.force("link").distance((l) => l.tipo === "notion" ? 40 : l.tipo === "area" ? 120 : 150).strength((l) => l.tipo === "notion" ? 0.8 : l.tipo === "area" ? 0.4 : 0.12);
+    sim.force("carga").strength((d) => d.forma === "centro" ? -1200 : d.forma === "area" ? -700 : d.forma === "notion" ? -60 : -420);
+    sim.force("x").x(0).strength(0.03); sim.force("y").y(0).strength(0.03);
+  } else {
+    sim.force("link").strength(0.004);
+    sim.force("carga").strength(-10);
+    sim.force("x").x((d) => d.alvoX).strength(0.55); sim.force("y").y((d) => d.alvoY).strength(0.55);
+  }
+  if (reduzido || !animar) { sim.stop(); sim.alpha(1); for (let i = 0; i < 400; i++) sim.tick(); desenhar(); enquadrar(false); }
+  else { enquadrarNoFim = true; sim.alpha(0.9).restart(); if (m === "camadas") enquadrar(true); }
+}
+
+/* zoom */
+const zoom = d3.zoom().scaleExtent([0.2, 4]).on("zoom", (e) => raiz.attr("transform", e.transform));
+svg.call(zoom).on("dblclick.zoom", null);
+function enquadrar(animar) {
+  const el = svg.node(); const w = el.clientWidth || 800, h = el.clientHeight || 600;
+  let x0, x1, y0, y1;
+  if (modo === "camadas") { x0 = y0 = -(ANEIS.notion + 110); x1 = y1 = ANEIS.notion + 110; }
+  else {
+    x0 = d3.min(nos, (d) => d.x) - 40; x1 = d3.max(nos, (d) => d.x) + 170;
+    y0 = d3.min(nos, (d) => d.y) - 30; y1 = d3.max(nos, (d) => d.y) + 30;
+  }
+  const k = Math.max(0.25, Math.min(w / (x1 - x0), h / (y1 - y0), 1.4));
+  const t = d3.zoomIdentity.translate(w / 2 - k * (x0 + x1) / 2, h / 2 - k * (y0 + y1) / 2).scale(k);
+  (animar ? svg.transition().duration(600) : svg).call(zoom.transform, t);
+}
+function focar(n) {
+  const el = svg.node(); const w = el.clientWidth, h = el.clientHeight;
+  const deslocar = !leitor.hidden && w > 760 ? -Math.min(230, w / 4) : 0;
+  const k = 1.6;
+  const dy = !leitor.hidden && w <= 760 ? -h * 0.3 : 0;
+  svg.transition().duration(reduzido ? 0 : 600)
+    .call(zoom.transform, d3.zoomIdentity.translate(w / 2 + deslocar - n.x * k, h / 2 + dy - n.y * k).scale(k));
+}
+window.addEventListener("resize", () => enquadrar(false));
+
+/* arrastar nós */
+grupos.call(d3.drag()
+  .on("start", (e, d) => { if (!e.active) sim.alphaTarget(0.2).restart(); d.fx = d.x; d.fy = d.y; })
+  .on("drag", (e, d) => { d.fx = e.x; d.fy = e.y; })
+  .on("end", (e, d) => { if (!e.active) sim.alphaTarget(0); if (d.forma !== "centro") { d.fx = null; d.fy = null; } }));
+
+/* realce: passar o mouse > busca > área > selecionado */
+let sobre = null, selecionado = null, achados = null;
+function realcar() {
+  let foco = null, forte = null;
+  if (sobre) { foco = new Set([sobre, ...vizinhos.get(sobre)]); forte = sobre; }
+  else if (achados) foco = achados;
+  else if (areaFiltro) foco = new Set(nos.filter((n) => n.area === areaFiltro).map((n) => n.id));
+  else if (selecionado) { foco = new Set([selecionado, ...vizinhos.get(selecionado)]); forte = selecionado; }
+  grupos.classed("apagado", (d) => foco && !foco.has(d.id))
+    .classed("vizinho", (d) => !!forte && foco.has(d.id))
+    .classed("achado", (d) => !!achados && achados.has(d.id))
+    .classed("selecionado", (d) => d.id === selecionado);
+  linhas.classed("apagado", (l) => foco && !(foco.has(l.source.id) && foco.has(l.target.id)) )
+    .classed("forte", (l) => forte && (l.source.id === forte || l.target.id === forte));
+}
+grupos.on("mouseenter", (e, d) => { sobre = d.id; realcar(); })
+  .on("mouseleave", () => { sobre = null; realcar(); })
+  .on("click", (e, d) => abrir(d.id))
+  .on("keydown", (e, d) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); abrir(d.id); } });
+
+/* ---------- leitor ---------- */
+const leitor = document.getElementById("leitor");
+const WIKI = /\[\[([^\]|#]+)(?:#[^\]|]*)?(?:\|([^\]]+))?\]\]/g;
+function renderMd(texto) {
+  // troca [[links]] por links clicáveis, mas não mexe no que está dentro de código
+  const comLinks = (texto || "").split(/(```[\s\S]*?```|`[^`\n]*`)/).map((parte, i) => i % 2 ? parte : parte.replace(WIKI, (m, alvo, rot) => {
+    const id = alvo.trim(); const n = porId.get(id);
+    return `<a class="wiki" data-no="${esc(id)}" href="#">${esc(rot || (n ? n.titulo : id))}</a>`;
+  })).join("");
+  const html = window.marked ? marked.parse(comLinks, { gfm: true }) : `<pre>${esc(texto)}</pre>`;
+  const div = document.createElement("div"); div.innerHTML = html;
+  div.querySelectorAll("a[href^='http']").forEach((a) => { a.target = "_blank"; a.rel = "noopener"; });
+  return div.innerHTML;
+}
+function chipArea(n) {
+  return `<span class="chip"><i class="ponto${n.forma === "notion" ? " oco" : ""}" style="--cor:${corDa(n.area)}"></i>${AREAS[n.area] || n.area}</span>`;
+}
+function abrir(id) {
+  const n = porId.get(id); if (!n) return;
+  selecionado = id; realcar();
+  document.querySelectorAll("#leitor-chips .chip").forEach((c) => c.remove());
+  document.getElementById("leitor-chips").insertAdjacentHTML("afterbegin",
+    chipArea(n) + `<span class="chip">${CAMADAS[n.camada] || n.camada}</span>`);
+  document.getElementById("leitor-titulo").textContent = n.titulo;
+  const meta = [];
+  if (n.caminho) meta.push(n.caminho);
+  if (n.atualizado) meta.push("atualizado " + fmtData(n.atualizado));
+  document.getElementById("leitor-meta").textContent = meta.join(" · ");
+  const corpo = document.getElementById("leitor-corpo");
+  if (n.forma === "notion") {
+    corpo.innerHTML = `<p>Página do Notion ligada à área <strong>${esc(AREAS[n.area] || n.area)}</strong>. O conteúdo fica no Notion; o cérebro guarda o atalho.</p>
+      <p><a class="botao-externo" href="${esc(n.url)}" target="_blank" rel="noopener">Abrir no Notion ↗</a></p>`;
+  } else {
+    corpo.innerHTML = renderMd(n.texto);
+    if (n.fonte) corpo.insertAdjacentHTML("beforeend", `<p class="etiqueta">Origem: <a href="${esc(n.fonte)}" target="_blank" rel="noopener">página no Notion ↗</a></p>`);
+  }
+  corpo.scrollTop = 0;
+  const viz = [...vizinhos.get(id)].map((v) => porId.get(v)).sort((a, b) => (a.forma === "notion") - (b.forma === "notion") || a.titulo.localeCompare(b.titulo));
+  document.getElementById("leitor-rodape").innerHTML = viz.length
+    ? `<span class="etiqueta">Ligado a ${viz.length}</span><div class="lista">${viz.map((v) =>
+        `<button class="chip" data-no="${esc(v.id)}"><i class="ponto${v.forma === "notion" ? " oco" : ""}" style="--cor:${corDa(v.area)}"></i>${esc(v.titulo)}</button>`).join("")}</div>`
+    : "";
+  leitor.hidden = false;
+  if (!document.getElementById("vista-grafo").hidden) focar(n);
+}
+function fechar() { leitor.hidden = true; selecionado = null; realcar(); }
+document.getElementById("leitor-fechar").addEventListener("click", fechar);
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !leitor.hidden) fechar(); });
+document.addEventListener("click", (e) => {
+  const alvo = e.target.closest("[data-no]");
+  if (alvo && !alvo.closest(".legenda")) { e.preventDefault(); if (porId.has(alvo.dataset.no)) abrir(alvo.dataset.no); }
+});
+
+/* ---------- busca ---------- */
+const campo = document.getElementById("busca");
+const lista = document.getElementById("resultados");
+let ativo = 0, encontrados = [];
+function buscar() {
+  const q = semAcento(campo.value.trim());
+  if (!q) { achados = null; lista.hidden = true; realcar(); return; }
+  encontrados = nos.map((n) => {
+    const t = semAcento(n.titulo), c = semAcento(n.texto);
+    const pts = t.startsWith(q) ? 3 : t.includes(q) ? 2 : c.includes(q) ? 1 : 0;
+    return { n, pts };
+  }).filter((x) => x.pts).sort((a, b) => b.pts - a.pts || a.n.titulo.localeCompare(b.n.titulo)).map((x) => x.n);
+  achados = new Set(encontrados.map((n) => n.id));
+  ativo = 0;
+  lista.innerHTML = encontrados.length
+    ? encontrados.slice(0, 10).map((n, i) => `<li><button data-no="${esc(n.id)}" class="${i === 0 ? "ativo" : ""}">
+        <i class="ponto${n.forma === "notion" ? " oco" : ""}" style="--cor:${corDa(n.area)}"></i>
+        <span class="tit">${esc(n.titulo)}</span><span class="etiqueta">${CAMADAS[n.camada] || ""}</span></button></li>`).join("")
+    : `<li class="vazio">Nada encontrado para “${esc(campo.value.trim())}”.</li>`;
+  lista.hidden = false;
+  realcar();
+}
+campo.addEventListener("input", buscar);
+campo.addEventListener("focus", () => { if (campo.value.trim()) buscar(); });
+campo.addEventListener("keydown", (e) => {
+  const bts = lista.querySelectorAll("button");
+  if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+    e.preventDefault(); if (!bts.length) return;
+    ativo = (ativo + (e.key === "ArrowDown" ? 1 : -1) + bts.length) % bts.length;
+    bts.forEach((b, i) => b.classList.toggle("ativo", i === ativo));
+  } else if (e.key === "Enter" && bts[ativo]) { escolher(bts[ativo].dataset.no); }
+  else if (e.key === "Escape") { campo.value = ""; buscar(); }
+});
+lista.addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) { e.stopPropagation(); escolher(b.dataset.no); } });
+function escolher(id) { lista.hidden = true; achados = null; mostrarAba("grafo"); abrir(id); }
+document.addEventListener("click", (e) => { if (!e.target.closest(".busca")) lista.hidden = true; });
+
+/* ---------- aba Hoje ---------- */
+function montarHoje() {
+  const tarefas = porId.get("tarefas"), prior = porId.get("prioridades");
+  const diarios = nos.filter((n) => n.tipo === "diario").sort((a, b) => b.id.localeCompare(a.id));
+  const ultimo = diarios[0];
+  const itens = [];
+  if (tarefas) {
+    let secao = "";
+    tarefas.texto.split("\n").forEach((l) => {
+      const h = l.match(/^##\s+(.*)/); if (h) secao = h[1];
+      const m = l.match(/^\s*-\s*\[( |x|X)\]\s+(.*)$/);
+      if (m) itens.push({ feito: m[1] !== " ", partes: m[2].split(" · ").map((s) => s.trim()), secao });
+    });
+  }
+  const abertas = itens.filter((i) => !i.feito), feitas = itens.filter((i) => i.feito);
+  const linhaTarefa = (t) => {
+    const [txt, area, ...resto] = t.partes;
+    const a = semAcento(area || "");
+    const info = [area && AREAS[a] ? `<span class="chip"><i class="ponto" style="--cor:${corDa(a)}"></i>${AREAS[a]}</span>` : (area ? esc(area) : ""),
+      ...resto.map((r) => renderMd(r).replace(/^<p>|<\/p>\s*$/g, "").replace(/<a class="wiki" data-no="([^"]+)" href="#">/g, '<button data-no="$1">').replace(/<\/a>/g, "</button>"))].filter(Boolean).join(" · ");
+    const tTxt = renderMd(txt).replace(/^<p>|<\/p>\s*$/g, "");
+    return `<li class="${t.feito ? "feito" : ""}"><span class="caixa" aria-hidden="true"></span><span class="txt">${tTxt}</span><span class="info">${info}</span></li>`;
+  };
+  const priores = prior ? [...prior.texto.matchAll(/^##\s+(?:\d+\.\s*)?(.+)$/gm)].map((m) => m[1]) : [];
+  const aviso = prior && /a confirmar/i.test(prior.texto);
+  const hojeData = new Date().toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" });
+  document.getElementById("hoje").innerHTML = `
+    <div class="saudacao"><h2>Hoje</h2><p>${esc(hojeData)} · ${abertas.length} tarefas abertas · último registro de memória ${ultimo ? fmtData(ultimo.id) : "nenhum"}</p></div>
+    <div class="coluna">
+      <section class="bloco">
+        <span class="etiqueta">Memória · tarefas</span>
+        <h2>Para fazer</h2>
+        <ul class="tarefas">${abertas.map(linhaTarefa).join("") || "<li>Nenhuma tarefa aberta.</li>"}</ul>
+        ${feitas.length ? `<ul class="tarefas">${feitas.slice(0, 3).map(linhaTarefa).join("")}</ul>` : ""}
+        <p class="etiqueta" style="margin:12px 0 0">Para marcar como feita, peça ao Claude ou edite <button class="link-abrir" data-no="tarefas">tarefas.md</button></p>
+      </section>
+    </div>
+    <div class="coluna">
+      <section class="bloco">
+        <span class="etiqueta">Memória · prioridades${aviso ? " · a confirmar" : ""}</span>
+        <h2>Foco</h2>
+        <ol class="prioridades">${priores.map((p) => `<li>${esc(p)}</li>`).join("")}</ol>
+        <p style="margin:12px 0 0"><button class="link-abrir" data-no="prioridades">Ver prioridades completas</button></p>
+      </section>
+      ${ultimo ? `<section class="bloco">
+        <span class="etiqueta">Memória · diário</span>
+        <h2>${esc(ultimo.titulo)}</h2>
+        <div class="md">${renderMd(ultimo.texto)}</div>
+      </section>` : ""}
+    </div>`;
+}
+
+/* ---------- abas ---------- */
+function mostrarAba(qual) {
+  const grafo = qual === "grafo";
+  document.getElementById("aba-grafo").setAttribute("aria-selected", String(grafo));
+  document.getElementById("aba-hoje").setAttribute("aria-selected", String(!grafo));
+  document.getElementById("vista-grafo").hidden = !grafo;
+  document.getElementById("vista-hoje").hidden = grafo;
+  document.getElementById("modos").hidden = !grafo;
+  if (!grafo) fechar();
+  guardar("aba", qual);
+  if (grafo) requestAnimationFrame(() => enquadrar(false));
+}
+document.getElementById("aba-grafo").addEventListener("click", () => mostrarAba("grafo"));
+document.getElementById("aba-hoje").addEventListener("click", () => mostrarAba("hoje"));
+document.getElementById("modo-neural").addEventListener("click", () => aplicarModo("neural"));
+document.getElementById("modo-camadas").addEventListener("click", () => aplicarModo("camadas"));
+
+montarHoje();
+aplicarModo(modo, false);
+const abaSalva = (location.hash === "#hoje" ? "hoje" : null) || lembrar("aba");
+mostrarAba(abaSalva === "hoje" ? "hoje" : "grafo");
+</script>
+
+</body>
+</html>
