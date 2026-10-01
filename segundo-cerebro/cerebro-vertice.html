@@ -635,7 +635,14 @@ function refresh() {
 let G = null, graphSig = '', graphAdj = new Map(), centers = new Map(), didFit = false, hubDeg = 99;
 let hi = null, hiMode = null, focusId = null;
 const nodeCache = new Map();
-const fit = (ms = 700) => { if (G) G.zoomToFit(ms, mqMobile.matches ? 28 : 80); };
+let pendingFit = false;
+const fit = (ms = 700) => {
+  if (!G) return;
+  if (G.width() < 80 || G.height() < 80) { pendingFit = true; return; }
+  pendingFit = false;
+  G.zoomToFit(ms, mqMobile.matches ? 48 : 90);
+};
+const finite = n => Number.isFinite(n.x) && Number.isFinite(n.y);
 
 function initGraph() {
   const el = $('#graph');
@@ -646,7 +653,7 @@ function initGraph() {
     .nodeId('id')
     .nodeLabel(() => '')
     .nodeCanvasObject(drawNode)
-    .nodePointerAreaPaint((n, color, ctx) => { ctx.fillStyle = color; ctx.beginPath(); ctx.arc(n.x, n.y, Math.max(n.r || 3, 4) + 2, 0, 2 * Math.PI); ctx.fill(); })
+    .nodePointerAreaPaint((n, color, ctx) => { if (!finite(n)) return; ctx.fillStyle = color; ctx.beginPath(); ctx.arc(n.x, n.y, Math.max(n.r || 3, 4) + 2, 0, 2 * Math.PI); ctx.fill(); })
     .linkColor(linkColor)
     .linkWidth(l => isFocusLink(l) ? 1.3 : 0.55)
     .linkDirectionalParticles(S.signals ? 2 : 0)
@@ -665,7 +672,12 @@ function initGraph() {
   G.d3Force('charge').strength(-S.repel).distanceMax(700);
   applyLinkForce();
   G.d3Force('gravity', gravity);
-  new ResizeObserver(() => { G.width(el.clientWidth).height(el.clientHeight); drawStars(); }).observe(el);
+  new ResizeObserver(() => {
+    const w = el.clientWidth, h = el.clientHeight;
+    if (!w || !h) return;
+    G.width(w).height(h); drawStars();
+    if (pendingFit) setTimeout(() => fit(600), 150);
+  }).observe(el);
 }
 const sameCluster = l => l.source.cl != null && l.source.cl === l.target.cl;
 function applyLinkForce() {
@@ -678,6 +690,7 @@ function applyLinkForce() {
 const regionKey = n => S.layout === 'tema' ? n.cl : S.layout === 'tipo' && n.kind === 'note' ? n.type : null;
 function gravity(alpha) {
   for (const n of gravity.nodes) {
+    if (!finite(n)) { n.x = (Math.random() - .5) * 50; n.y = (Math.random() - .5) * 50; n.vx = n.vy = 0; }
     let cx = 0, cy = 0, k = 0.012;
     const key = regionKey(n), c = key != null && centers.get(key);
     if (c) { cx = c.x; cy = c.y; k = 0.075; }
@@ -901,7 +914,8 @@ function linkColor(l) {
 }
 
 function drawNode(n, ctx, scale) {
-  const r = n.r || 3;
+  if (!finite(n) || !Number.isFinite(scale) || scale <= 0) return;
+  const r = Number.isFinite(n.r) && n.r > 0 ? n.r : 3;
   const dimmed = !!hi && !hi.has(n.id);
   const sel = n.id === state.selectedId, hov = n.id === state.hoverId;
   const col = n.kind === 'note' ? TYPE[n.type].color : n.kind === 'tag' ? C.mist : C.dust;
@@ -945,10 +959,11 @@ function drawNode(n, ctx, scale) {
 }
 
 function drawBackdrop(ctx, scale) {
+  if (!Number.isFinite(scale) || scale <= 0) return;
   if (S.layout === 'livre' || !G) return;
   const groups = new Map();
   for (const n of G.graphData().nodes) {
-    if (n.kind !== 'note' || n.x == null) continue;
+    if (n.kind !== 'note' || !finite(n)) continue;
     const key = regionKey(n);
     if (key == null) continue;
     let g = groups.get(key);
