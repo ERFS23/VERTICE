@@ -1,0 +1,2036 @@
+<title>Cérebro Vértice</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&display=swap">
+<style>
+:root{
+  /* Layout: a full-bleed star map of notes; instrument rail on the left, reading drawer on the right, search as the command line on top */
+  color-scheme: dark;
+  --void:#06070B; --deck:#0B0D14; --deck-2:#11141F; --deck-3:#191D2C;
+  --rule:#252A3E; --rule-soft:#171A27;
+  --ivory:#ECE7DC; --mist:#9397AA; --dust:#62667A;
+  --amber:#F4B860; --amber-soft:rgba(244,184,96,.14); --amber-ink:#1B1307;
+  --danger:#F0736A;
+  --t-conceito:#F1ECDF; --t-nota:#86A8D4; --t-projeto:#FF8A4C; --t-fonte:#E66F9A; --t-pessoa:#57C4AE; --t-diario:#A596F0;
+  --f-read:"Newsreader","Iowan Old Style",Georgia,serif;
+  --f-ui:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --top-h:56px; --rail-w:268px; --drawer-w:468px;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{height:100%}
+body{height:100%;margin:0;background:var(--void);color:var(--ivory);font:14px/1.5 var(--f-ui);overflow:hidden;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;padding:0}
+input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+svg{display:block}
+
+#app{position:relative;height:100%;display:grid;grid-template-rows:var(--top-h) minmax(0,1fr);grid-template-columns:var(--rail-w) minmax(0,1fr);grid-template-areas:"top top" "rail stage"}
+
+/* top bar */
+.topbar{grid-area:top;display:flex;align-items:center;gap:12px;padding-inline:16px;border-bottom:1px solid var(--rule-soft);background:var(--void);position:relative;z-index:40;min-width:0}
+.brand{display:flex;align-items:baseline;gap:10px;flex:none}
+.brand .logo{width:24px;height:24px;align-self:center}
+.brand b{font:500 20px/1 var(--f-read);letter-spacing:.005em}
+.brand small{font:500 10px/1 var(--f-mono);letter-spacing:.16em;text-transform:uppercase;color:var(--dust)}
+.search{position:relative;flex:1;max-width:580px;margin-inline:auto;min-width:0}
+.search-box{display:flex;align-items:center;gap:8px;height:38px;padding-inline:14px 8px;background:var(--deck-2);border:1px solid var(--rule);border-radius:999px;color:var(--dust)}
+.search-box svg{width:17px;height:17px;flex:none}
+.search-box:focus-within{border-color:var(--amber);box-shadow:0 0 0 3px var(--amber-soft)}
+.search input{flex:1;min-width:0;background:none;border:0;outline:none;color:var(--ivory)}
+.search input::placeholder{color:var(--dust)}
+kbd{font:500 11px/1 var(--f-mono);color:var(--mist);border:1px solid var(--rule);border-radius:5px;padding:4px 6px;background:var(--deck);white-space:nowrap}
+.results{position:absolute;top:calc(100% + 8px);left:0;right:0;background:var(--deck-2);border:1px solid var(--rule);border-radius:14px;box-shadow:0 24px 60px rgba(0,0,0,.6);max-height:min(70vh,540px);overflow-y:auto;padding:6px;z-index:60}
+.results-head{font:500 10px/1 var(--f-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--dust);padding:10px 10px 8px}
+.result{display:grid;grid-template-columns:10px minmax(0,1fr);gap:3px 10px;width:100%;text-align:left;padding:9px 10px;border-radius:9px}
+.result[aria-selected="true"],.result:hover{background:var(--deck-3)}
+.result .dot{margin-top:7px}
+.result .t{font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.result .s{grid-column:2;color:var(--mist);font-size:12.5px;line-height:1.45;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.result .tg{font-family:var(--f-mono);font-size:11.5px;color:var(--dust)}
+.result.create .t{color:var(--amber)}
+.tips{display:grid;gap:6px;padding:4px 10px 10px;color:var(--mist);font-size:12.5px}
+.tips code{font:12px var(--f-mono);color:var(--ivory);background:var(--deck-3);padding:1px 6px;border-radius:4px}
+mark{background:rgba(244,184,96,.24);color:var(--ivory);border-radius:2px;padding:0 1px}
+.dot{width:8px;height:8px;border-radius:50%;flex:none;display:inline-block;background:var(--c,var(--mist))}
+.dot.ghost{background:none;border:1px dashed var(--dust)}
+.dot.plus{background:none;color:var(--amber);width:10px;height:auto;font:600 14px/1 var(--f-mono);margin-top:2px}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;height:34px;padding-inline:14px;border-radius:999px;font-weight:500;font-size:13px;white-space:nowrap;border:1px solid var(--rule);color:var(--ivory);background:var(--deck-2);flex:none}
+.btn:hover{border-color:#384062;background:var(--deck-3)}
+.btn svg{width:16px;height:16px}
+.btn.primary{background:var(--amber);border-color:var(--amber);color:var(--amber-ink)}
+.btn.primary:hover{background:#F8C985;border-color:#F8C985}
+.btn.danger{background:var(--danger);border-color:var(--danger);color:#1d0806}
+.btn.small{height:30px;padding-inline:11px;font-size:12.5px}
+.btn[disabled]{opacity:.5;cursor:default}
+.ask-btn{border-color:rgba(244,184,96,.45);color:var(--amber)}
+.icon-btn{display:inline-grid;place-items:center;width:34px;height:34px;border-radius:50%;color:var(--mist);flex:none}
+.icon-btn svg{width:18px;height:18px}
+.icon-btn:hover{background:var(--deck-3);color:var(--ivory)}
+.icon-btn[aria-pressed="true"]{color:var(--amber);background:var(--amber-soft)}
+.icon-btn.sm{width:26px;height:26px}
+.icon-btn.sm svg{width:14px;height:14px}
+.actions{display:flex;align-items:center;gap:4px;flex:none;position:relative}
+.menu{position:absolute;top:calc(100% + 10px);right:0;width:290px;background:var(--deck-2);border:1px solid var(--rule);border-radius:14px;padding:6px;box-shadow:0 24px 60px rgba(0,0,0,.6);z-index:60}
+.menu button{display:flex;gap:11px;align-items:center;width:100%;padding:9px 10px;border-radius:8px;text-align:left;font-size:13px}
+.menu button svg{width:17px;height:17px;color:var(--mist);flex:none}
+.menu button:hover{background:var(--deck-3)}
+.menu button small{display:block;color:var(--dust);font-size:11.5px;line-height:1.35;margin-top:1px}
+.menu hr{border:0;border-top:1px solid var(--rule);margin:6px 4px}
+.menu .label{font:500 10px/1 var(--f-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--dust);padding:10px 10px 6px}
+
+/* rail */
+.rail{grid-area:rail;overflow-y:auto;background:var(--deck);border-right:1px solid var(--rule-soft);padding:18px 14px 20px;display:flex;flex-direction:column;gap:24px;min-width:0}
+.rail h3{margin:0 0 8px;padding-inline:8px;font:500 10.5px/1 var(--f-mono);letter-spacing:.16em;text-transform:uppercase;color:var(--dust);display:flex;justify-content:space-between}
+.stack{display:flex;flex-direction:column;gap:1px}
+.region{display:flex;align-items:center;gap:10px;width:100%;padding:6px 8px;border-radius:7px;font-size:13px;text-align:left}
+.region:hover{background:var(--deck-2)}
+.region .n{margin-left:auto;font:12px var(--f-mono);color:var(--mist);font-variant-numeric:tabular-nums}
+.region[aria-pressed="false"]{opacity:.35}
+.region[aria-pressed="false"] .dot{background:none;border:1px solid var(--c)}
+.switch{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:5px 8px;font-size:13px;cursor:pointer;border-radius:7px}
+.switch:hover{background:var(--deck-2)}
+.switch input{appearance:none;-webkit-appearance:none;margin:0;width:30px;height:18px;border-radius:9px;background:var(--deck-3);border:1px solid var(--rule);position:relative;flex:none;cursor:pointer;transition:background .15s,border-color .15s}
+.switch input::after{content:"";position:absolute;top:2px;left:2px;width:12px;height:12px;border-radius:50%;background:var(--mist);transition:transform .15s,background .15s}
+.switch input:checked{background:var(--amber-soft);border-color:var(--amber)}
+.switch input:checked::after{transform:translateX(12px);background:var(--amber)}
+.range{display:grid;gap:2px;padding:6px 8px 2px;font-size:12.5px;color:var(--mist)}
+.range input{width:100%;accent-color:var(--amber);margin:0}
+.list-btn{display:flex;align-items:center;gap:9px;width:100%;padding:5px 8px;border-radius:7px;text-align:left;font-size:13px;min-width:0}
+.list-btn:hover{background:var(--deck-2)}
+.list-btn .t{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;flex:1}
+.list-btn small{color:var(--dust);font:11px var(--f-mono);flex:none}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.rail .chips{padding-inline:6px}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;border:1px solid var(--rule);font:12px/1.5 var(--f-mono);color:var(--mist);background:var(--deck);max-width:100%}
+.chip:hover{border-color:var(--amber);color:var(--ivory)}
+.chip b{font-weight:400;color:var(--dust)}
+.chip.missing{border-style:dashed;color:var(--dust)}
+.chip.link-chip{font-family:var(--f-ui);font-size:12.5px;color:var(--ivory)}
+.muted,.muted-note{color:var(--dust);font-size:12.5px;margin:0}
+.muted-note{padding-inline:8px}
+.stats{font:11.5px/1.8 var(--f-mono);color:var(--dust);border-top:1px solid var(--rule-soft);padding:14px 8px 0;margin-top:auto;display:grid;grid-template-columns:1fr auto;column-gap:10px}
+.stats strong{color:var(--ivory);font-weight:500;text-align:right;font-variant-numeric:tabular-nums}
+
+/* stage */
+.stage{grid-area:stage;position:relative;overflow:hidden;min-width:0;background:radial-gradient(ellipse 70% 60% at 50% 45%,#0F1222 0%,var(--void) 72%)}
+#stars{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+#graph{position:absolute;inset:0}
+.hud{position:absolute;left:16px;bottom:16px;display:flex;gap:6px;z-index:5}
+.hud .icon-btn{background:rgba(11,13,20,.85);border:1px solid var(--rule)}
+.focus-chip{position:absolute;left:50%;transform:translateX(-50%);bottom:16px;display:flex;align-items:center;gap:10px;padding:5px 6px 5px 14px;border-radius:999px;background:rgba(11,13,20,.92);border:1px solid rgba(244,184,96,.5);font-size:12.5px;z-index:5;max-width:calc(100% - 180px);white-space:nowrap}
+.focus-chip > span:first-child{overflow:hidden;text-overflow:ellipsis;min-width:0}
+.seg{display:flex;border:1px solid var(--rule);border-radius:999px;overflow:hidden;flex:none}
+.seg button{font:12px var(--f-mono);padding:2px 9px;color:var(--mist)}
+.seg button[aria-pressed="true"]{background:var(--amber);color:var(--amber-ink)}
+@media (min-width:761px){
+  #app.drawer-open .focus-chip,#app.drawer-open .banner{left:calc((100% - min(var(--drawer-w),100%)) / 2)}
+  #app.drawer-open .focus-chip{max-width:calc(100% - min(var(--drawer-w),100%) - 150px)}
+}
+.hovercard{position:absolute;z-index:8;pointer-events:none;width:270px;background:rgba(17,20,31,.97);border:1px solid var(--rule);border-radius:12px;padding:11px 13px 12px;box-shadow:0 14px 40px rgba(0,0,0,.55)}
+.hovercard .k{font:500 10px/1 var(--f-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--c)}
+.hovercard h4{margin:7px 0 5px;font:500 17px/1.2 var(--f-read);text-wrap:balance}
+.hovercard p{margin:0;color:var(--mist);font-size:12.5px;line-height:1.45}
+.hovercard .m{margin-top:9px;font:11px var(--f-mono);color:var(--dust)}
+.overlay-msg{position:absolute;inset:0;display:grid;place-items:center;padding:24px 16px;z-index:4;pointer-events:none}
+.overlay-msg .box{pointer-events:auto;max-width:440px;text-align:center}
+.overlay-msg h2{font:500 30px/1.15 var(--f-read);margin:8px 0 10px;text-wrap:balance}
+.overlay-msg p{color:var(--mist);margin:0 0 20px}
+.overlay-msg .acts{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.eyebrow{font:500 10.5px/1 var(--f-mono);letter-spacing:.16em;text-transform:uppercase;color:var(--amber)}
+.banner{position:absolute;top:12px;left:50%;transform:translateX(-50%);z-index:6;background:rgba(11,13,20,.92);border:1px solid var(--rule);border-radius:999px;padding:6px 14px;font-size:12.5px;color:var(--mist);max-width:calc(100% - 32px);text-align:center}
+.thinking{display:flex;align-items:center;gap:10px;color:var(--mist);font-size:13px}
+.pulse{width:8px;height:8px;border-radius:50%;background:var(--amber);animation:pulse 1.2s ease-in-out infinite;flex:none}
+@keyframes pulse{0%,100%{opacity:.25;transform:scale(.8)}50%{opacity:1;transform:scale(1.15)}}
+
+/* drawer */
+.drawer{position:absolute;top:var(--top-h);right:0;bottom:0;width:min(var(--drawer-w),100%);background:var(--deck);border-left:1px solid var(--rule);z-index:30;display:flex;flex-direction:column;box-shadow:-30px 0 70px rgba(0,0,0,.4)}
+.drawer-head{display:flex;align-items:center;gap:2px;padding:10px 10px 10px 16px;border-bottom:1px solid var(--rule-soft);flex:none;min-height:56px}
+.crumb{flex:1;min-width:0;display:flex;align-items:center;gap:8px;font:500 10.5px/1 var(--f-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--c,var(--mist));white-space:nowrap;overflow:hidden}
+.crumb svg{width:15px;height:15px}
+.head-acts{display:flex;align-items:center;gap:2px}
+.drawer-body{flex:1;overflow-y:auto;padding:24px 24px 48px;min-height:0}
+.drawer-body.editing{display:flex;flex-direction:column;padding-bottom:16px}
+.note-title{font:500 34px/1.1 var(--f-read);margin:0 0 10px;text-wrap:balance;letter-spacing:-.01em;overflow-wrap:anywhere}
+.note-title.ghost-title{color:var(--mist);font-style:italic}
+.note-meta{font:11.5px/1.5 var(--f-mono);color:var(--dust);display:flex;flex-wrap:wrap;gap:4px 14px;margin-bottom:16px}
+.lede{color:var(--mist);margin:0 0 18px;font-size:14px}
+.prose{font:17px/1.62 var(--f-read);color:#E2DDD2;max-width:65ch;overflow-wrap:break-word}
+.prose>:first-child{margin-top:0}
+.prose h1,.prose h2,.prose h3,.prose h4{font-family:var(--f-read);font-weight:600;line-height:1.2;margin:1.3em 0 .45em;color:var(--ivory);text-wrap:balance}
+.prose h1{font-size:1.4em}.prose h2{font-size:1.22em}.prose h3,.prose h4{font-size:1.06em}
+.prose p{margin:0 0 .8em}
+.prose a{color:var(--amber);text-decoration:underline;text-decoration-color:rgba(244,184,96,.4);text-underline-offset:3px}
+.prose a.wl{color:var(--ivory);text-decoration:none;background:rgba(244,184,96,.09);box-shadow:inset 0 -1px 0 rgba(244,184,96,.6);border-radius:3px;padding:0 2px}
+.prose a.wl:hover{background:rgba(244,184,96,.22)}
+.prose a.wl-missing{color:var(--mist);background:none;box-shadow:inset 0 -1px 0 var(--dust)}
+.prose blockquote{margin:1em 0;padding:.1em 0 .1em 1em;border-left:2px solid var(--amber);color:var(--mist);font-style:italic}
+.prose code{font:.8em var(--f-mono);background:var(--deck-3);padding:.12em .38em;border-radius:4px}
+.prose pre{background:var(--deck-2);border:1px solid var(--rule);border-radius:9px;padding:12px 14px;overflow-x:auto}
+.prose pre code{background:none;padding:0}
+.prose ul,.prose ol{padding-left:1.3em;margin:0 0 .9em}
+.prose li{margin:.2em 0}
+.prose li:has(> input[type=checkbox]){list-style:none;margin-left:-1.25em}
+.prose input[type=checkbox]{accent-color:var(--amber);width:15px;height:15px;margin:0 8px 0 0;vertical-align:-2px;cursor:pointer}
+.prose input[type=checkbox]:disabled{cursor:default}
+.prose hr{border:0;border-top:1px solid var(--rule);margin:1.6em 0}
+.prose table{border-collapse:collapse;font:14px var(--f-ui);display:block;overflow-x:auto;max-width:100%}
+.prose th,.prose td{border:1px solid var(--rule);padding:6px 10px;text-align:left}
+.prose img{max-width:100%;border-radius:6px}
+.prose .empty-body{color:var(--dust);font-style:italic}
+.section{margin-top:30px;border-top:1px solid var(--rule-soft);padding-top:16px}
+.section h3{margin:0 0 12px;font:500 10.5px/1 var(--f-mono);letter-spacing:.16em;text-transform:uppercase;color:var(--dust);display:flex;align-items:center;gap:8px}
+.section h3 svg{width:14px;height:14px;color:var(--amber)}
+.section h3 .n{color:var(--mist)}
+.section .muted + .btn{margin-top:10px}
+.ref{display:flex;align-items:flex-start;gap:8px;padding:10px 10px 10px 12px;border-radius:10px;border:1px solid var(--rule-soft);background:var(--deck-2);margin-bottom:8px}
+.ref:hover{border-color:var(--rule)}
+.ref-main{flex:1;min-width:0;text-align:left;display:block}
+.ref .rt{display:flex;align-items:center;gap:8px;font-weight:500;font-size:13.5px}
+.ref .rs{display:block;color:var(--mist);font-size:12.5px;margin-top:4px;line-height:1.45}
+.row-acts{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 4px}
+
+/* editor */
+.editor{display:flex;flex-direction:column;gap:14px;flex:1;min-height:0}
+.field label{display:flex;justify-content:space-between;gap:10px;font:500 10.5px/1 var(--f-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--dust);margin-bottom:7px}
+.field label .hint{letter-spacing:0;text-transform:none;color:var(--dust);font-size:11px}
+.field.grow{flex:1;display:flex;flex-direction:column;min-height:280px}
+.inp{width:100%;background:var(--deck-2);border:1px solid var(--rule);border-radius:9px;color:var(--ivory);padding:9px 12px;outline:none}
+.inp:focus{border-color:var(--amber)}
+.inp.title{font:500 24px/1.25 var(--f-read);padding:8px 12px}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.row>.field{flex:1;min-width:130px}
+.row>.field.wide{flex:2}
+select.inp{appearance:auto}
+.ta-wrap{position:relative;flex:1;display:flex;min-height:240px}
+#edBody{resize:none;flex:1;font:13.5px/1.7 var(--f-mono);tab-size:2}
+.ac{position:absolute;z-index:5;width:270px;max-width:calc(100% - 8px);background:var(--deck-3);border:1px solid var(--rule);border-radius:11px;padding:4px;box-shadow:0 16px 40px rgba(0,0,0,.55)}
+.ac button{display:flex;gap:9px;align-items:center;width:100%;padding:7px 9px;border-radius:7px;text-align:left;font-size:13px}
+.ac button span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.ac button svg{width:14px;height:14px;color:var(--amber);flex:none}
+.ac button[aria-selected="true"]{background:var(--amber-soft)}
+.edit-foot{display:flex;align-items:center;gap:10px;justify-content:space-between;flex-wrap:wrap;font:11.5px var(--f-mono);color:var(--dust)}
+.err{color:var(--danger);font-size:12.5px;margin:6px 0 0}
+.ask-form{display:flex;flex-direction:column;gap:10px}
+.ask-form textarea{resize:vertical;min-height:84px;font-size:14.5px;line-height:1.5}
+.ask-acts{display:flex;align-items:center;gap:8px;justify-content:flex-end}
+.ask-acts .hint{margin-right:auto;font:11px var(--f-mono);color:var(--dust)}
+.ask-out{margin-top:22px}
+.ask-examples{display:flex;flex-direction:column;gap:6px;margin-top:6px}
+.ask-examples button{text-align:left;padding:9px 12px;border-radius:9px;border:1px solid var(--rule-soft);background:var(--deck-2);color:var(--mist);font-size:13px}
+.ask-examples button:hover{border-color:var(--rule);color:var(--ivory)}
+
+/* modal, toast, scrim */
+.modal-back{position:fixed;inset:0;background:rgba(3,4,7,.7);z-index:80;display:grid;place-items:center;padding:16px}
+.modal{width:min(460px,100%);max-height:calc(100% - 32px);overflow-y:auto;background:var(--deck-2);border:1px solid var(--rule);border-radius:16px;padding:22px;box-shadow:0 30px 80px rgba(0,0,0,.6)}
+.modal h2{margin:0 0 8px;font:500 23px/1.2 var(--f-read);text-wrap:balance}
+.modal p{margin:0 0 20px;color:var(--mist)}
+.modal .acts{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+.keys{display:grid;grid-template-columns:auto 1fr;gap:9px 16px;align-items:center;margin:4px 0 20px;color:var(--mist);font-size:13px}
+.keys kbd{justify-self:start}
+.toast{position:fixed;left:50%;bottom:calc(22px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:90;background:var(--ivory);color:var(--void);padding:9px 16px;border-radius:12px;font-weight:500;font-size:13px;box-shadow:0 14px 40px rgba(0,0,0,.5);max-width:calc(100% - 32px);text-align:center}
+.toast.error{background:var(--danger);color:#1d0806}
+.scrim{position:fixed;inset:0;background:rgba(3,4,7,.6);z-index:34}
+.ro .w{display:none!important}
+
+@media (min-width:761px){
+  #app.rail-collapsed{grid-template-columns:0 minmax(0,1fr)}
+  #app.rail-collapsed .rail{display:none}
+}
+@media (max-width:1000px){:root{--rail-w:236px}}
+@media (max-width:760px){
+  #app{grid-template-columns:minmax(0,1fr);grid-template-areas:"top" "stage"}
+  .topbar{gap:6px;padding-inline:10px}
+  .rail{position:fixed;top:calc(var(--top-h) + env(safe-area-inset-top,0px));left:0;bottom:0;width:min(300px,86vw);z-index:35;transform:translateX(-105%);transition:transform .22s ease;border-right:1px solid var(--rule)}
+  #app.rail-open .rail{transform:none}
+  .brand b,.brand small,.search kbd,.hide-sm,.lbl{display:none}
+  .btn.primary,.ask-btn{width:34px;padding:0}
+  .drawer{width:100%;border-left:0}
+  .drawer-body{padding:20px 16px 48px}
+  .results{position:fixed;left:8px;right:8px;top:calc(var(--top-h) + 6px + env(safe-area-inset-top,0px))}
+  .note-title{font-size:28px}
+  .focus-chip{left:auto;right:16px;transform:none;max-width:calc(100% - 150px)}
+  .menu{position:fixed;right:8px;top:calc(var(--top-h) + 6px + env(safe-area-inset-top,0px));width:min(300px,calc(100% - 16px))}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<div id="app">
+  <header class="topbar">
+    <button class="icon-btn" id="btnRail" data-icon="menu" aria-label="Mostrar ou esconder filtros"></button>
+    <div class="brand">
+      <svg class="logo" viewBox="0 0 24 24" aria-hidden="true"><g style="stroke:var(--mist)" stroke-width="1.2" opacity=".7"><path d="M12 12 4.6 5.6M12 12l7.6-3M12 12l-1.6 8.6"/></g><circle cx="4.6" cy="5.6" r="1.7" style="fill:var(--t-nota)"/><circle cx="19.6" cy="9" r="1.7" style="fill:var(--t-pessoa)"/><circle cx="10.4" cy="20.6" r="1.7" style="fill:var(--t-fonte)"/><circle cx="12" cy="12" r="3.3" style="fill:var(--amber)"/></svg>
+      <b>Vértice</b><small>segundo cérebro</small>
+    </div>
+    <div class="search">
+      <div class="search-box">
+        <span data-icon="search"></span>
+        <input id="q" type="text" placeholder="Buscar notas, ideias, #tags…" autocomplete="off" spellcheck="false" aria-label="Buscar notas" role="combobox" aria-expanded="false" aria-controls="results">
+        <button class="icon-btn sm" id="qClear" data-icon="x" aria-label="Limpar busca" hidden></button>
+        <kbd id="kbdK">Ctrl K</kbd>
+      </div>
+      <div class="results" id="results" role="listbox" hidden></div>
+    </div>
+    <div class="actions">
+      <button class="btn ask-btn" id="btnAsk" hidden aria-label="Perguntar ao seu cérebro" title="Perguntar ao seu cérebro (A)"><span data-icon="spark"></span><span class="lbl">Perguntar</span></button>
+      <button class="icon-btn hide-sm" id="btnRandom" data-icon="shuffle" aria-label="Abrir nota aleatória" title="Nota aleatória (R)"></button>
+      <button class="icon-btn hide-sm w" id="btnDaily" data-icon="calendar" aria-label="Abrir o diário de hoje" title="Diário de hoje (D)"></button>
+      <button class="btn primary w" id="btnNew" aria-label="Nova nota" title="Nova nota (N)"><span data-icon="plus"></span><span class="lbl">Nova nota</span></button>
+      <button class="icon-btn" id="btnMenu" data-icon="more" aria-label="Mais opções" aria-haspopup="menu" aria-expanded="false"></button>
+      <div class="menu" id="menu" role="menu" hidden></div>
+    </div>
+  </header>
+
+  <aside class="rail" id="rail" aria-label="Filtros e navegação">
+    <section><h3>Regiões <span>tipos</span></h3><div id="regions" class="stack"></div></section>
+    <section>
+      <h3>Exibição</h3>
+      <label class="switch" for="optRegions"><span>Agrupar por tipo</span><input type="checkbox" id="optRegions"></label>
+      <label class="switch" for="optTags"><span>Tags como nós</span><input type="checkbox" id="optTags"></label>
+      <label class="switch" for="optGhosts"><span>Ideias pendentes</span><input type="checkbox" id="optGhosts"></label>
+      <label class="switch" for="optOrphans"><span>Notas soltas</span><input type="checkbox" id="optOrphans"></label>
+      <label class="switch" for="optLabels"><span>Nomes sempre visíveis</span><input type="checkbox" id="optLabels"></label>
+      <label class="switch" for="optSignals"><span>Sinais nas conexões</span><input type="checkbox" id="optSignals"></label>
+      <div class="range"><label for="optRepel">Repulsão</label><input type="range" id="optRepel" min="20" max="240" step="5"></div>
+      <div class="range"><label for="optDist">Distância das ligações</label><input type="range" id="optDist" min="14" max="140" step="2"></div>
+    </section>
+    <section><h3>Favoritas</h3><div id="favs" class="stack"></div></section>
+    <section><h3>Tags</h3><div id="tags" class="chips"></div></section>
+    <section><h3>Recentes</h3><div id="recent" class="stack"></div></section>
+    <div class="stats" id="stats"></div>
+  </aside>
+
+  <main class="stage" id="stage">
+    <canvas id="stars" aria-hidden="true"></canvas>
+    <div id="graph" aria-label="Grafo das notas"></div>
+    <div class="overlay-msg" id="overlay"><div class="box"><div class="thinking" style="justify-content:center"><span class="pulse"></span>Conectando às suas notas…</div></div></div>
+    <div class="banner" id="banner" hidden></div>
+    <div class="hovercard" id="hovercard" hidden></div>
+    <div class="hud">
+      <button class="icon-btn" id="zIn" data-icon="zoomIn" aria-label="Aproximar"></button>
+      <button class="icon-btn" id="zOut" data-icon="zoomOut" aria-label="Afastar"></button>
+      <button class="icon-btn" id="zFit" data-icon="fit" aria-label="Enquadrar todo o grafo" title="Enquadrar tudo (G)"></button>
+    </div>
+    <div class="focus-chip" id="focusChip" hidden></div>
+  </main>
+
+  <section class="drawer" id="drawer" hidden aria-label="Painel da nota">
+    <div class="drawer-head">
+      <button class="icon-btn" id="btnBack" data-act="back" data-icon="back" aria-label="Voltar" title="Voltar" hidden></button>
+      <div class="crumb" id="crumb"></div>
+      <div class="head-acts" id="headActs"></div>
+      <button class="icon-btn" data-act="close" data-icon="x" aria-label="Fechar" title="Fechar (Esc)"></button>
+    </div>
+    <div class="drawer-body" id="drawerBody"></div>
+  </section>
+  <div class="scrim" id="scrim" hidden></div>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+<input type="file" id="fileMd" multiple accept=".md,.markdown,.txt,.json" hidden>
+<input type="file" id="fileDir" webkitdirectory multiple hidden>
+
+<script src="https://cdn.jsdelivr.net/npm/force-graph@1.43.5/dist/force-graph.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<script>
+(() => {
+'use strict';
+
+/* ---------- basics ---------- */
+const root = document.documentElement;
+const cssVar = n => getComputedStyle(root).getPropertyValue(n).trim();
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const TYPE_LIST = [
+  { key: 'conceito', label: 'Conceito', plural: 'Conceitos' },
+  { key: 'nota', label: 'Nota', plural: 'Notas' },
+  { key: 'projeto', label: 'Projeto', plural: 'Projetos' },
+  { key: 'fonte', label: 'Fonte', plural: 'Fontes' },
+  { key: 'pessoa', label: 'Pessoa', plural: 'Pessoas' },
+  { key: 'diario', label: 'Diário', plural: 'Diário' },
+];
+const TYPE = {};
+for (const t of TYPE_LIST) { t.color = cssVar('--t-' + t.key) || '#cccccc'; TYPE[t.key] = t; }
+const C = { ivory: cssVar('--ivory'), mist: cssVar('--mist'), dust: cssVar('--dust'), amber: cssVar('--amber'), void: cssVar('--void') };
+const LINK_RE = /\[\[([^\[\]\n]+?)\]\]/g;
+const isTouch = matchMedia('(hover: none)').matches;
+const mqMobile = matchMedia('(max-width: 760px)');
+const isMac = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent);
+
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const norm = s => String(s ?? '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/\s+/g, ' ').trim();
+const escRe = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const uid = () => 'n' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+const LS = 'cerebro-vertice:';
+const lsGet = (k, d) => { try { const v = localStorage.getItem(LS + k); return v == null ? d : JSON.parse(v); } catch { return d; } };
+const lsSet = (k, v) => { try { localStorage.setItem(LS + k, JSON.stringify(v)); } catch {} };
+const debounce = (fn, ms) => { let t; const f = (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; f.cancel = () => clearTimeout(t); return f; };
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const hm = () => new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+const fmtDate = ts => new Date(ts).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short', year: 'numeric' });
+const todayISO = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
+const rtf = new Intl.RelativeTimeFormat('pt-BR', { numeric: 'auto' });
+function ago(ts) {
+  if (!ts) return '';
+  const s = (ts - Date.now()) / 1000, a = Math.abs(s);
+  if (a < 60) return 'agora';
+  if (a < 3600) return rtf.format(Math.round(s / 60), 'minute');
+  if (a < 86400) return rtf.format(Math.round(s / 3600), 'hour');
+  if (a < 86400 * 30) return rtf.format(Math.round(s / 86400), 'day');
+  return fmtDate(ts);
+}
+function hexA(hex, a) {
+  const h = hex.replace('#', '');
+  const n = parseInt(h.length === 3 ? h.split('').map(c => c + c).join('') : h, 16);
+  return `rgba(${n >> 16 & 255},${n >> 8 & 255},${n & 255},${a})`;
+}
+function parseLink(inner) {
+  const bar = inner.indexOf('|');
+  const left = bar >= 0 ? inner.slice(0, bar) : inner;
+  const target = left.split('#')[0].trim();
+  const alias = (bar >= 0 ? inner.slice(bar + 1) : left).trim();
+  return { target, alias: alias || target };
+}
+function plain(md) {
+  return String(md || '')
+    .replace(/```[\s\S]*?```/g, ' ')
+    .replace(/\[\[([^\[\]\n]+?)\]\]/g, (m, i) => parseLink(i).alias)
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, ' ')
+    .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
+    .replace(/^#{1,6}\s+/gm, '')
+    .replace(/^\s*(?:[-*+]|\d+[.)])\s+\[[ xX]\]\s*/gm, '')
+    .replace(/^\s*(?:[-*+]|\d+[.)])\s+/gm, '')
+    .replace(/^>\s?/gm, '')
+    .replace(/[*_`~]/g, '')
+    .replace(/\s+/g, ' ').trim();
+}
+function excerpt(md, n = 150) { const p = plain(md); return p.length > n ? p.slice(0, n).replace(/\s\S*$/, '') + '…' : p; }
+const countWords = md => { const p = plain(md); return p ? p.split(' ').length : 0; };
+function cleanTags(input) {
+  const arr = Array.isArray(input) ? input : String(input || '').split(/[,\s]+/);
+  const out = [];
+  for (let t of arr) { t = String(t).trim().replace(/^#+/, '').toLowerCase(); if (t && t.length <= 40 && !out.includes(t)) out.push(t); }
+  return out.slice(0, 24);
+}
+function coerce(id, d) {
+  if (!d || typeof d !== 'object') return null;
+  const title = String(d.title ?? '').trim().replace(/\s+/g, ' ');
+  if (!title) return null;
+  return {
+    id, title: title.slice(0, 200), body: String(d.body ?? ''),
+    type: TYPE[d.type] ? d.type : 'nota', tags: cleanTags(d.tags), fav: !!d.fav,
+    created: +d.created || +d.updated || 0, updated: +d.updated || +d.created || 0,
+  };
+}
+function normWithMap(s) {
+  let out = ''; const map = [];
+  for (let i = 0; i < s.length; i++) {
+    const c = s[i].toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+    for (let j = 0; j < c.length; j++) { out += c[j]; map.push(i); }
+  }
+  return { out, map };
+}
+function highlight(text, words) {
+  words = words.filter(Boolean);
+  if (!words.length) return esc(text);
+  const { out, map } = normWithMap(text);
+  const ranges = [];
+  for (const w of words) { let i = 0; while ((i = out.indexOf(w, i)) !== -1) { ranges.push([map[i], map[i + w.length - 1] + 1]); i += w.length; } }
+  if (!ranges.length) return esc(text);
+  ranges.sort((a, b) => a[0] - b[0]);
+  let html = '', pos = 0;
+  for (const [a, b] of ranges) { if (a < pos) continue; html += esc(text.slice(pos, a)) + '<mark>' + esc(text.slice(a, b)) + '</mark>'; pos = b; }
+  return html + esc(text.slice(pos));
+}
+function snippet(body, words, len = 160) {
+  const p = plain(body);
+  const { out, map } = normWithMap(p);
+  let first = -1;
+  for (const w of words) { if (!w) continue; const i = out.indexOf(w); if (i !== -1 && (first === -1 || i < first)) first = i; }
+  if (first === -1) return esc(p.slice(0, len)) + (p.length > len ? '…' : '');
+  const start = Math.max(0, map[first] - 50);
+  const s = p.slice(start, start + len);
+  return (start > 0 ? '…' : '') + highlight(s, words) + (start + len < p.length ? '…' : '');
+}
+
+const ICONS = {
+  search: '<circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/>',
+  menu: '<path d="M4 7h16M4 12h16M4 17h10"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>',
+  more: '<circle cx="5.5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="18.5" cy="12" r="1.2"/>',
+  shuffle: '<path d="M16 4h4v4M4 18 20 4M20 16v4h-4M14.5 14.5 20 20M4 6l5 5"/>',
+  calendar: '<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/>',
+  x: '<path d="M6 6l12 12M18 6 6 18"/>',
+  back: '<path d="M15 6l-6 6 6 6"/>',
+  star: '<path d="m12 4 2.4 5 5.4.6-4 3.7 1.1 5.4L12 16l-4.9 2.7 1.1-5.4-4-3.7 5.4-.6z"/>',
+  edit: '<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m13.5 6.5 4 4"/>',
+  trash: '<path d="M5 7h14M10 7V5h4v2M7 7l1 13h8l1-13"/>',
+  focus: '<circle cx="12" cy="12" r="2.4"/><circle cx="12" cy="12" r="7"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>',
+  zoomIn: '<circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2M8 11h6M11 8v6"/>',
+  zoomOut: '<circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2M8 11h6"/>',
+  fit: '<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>',
+  spark: '<path d="M12 3c.6 4.6 2.4 6.4 7 7-4.6.6-6.4 2.4-7 7-.6-4.6-2.4-6.4-7-7 4.6-.6 6.4-2.4 7-7z"/><path d="M19 3v3M17.5 4.5h3"/>',
+  upload: '<path d="M12 16V4M7 9l5-5 5 5M5 20h14"/>',
+  download: '<path d="M12 4v12M7 11l5 5 5-5M5 20h14"/>',
+  keyboard: '<rect x="3" y="6" width="18" height="12" rx="2"/><path d="M7 10h.01M11 10h.01M15 10h.01M7 14h10"/>',
+  link: '<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>',
+  folder: '<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
+  check: '<path d="m5 12 5 5 9-10"/>',
+  archive: '<rect x="3" y="4" width="18" height="5" rx="1"/><path d="M5 9v10h14V9M10 13h4"/>',
+};
+const icon = (n, fill = 'none') => `<svg viewBox="0 0 24 24" fill="${fill}" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[n] || ''}</svg>`;
+
+/* ---------- state ---------- */
+const S = Object.assign({ tagNodes: false, ghosts: true, orphans: true, regions: false, labels: false, signals: true, repel: 75, dist: 44 }, lsGet('settings', {}));
+const state = {
+  notes: new Map(), loaded: false, mode: 'loading', canWrite: true,
+  hidden: new Set(lsGet('hidden', [])),
+  hoverId: null, selectedId: null, local: null,
+  search: { q: '', ids: null, results: [], active: 0, createIdx: -1 },
+  sample: null, downloads: null,
+};
+let idx = { byKey: new Map(), out: new Map(), back: new Map(), tags: new Map() };
+
+function reindex() {
+  const byKey = new Map(), out = new Map(), back = new Map(), tags = new Map();
+  for (const n of state.notes.values()) byKey.set(norm(n.title), n);
+  for (const n of state.notes.values()) {
+    const self = norm(n.title), keys = new Map();
+    const src = n.body.replace(/```[\s\S]*?```/g, '').replace(/`[^`\n]*`/g, '');
+    for (const m of src.matchAll(LINK_RE)) {
+      const { target } = parseLink(m[1]);
+      if (!target) continue;
+      const k = norm(target);
+      if (k === self || keys.has(k)) continue;
+      keys.set(k, target);
+    }
+    out.set(n.id, keys);
+    for (const k of keys.keys()) { if (!back.has(k)) back.set(k, new Set()); back.get(k).add(n.id); }
+    for (const t of n.tags) tags.set(t, (tags.get(t) || 0) + 1);
+  }
+  idx = { byKey, out, back, tags };
+}
+
+/* ---------- storage ---------- */
+const store = {
+  col: null, chains: new Map(),
+  async start() {
+    let db = null;
+    try { db = window.claude && typeof window.claude.use === 'function' ? await window.claude.use('db') : null; } catch { db = null; }
+    if (db) {
+      state.mode = 'db';
+      this.col = db.collection('notes');
+      this.subscribe();
+      try {
+        const user = await window.claude.use('user');
+        if (user && (await user.can('data.write')) === false) setReadOnly(true);
+      } catch {}
+    } else {
+      state.mode = 'local';
+      const arr = lsGet('notes', []);
+      for (const d of Array.isArray(arr) ? arr : []) { const n = d && d.id ? coerce(d.id, d) : null; if (n) state.notes.set(n.id, n); }
+      state.loaded = true;
+      showBanner('Modo local: as notas ficam salvas só neste navegador.');
+      onNotesChanged();
+    }
+  },
+  subscribe() {
+    this.col.onSnapshot(snap => {
+      const m = new Map();
+      for (const d of snap.docs) { const n = coerce(d.id, d.data()); if (n) m.set(d.id, n); }
+      state.notes = m;
+      state.loaded = true;
+      onNotesChanged();
+    }, err => {
+      const code = err && err.code;
+      if (code === 'unavailable') { setTimeout(() => this.subscribe(), 1500 + Math.random() * 2500); return; }
+      if (code === 'revoked') { setReadOnly(true); return; }
+      state.loaded = true; onNotesChanged();
+      toast('Não consegui carregar as notas. Recarregue a página.', 'error');
+    });
+  },
+  persistLocal() { lsSet('notes', [...state.notes.values()]); },
+  write(id, fn) {
+    const prev = this.chains.get(id) || Promise.resolve(true);
+    const p = prev.then(async () => {
+      try { await fn(); }
+      catch (e) {
+        if (e && e.code === 'unavailable') { await sleep(400 + Math.random() * 700); await fn(); }
+        else throw e;
+      }
+      return true;
+    }).catch(e => { writeError(e); return false; });
+    this.chains.set(id, p);
+    p.then(() => { if (this.chains.get(id) === p) this.chains.delete(id); });
+    return p;
+  },
+  put(n) {
+    const note = { id: n.id, title: n.title, body: n.body, type: n.type, tags: cleanTags(n.tags), fav: !!n.fav, created: n.created || Date.now(), updated: n.updated || Date.now() };
+    state.notes.set(note.id, note);
+    onNotesChanged();
+    if (state.mode !== 'db') { this.persistLocal(); return Promise.resolve(true); }
+    const { id, ...data } = note;
+    return this.write(id, () => this.col.doc(id).set(data));
+  },
+  remove(id) {
+    state.notes.delete(id);
+    onNotesChanged();
+    if (state.mode !== 'db') { this.persistLocal(); return Promise.resolve(true); }
+    return this.write(id, () => this.col.doc(id).delete());
+  },
+};
+function writeError(e) {
+  const code = e && e.code;
+  if (code === 'quota_exceeded') toast('O armazenamento está cheio. Apague notas antigas para criar novas.', 'error', 6000);
+  else if (code === 'resource_exhausted') toast('Muitas alterações de uma vez. Espere alguns segundos e tente de novo.', 'error', 5000);
+  else if (code === 'invalid_argument') toast('Não foi possível salvar: sem permissão para editar, ou a nota ficou grande demais.', 'error', 6000);
+  else if (code === 'revoked' || code === 'not_granted') setReadOnly(true);
+  else toast('Não consegui salvar. Verifique a conexão e tente de novo.', 'error', 5000);
+}
+function setReadOnly(v) {
+  state.canWrite = !v;
+  root.classList.toggle('ro', v);
+  if (v) showBanner('Somente leitura: você pode explorar as notas, mas não editar.');
+  refreshDrawer(); renderOverlay(true);
+}
+
+/* ---------- refresh pipeline ---------- */
+let refreshQueued = false;
+function onNotesChanged() {
+  if (refreshQueued) return;
+  refreshQueued = true;
+  requestAnimationFrame(() => { refreshQueued = false; refresh(); });
+}
+function refresh() {
+  reindex();
+  updateGraph();
+  renderRail();
+  if (state.search.q.trim()) runSearch(state.search.q);
+  renderOverlay();
+  refreshDrawer();
+}
+
+/* ---------- graph ---------- */
+let G = null, graphSig = '', graphAdj = new Map(), centers = new Map(), didFit = false, hubDeg = 99;
+let hi = null, hiMode = null, focusId = null;
+const nodeCache = new Map();
+const fit = (ms = 700) => { if (G) G.zoomToFit(ms, mqMobile.matches ? 28 : 80); };
+
+function initGraph() {
+  const el = $('#graph');
+  if (typeof ForceGraph !== 'function') { showBanner('Não consegui carregar o motor do grafo. Recarregue a página.'); return; }
+  G = ForceGraph()(el)
+    .backgroundColor('rgba(0,0,0,0)')
+    .width(el.clientWidth || 800).height(el.clientHeight || 600)
+    .nodeId('id')
+    .nodeLabel(() => '')
+    .nodeCanvasObject(drawNode)
+    .nodePointerAreaPaint((n, color, ctx) => { ctx.fillStyle = color; ctx.beginPath(); ctx.arc(n.x, n.y, Math.max(n.r || 3, 4) + 2, 0, 2 * Math.PI); ctx.fill(); })
+    .linkColor(linkColor)
+    .linkWidth(l => isFocusLink(l) ? 1.3 : 0.55)
+    .linkDirectionalParticles(S.signals ? 2 : 0)
+    .linkDirectionalParticleWidth(l => isFocusLink(l) ? 2.4 : 0)
+    .linkDirectionalParticleSpeed(0.006)
+    .linkDirectionalParticleColor(() => C.amber)
+    .autoPauseRedraw(false)
+    .minZoom(0.12).maxZoom(14)
+    .warmupTicks(30)
+    .cooldownTime(9000)
+    .d3VelocityDecay(0.3)
+    .onNodeHover(onHover)
+    .onNodeClick(onNodeClick)
+    .onBackgroundClick(() => closeResults())
+    .onRenderFramePre(drawBackdrop);
+  G.d3Force('charge').strength(-S.repel).distanceMax(700);
+  G.d3Force('link').distance(S.dist);
+  G.d3Force('gravity', gravity);
+  new ResizeObserver(() => { G.width(el.clientWidth).height(el.clientHeight); drawStars(); }).observe(el);
+}
+function gravity(alpha) {
+  for (const n of gravity.nodes) {
+    let cx = 0, cy = 0, k = 0.012;
+    if (S.regions && n.kind === 'note') { const c = centers.get(n.type); if (c) { cx = c.x; cy = c.y; k = 0.07; } }
+    n.vx += (cx - n.x) * k * alpha;
+    n.vy += (cy - n.y) * k * alpha;
+  }
+}
+gravity.nodes = [];
+gravity.initialize = nodes => { gravity.nodes = nodes; };
+
+function computeCenters(nodes) {
+  centers = new Map();
+  const present = TYPE_LIST.filter(t => nodes.some(n => n.kind === 'note' && n.type === t.key));
+  const R = 110 + 17 * Math.sqrt(nodes.length);
+  present.forEach((t, i) => {
+    const a = -Math.PI / 2 + i * 2 * Math.PI / present.length;
+    centers.set(t.key, present.length === 1 ? { x: 0, y: 0 } : { x: Math.cos(a) * R, y: Math.sin(a) * R });
+  });
+}
+
+function updateGraph() {
+  if (!G) return;
+  const nodes = new Map(), links = [], seen = new Set();
+  const add = (a, b) => { if (a === b) return; const k = a < b ? a + '\u0001' + b : b + '\u0001' + a; if (seen.has(k)) return; seen.add(k); links.push([a, b]); };
+  for (const n of state.notes.values()) if (!state.hidden.has(n.type)) nodes.set(n.id, { kind: 'note', label: n.title, type: n.type });
+  for (const n of state.notes.values()) {
+    if (!nodes.has(n.id)) continue;
+    for (const [k, disp] of idx.out.get(n.id) || []) {
+      const t = idx.byKey.get(k);
+      if (t) { if (nodes.has(t.id)) add(n.id, t.id); }
+      else if (S.ghosts) { const gid = 'g:' + k; if (!nodes.has(gid)) nodes.set(gid, { kind: 'ghost', label: disp, type: null }); add(n.id, gid); }
+    }
+    if (S.tagNodes) for (const tg of n.tags) { const tid = 't:' + tg; if (!nodes.has(tid)) nodes.set(tid, { kind: 'tag', label: '#' + tg, type: null, tag: tg }); add(n.id, tid); }
+  }
+  const adj = new Map();
+  for (const id of nodes.keys()) adj.set(id, new Set());
+  for (const [a, b] of links) { adj.get(a).add(b); adj.get(b).add(a); }
+  let keep = new Set(nodes.keys());
+  if (!S.orphans) for (const id of [...keep]) if (!adj.get(id).size) keep.delete(id);
+  if (state.local) {
+    if (!adj.has(state.local.id)) state.local = null;
+    else {
+      const reach = new Set([state.local.id]);
+      let frontier = [state.local.id];
+      for (let d = 0; d < state.local.depth; d++) {
+        const next = [];
+        for (const id of frontier) for (const nb of adj.get(id)) if (!reach.has(nb)) { reach.add(nb); next.push(nb); }
+        frontier = next;
+      }
+      keep = new Set([...keep].filter(id => reach.has(id)));
+      keep.add(state.local.id);
+    }
+  }
+  const finalLinks = links.filter(([a, b]) => keep.has(a) && keep.has(b));
+  graphAdj = new Map();
+  for (const id of keep) graphAdj.set(id, new Set());
+  for (const [a, b] of finalLinks) { graphAdj.get(a).add(b); graphAdj.get(b).add(a); }
+  const degs = [];
+  const finalNodes = [...keep].map(id => {
+    const p = nodes.get(id), deg = graphAdj.get(id).size;
+    degs.push(deg);
+    let o = nodeCache.get(id);
+    if (!o) {
+      o = { id };
+      nodeCache.set(id, o);
+      for (const nb of adj.get(id)) { const c = nodeCache.get(nb); if (c && c.x != null) { o.x = c.x + (Math.random() - .5) * 30; o.y = c.y + (Math.random() - .5) * 30; break; } }
+    }
+    Object.assign(o, p, { deg });
+    o.r = p.kind === 'note' ? 2.6 + Math.min(11, Math.sqrt(deg) * 1.75) : p.kind === 'tag' ? 2.4 + Math.min(4.5, Math.sqrt(deg) * 0.9) : 2.1;
+    return o;
+  });
+  degs.sort((a, b) => b - a);
+  hubDeg = Math.max(4, degs[Math.floor(degs.length * 0.08)] || 0);
+  for (const o of finalNodes) o.hub = o.kind !== 'ghost' && o.deg >= hubDeg;
+  computeCenters(finalNodes);
+  const sig = finalNodes.map(n => n.id).sort().join(',') + '|' + finalLinks.map(l => l.join('>')).sort().join(',');
+  if (sig !== graphSig) {
+    graphSig = sig;
+    G.graphData({ nodes: finalNodes, links: finalLinks.map(([a, b]) => ({ source: a, target: b })) });
+  }
+  if (nodeCache.size > finalNodes.length * 2 + 200) for (const id of [...nodeCache.keys()]) if (!keep.has(id)) nodeCache.delete(id);
+  if (state.hoverId && !graphAdj.has(state.hoverId)) { state.hoverId = null; renderHoverCard(null); }
+  computeHighlight();
+  renderFocusChip();
+  if (!didFit && finalNodes.length) { didFit = true; setTimeout(() => fit(900), 900); }
+}
+
+function computeHighlight() {
+  hi = null; hiMode = null; focusId = null;
+  if (state.hoverId && graphAdj.has(state.hoverId)) {
+    focusId = state.hoverId; hi = new Set([focusId, ...graphAdj.get(focusId)]); hiMode = 'hover'; return;
+  }
+  if (state.search.ids) { hi = new Set([...state.search.ids].filter(id => graphAdj.has(id))); hiMode = 'search'; return; }
+  if (state.selectedId && graphAdj.has(state.selectedId)) focusId = state.selectedId;
+}
+const lid = x => (x && typeof x === 'object') ? x.id : x;
+function isFocusLink(l) { return focusId != null && (lid(l.source) === focusId || lid(l.target) === focusId); }
+function linkColor(l) {
+  if (hiMode === 'hover') return isFocusLink(l) ? 'rgba(244,184,96,.8)' : 'rgba(236,231,220,.035)';
+  if (hiMode === 'search') return hi.has(lid(l.source)) && hi.has(lid(l.target)) ? 'rgba(236,231,220,.32)' : 'rgba(236,231,220,.03)';
+  if (isFocusLink(l)) return 'rgba(244,184,96,.55)';
+  return 'rgba(236,231,220,.11)';
+}
+
+function drawNode(n, ctx, scale) {
+  const r = n.r || 3;
+  const dimmed = !!hi && !hi.has(n.id);
+  const sel = n.id === state.selectedId, hov = n.id === state.hoverId;
+  const col = n.kind === 'note' ? TYPE[n.type].color : n.kind === 'tag' ? C.mist : C.dust;
+  ctx.globalAlpha = dimmed ? 0.1 : 1;
+  if (!dimmed && (n.hub || sel || hov)) {
+    const gr = r * (sel || hov ? 4.2 : 3.4);
+    const glow = n.hub && n.kind === 'note' && !sel && !hov ? C.amber : col;
+    const g = ctx.createRadialGradient(n.x, n.y, r * 0.4, n.x, n.y, gr);
+    g.addColorStop(0, hexA(glow, 0.34));
+    g.addColorStop(1, hexA(glow, 0));
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.arc(n.x, n.y, gr, 0, 2 * Math.PI); ctx.fill();
+  }
+  ctx.beginPath(); ctx.arc(n.x, n.y, r, 0, 2 * Math.PI);
+  if (n.kind === 'note') {
+    ctx.fillStyle = col; ctx.fill();
+    if (r > 4.2) { ctx.beginPath(); ctx.arc(n.x, n.y, r * 0.36, 0, 2 * Math.PI); ctx.fillStyle = 'rgba(255,255,255,.78)'; ctx.fill(); }
+  } else if (n.kind === 'tag') {
+    ctx.fillStyle = C.void; ctx.fill();
+    ctx.lineWidth = Math.max(0.6, 1.3 / scale); ctx.strokeStyle = col; ctx.stroke();
+  } else {
+    ctx.setLineDash([2 / scale, 2 / scale]); ctx.lineWidth = 1 / scale; ctx.strokeStyle = col; ctx.stroke(); ctx.setLineDash([]);
+  }
+  if (sel) { ctx.beginPath(); ctx.arc(n.x, n.y, r + 3 / scale + 1, 0, 2 * Math.PI); ctx.lineWidth = 1.5 / scale; ctx.strokeStyle = C.amber; ctx.stroke(); }
+  const show = sel || hov || (!dimmed && (
+    (hiMode === 'hover') || (hiMode === 'search' && hi.size <= 60) || S.labels || scale >= 1.5 || (n.hub && scale >= 0.55)
+  ));
+  if (show && !dimmed) {
+    const strong = sel || hov;
+    const fs = (strong ? 13 : 11) / scale;
+    ctx.font = `${strong ? 600 : 500} ${fs}px "IBM Plex Sans", system-ui, sans-serif`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+    const label = n.label.length > 34 ? n.label.slice(0, 33) + '…' : n.label;
+    const y = n.y + r + 3 / scale;
+    ctx.lineJoin = 'round'; ctx.lineWidth = 3 / scale; ctx.strokeStyle = 'rgba(6,7,11,.9)';
+    ctx.strokeText(label, n.x, y);
+    ctx.fillStyle = strong ? C.ivory : n.kind === 'ghost' ? C.dust : 'rgba(236,231,220,.74)';
+    ctx.fillText(label, n.x, y);
+  }
+  ctx.globalAlpha = 1;
+}
+
+function drawBackdrop(ctx, scale) {
+  if (!S.regions || !G) return;
+  const groups = new Map();
+  for (const n of G.graphData().nodes) {
+    if (n.kind !== 'note' || n.x == null) continue;
+    let g = groups.get(n.type);
+    if (!g) groups.set(n.type, g = { sx: 0, sy: 0, c: 0, pts: [] });
+    g.sx += n.x; g.sy += n.y; g.c++; g.pts.push(n);
+  }
+  ctx.save();
+  for (const [type, g] of groups) {
+    const cx = g.sx / g.c, cy = g.sy / g.c;
+    let rad = 0;
+    for (const p of g.pts) rad = Math.max(rad, Math.hypot(p.x - cx, p.y - cy));
+    rad += 14;
+    const col = TYPE[type].color;
+    ctx.beginPath(); ctx.arc(cx, cy, rad, 0, 2 * Math.PI);
+    ctx.fillStyle = hexA(col, 0.025); ctx.fill();
+    ctx.setLineDash([3 / scale, 5 / scale]); ctx.lineWidth = 1 / scale; ctx.strokeStyle = hexA(col, 0.18); ctx.stroke(); ctx.setLineDash([]);
+    const len = Math.hypot(cx, cy) || 1;
+    const dx = Math.hypot(cx, cy) < 1 ? 0 : cx / len, dy = Math.hypot(cx, cy) < 1 ? -1 : cy / len;
+    const lx = cx + dx * (rad + 14 / scale), ly = cy + dy * (rad + 14 / scale);
+    ctx.font = `500 ${11 / scale}px "IBM Plex Mono", monospace`;
+    if ('letterSpacing' in ctx) ctx.letterSpacing = (2 / scale) + 'px';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillStyle = hexA(col, 0.6);
+    ctx.fillText(TYPE[type].plural.toUpperCase() + '  ' + g.c, lx, ly);
+    if ('letterSpacing' in ctx) ctx.letterSpacing = '0px';
+  }
+  ctx.restore();
+}
+
+function drawStars() {
+  const cv = $('#stars');
+  const w = cv.clientWidth, h = cv.clientHeight;
+  if (!w || !h) return;
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  cv.width = w * dpr; cv.height = h * dpr;
+  const ctx = cv.getContext('2d');
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  let seed = 7;
+  const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  const count = Math.round(w * h / 5200);
+  for (let i = 0; i < count; i++) {
+    const x = rnd() * w, y = rnd() * h, r = rnd() * 0.85 + 0.15, a = rnd() * 0.3 + 0.04;
+    ctx.fillStyle = `rgba(236,231,220,${a.toFixed(3)})`;
+    ctx.beginPath(); ctx.arc(x, y, r, 0, 6.2832); ctx.fill();
+  }
+}
+
+const mouse = { x: 0, y: 0 };
+function onHover(node) {
+  state.hoverId = node ? node.id : null;
+  $('#graph').style.cursor = node ? 'pointer' : '';
+  computeHighlight();
+  renderHoverCard(node);
+}
+function onNodeClick(node) {
+  if (node.kind === 'note') openNote(node.id);
+  else if (node.kind === 'ghost') openGhost(node.label);
+  else if (node.kind === 'tag') setSearch('#' + node.tag, true);
+}
+function renderHoverCard(node) {
+  const el = $('#hovercard');
+  if (!node || isTouch) { el.hidden = true; return; }
+  let k, color, title, text, meta;
+  if (node.kind === 'note') {
+    const n = state.notes.get(node.id); if (!n) { el.hidden = true; return; }
+    k = TYPE[n.type].label; color = TYPE[n.type].color; title = n.title;
+    text = excerpt(n.body, 150) || 'Nota sem texto ainda.';
+    meta = `${node.deg} ${node.deg === 1 ? 'conexão' : 'conexões'} · ${ago(n.updated)}`;
+  } else if (node.kind === 'ghost') {
+    k = 'Ideia pendente'; color = C.dust; title = node.label;
+    text = 'Citada em outras notas, mas ainda sem página própria.'; meta = state.canWrite ? 'Clique para criar' : `${node.deg} menções`;
+  } else {
+    k = 'Tag'; color = C.mist; title = node.label;
+    text = `Aparece em ${node.deg} ${node.deg === 1 ? 'nota' : 'notas'}.`; meta = 'Clique para filtrar';
+  }
+  el.style.setProperty('--c', color);
+  el.innerHTML = `<div class="k">${esc(k)}</div><h4>${esc(title)}</h4><p>${esc(text)}</p><div class="m">${esc(meta)}</div>`;
+  el.hidden = false;
+  placeHoverCard();
+}
+function placeHoverCard() {
+  const el = $('#hovercard'), st = $('#stage');
+  const w = el.offsetWidth, h = el.offsetHeight;
+  let x = mouse.x + 18, y = mouse.y + 18;
+  if (x + w > st.clientWidth - 12) x = mouse.x - w - 18;
+  if (y + h > st.clientHeight - 12) y = mouse.y - h - 18;
+  el.style.left = Math.max(12, x) + 'px';
+  el.style.top = Math.max(12, y) + 'px';
+}
+function centerOn(id, minZoom = 1.5) {
+  const n = nodeCache.get(id);
+  if (!G || !n || n.x == null || !graphAdj.has(id)) return;
+  const k = Math.max(G.zoom(), minZoom);
+  const d = $('#drawer');
+  const shift = !d.hidden && !mqMobile.matches ? (d.offsetWidth / 2) / k : 0;
+  G.centerAt(n.x + shift, n.y, 700);
+  G.zoom(k, 700);
+}
+function renderFocusChip() {
+  const el = $('#focusChip');
+  if (!state.local) { el.hidden = true; return; }
+  const n = state.notes.get(state.local.id);
+  el.innerHTML = `<span>Vizinhança de <b>${esc(n ? n.title : '')}</b></span><span class="seg" role="group" aria-label="Profundidade">${[1, 2, 3].map(d => `<button data-depth="${d}" aria-pressed="${state.local.depth === d}" title="${d} ${d === 1 ? 'salto' : 'saltos'}">${d}</button>`).join('')}</span><button class="icon-btn sm" data-act="clear-local" aria-label="Voltar ao grafo completo" title="Voltar ao grafo completo">${icon('x')}</button>`;
+  el.hidden = false;
+}
+function toggleLocal(id) {
+  state.local = state.local && state.local.id === id ? null : { id, depth: (state.local && state.local.depth) || 1 };
+  updateGraph();
+  if (drawer.cur && !editor) renderDrawer();
+  if (G) setTimeout(() => fit(700), 450);
+}
+
+/* ---------- search ---------- */
+function parseQuery(q) {
+  const tags = [], words = []; let type = null;
+  for (const tok of q.trim().split(/\s+/)) {
+    if (!tok) continue;
+    if (tok.startsWith('#') && tok.length > 1) tags.push(norm(tok.slice(1)));
+    else if (/^tipo:/i.test(tok)) { const t = norm(tok.slice(5)); const f = TYPE_LIST.find(x => x.key === t || norm(x.label) === t || norm(x.plural) === t); if (f) type = f.key; }
+    else words.push(norm(tok));
+  }
+  return { tags, words, type };
+}
+function countOcc(h, w) { let c = 0, i = 0; while ((i = h.indexOf(w, i)) !== -1 && c < 20) { c++; i += w.length; } return c; }
+function searchNotes(q) {
+  const { tags, words, type } = parseQuery(q);
+  if (!tags.length && !words.length && !type) return [];
+  const res = [];
+  for (const n of state.notes.values()) {
+    if (type && n.type !== type) continue;
+    if (tags.length && !tags.every(t => n.tags.some(nt => { const x = norm(nt); return x === t || x.startsWith(t + '/'); }))) continue;
+    let score = words.length ? 0 : 1, ok = true;
+    if (words.length) {
+      const nt = norm(n.title), nb = norm(n.body), ntags = n.tags.map(norm).join(' ');
+      for (const w of words) {
+        let s = 0;
+        if (nt === w) s += 120; else if (nt.startsWith(w)) s += 80; else if (nt.includes(w)) s += 50;
+        if (ntags.includes(w)) s += 25;
+        const c = countOcc(nb, w); if (c) s += 6 + Math.min(c, 8) * 3;
+        if (!s) { ok = false; break; }
+        score += s;
+      }
+    }
+    if (ok) res.push({ n, score });
+  }
+  res.sort((a, b) => b.score - a.score || b.n.updated - a.n.updated);
+  return res;
+}
+function runSearch(q) {
+  state.search.q = q;
+  const t = q.trim();
+  if (!t) { state.search.ids = null; state.search.results = []; }
+  else {
+    const res = searchNotes(t);
+    state.search.results = res.slice(0, 14);
+    state.search.ids = new Set(res.map(r => r.n.id));
+  }
+  computeHighlight();
+  renderResults();
+}
+function renderResults() {
+  const box = $('#results'), input = $('#q');
+  const qv = state.search.q.trim();
+  if (document.activeElement !== input) { box.hidden = true; input.setAttribute('aria-expanded', 'false'); return; }
+  let html = '';
+  if (!qv) {
+    const recent = [...state.notes.values()].sort((a, b) => b.updated - a.updated).slice(0, 6);
+    html = `<div class="results-head">Como buscar</div><div class="tips"><span>Digite palavras para achar no título e no texto. Acentos não importam.</span><span><code>#tag</code> filtra por tag · <code>tipo:projeto</code> filtra por tipo</span></div>`;
+    if (recent.length) html += `<div class="results-head">Abertas recentemente</div>` + recent.map(n => `<button class="result" data-open="${esc(n.id)}"><span class="dot" style="--c:${TYPE[n.type].color}"></span><span class="t">${esc(n.title)}</span></button>`).join('');
+    state.search.createIdx = -1;
+  } else {
+    const res = state.search.results, total = state.search.ids ? state.search.ids.size : 0;
+    const { words } = parseQuery(qv);
+    const showCreate = state.canWrite && words.length > 0 && !/(^|\s)(#|tipo:)/i.test(qv) && !idx.byKey.has(norm(qv));
+    html = `<div class="results-head">${total ? `${total} ${total === 1 ? 'nota encontrada' : 'notas encontradas'} · em destaque no grafo` : 'Nenhuma nota encontrada'}</div>`;
+    html += res.map((r, i) => `<button class="result" role="option" data-i="${i}" aria-selected="${i === state.search.active}"><span class="dot" style="--c:${TYPE[r.n.type].color}"></span><span class="t">${highlight(r.n.title, words)}</span><span class="s">${r.n.tags.length ? `<span class="tg">${r.n.tags.slice(0, 3).map(t => '#' + esc(t)).join(' ')}</span> ` : ''}${snippet(r.n.body, words, 150)}</span></button>`).join('');
+    state.search.createIdx = showCreate ? res.length : -1;
+    if (showCreate) html += `<button class="result create" role="option" data-i="${res.length}" aria-selected="${state.search.active === res.length}"><span class="dot plus">+</span><span class="t">Criar nota “${esc(qv)}”</span></button>`;
+  }
+  box.innerHTML = html;
+  box.hidden = false;
+  input.setAttribute('aria-expanded', 'true');
+  const act = box.querySelector('[aria-selected="true"]');
+  if (act) act.scrollIntoView({ block: 'nearest' });
+}
+function closeResults() { $('#results').hidden = true; $('#q').setAttribute('aria-expanded', 'false'); }
+function setSearch(text, focus = false) {
+  const input = $('#q');
+  input.value = text;
+  state.search.active = 0;
+  $('#qClear').hidden = !text;
+  runSearch(text);
+  if (focus && !isTouch) input.focus();
+  if (text && mqMobile.matches) closeRail();
+}
+function activateResult(i) {
+  const qv = state.search.q.trim();
+  if (i === state.search.createIdx) createDraft({ title: qv });
+  else { const r = state.search.results[i]; if (!r) return; openNote(r.n.id, { center: true }); }
+  $('#q').blur(); closeResults();
+}
+
+/* ---------- markdown ---------- */
+const haveMd = typeof marked !== 'undefined' && typeof DOMPurify !== 'undefined';
+if (haveMd) {
+  marked.use({
+    gfm: true, breaks: true,
+    extensions: [{
+      name: 'wikilink', level: 'inline',
+      start(src) { const i = src.indexOf('[['); return i < 0 ? undefined : i; },
+      tokenizer(src) {
+        const m = /^\[\[([^\[\]\n]+?)\]\]/.exec(src);
+        if (!m) return;
+        const p = parseLink(m[1]);
+        if (!p.target) return;
+        return { type: 'wikilink', raw: m[0], target: p.target, alias: p.alias };
+      },
+      renderer(t) {
+        const ok = idx.byKey.has(norm(t.target));
+        return `<a href="#" class="wl${ok ? '' : ' wl-missing'}" data-target="${esc(t.target)}">${esc(t.alias)}</a>`;
+      },
+    }],
+  });
+  DOMPurify.addHook('afterSanitizeAttributes', node => {
+    if (node.tagName === 'A' && node.getAttribute('href') && !node.classList.contains('wl')) {
+      node.setAttribute('target', '_blank'); node.setAttribute('rel', 'noopener noreferrer');
+    }
+  });
+}
+function renderMd(md) {
+  if (!haveMd) return '<p>' + esc(md).replace(/\n/g, '<br>') + '</p>';
+  try { return DOMPurify.sanitize(marked.parse(md), { ADD_ATTR: ['target'], ADD_TAGS: ['input'] }); }
+  catch { return '<p>' + esc(md).replace(/\n/g, '<br>') + '</p>'; }
+}
+
+/* ---------- rail ---------- */
+const listBtn = n => `<button class="list-btn" data-open="${esc(n.id)}"><span class="dot" style="--c:${TYPE[n.type].color}"></span><span class="t">${esc(n.title)}</span><small>${esc(ago(n.updated))}</small></button>`;
+function renderRail() {
+  const counts = {};
+  for (const n of state.notes.values()) counts[n.type] = (counts[n.type] || 0) + 1;
+  $('#regions').innerHTML = TYPE_LIST.map(t => `<button class="region" data-type="${t.key}" aria-pressed="${!state.hidden.has(t.key)}" title="Mostrar ou esconder ${t.plural.toLowerCase()} no grafo"><span class="dot" style="--c:${t.color}"></span>${t.plural}<span class="n">${counts[t.key] || 0}</span></button>`).join('');
+  const all = [...state.notes.values()];
+  const favs = all.filter(n => n.fav).sort((a, b) => a.title.localeCompare(b.title, 'pt-BR'));
+  $('#favs').innerHTML = favs.length ? favs.map(listBtn).join('') : '<p class="muted-note">Marque notas com a estrela para fixá-las aqui.</p>';
+  const tags = [...idx.tags].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).slice(0, 40);
+  $('#tags').innerHTML = tags.length ? tags.map(([t, c]) => `<button class="chip" data-tag="${esc(t)}">#${esc(t)} <b>${c}</b></button>`).join('') : '<p class="muted-note">Nenhuma tag ainda.</p>';
+  const recent = all.sort((a, b) => b.updated - a.updated).slice(0, 8);
+  $('#recent').innerHTML = recent.length ? recent.map(listBtn).join('') : '<p class="muted-note">Suas últimas notas aparecem aqui.</p>';
+  let orphans = 0; const pend = new Set(), pairs = new Set();
+  for (const n of state.notes.values()) {
+    const outs = idx.out.get(n.id) || new Map();
+    for (const k of outs.keys()) { const t = idx.byKey.get(k); if (t) pairs.add(n.id < t.id ? n.id + '|' + t.id : t.id + '|' + n.id); else pend.add(k); }
+    if (!outs.size && !(idx.back.get(norm(n.title)) || new Set()).size) orphans++;
+  }
+  $('#stats').innerHTML = `<span>Notas</span><strong>${state.notes.size}</strong><span>Conexões</span><strong>${pairs.size}</strong><span>Ideias pendentes</span><strong>${pend.size}</strong><span>Notas soltas</span><strong>${orphans}</strong>`;
+}
+function applySettingsToUI() {
+  $('#optRegions').checked = S.regions; $('#optTags').checked = S.tagNodes; $('#optGhosts').checked = S.ghosts;
+  $('#optOrphans').checked = S.orphans; $('#optLabels').checked = S.labels; $('#optSignals').checked = S.signals;
+  $('#optRepel').value = S.repel; $('#optDist').value = S.dist;
+}
+function openRail() { root.querySelector('#app').classList.add('rail-open'); $('#scrim').hidden = false; }
+function closeRail() { root.querySelector('#app').classList.remove('rail-open'); $('#scrim').hidden = true; }
+
+/* ---------- overlay / banner / toast ---------- */
+let overlayKey = '';
+function renderOverlay(force = false) {
+  const ov = $('#overlay');
+  const key = !state.loaded ? 'loading' : state.notes.size === 0 ? 'empty' + state.canWrite : 'none';
+  if (key === overlayKey && !force) return;
+  overlayKey = key;
+  if (key === 'loading') return;
+  if (key === 'none') { ov.hidden = true; return; }
+  ov.hidden = false;
+  ov.innerHTML = `<div class="box"><span class="eyebrow">Cérebro vazio</span><h2>Sua rede começa com uma nota</h2><p>Escreva uma ideia, um livro que você leu ou um projeto. Ligue notas escrevendo [[Título de outra nota]] e a rede vai aparecendo aqui.</p>${state.canWrite ? `<div class="acts"><button class="btn primary" data-act="new">${icon('plus')}Escrever a primeira nota</button><button class="btn" data-act="import">${icon('upload')}Importar do Obsidian</button></div>` : ''}</div>`;
+}
+function showBanner(text) { const b = $('#banner'); b.textContent = text; b.hidden = false; }
+let toastT;
+function toast(msg, kind = '', ms = 3400) {
+  const el = $('#toast');
+  el.textContent = msg; el.className = 'toast' + (kind ? ' ' + kind : ''); el.hidden = false;
+  clearTimeout(toastT); toastT = setTimeout(() => { el.hidden = true; }, ms);
+}
+function confirmBox({ title, body, confirm = 'Confirmar', danger = false }) {
+  return new Promise(resolve => {
+    const back = document.createElement('div');
+    back.className = 'modal-back';
+    back.innerHTML = `<div class="modal" role="dialog" aria-modal="true" aria-labelledby="mdT"><h2 id="mdT">${esc(title)}</h2><p>${esc(body)}</p><div class="acts"><button class="btn" data-r="0">Cancelar</button><button class="btn ${danger ? 'danger' : 'primary'}" data-r="1">${esc(confirm)}</button></div></div>`;
+    const done = v => { back.remove(); document.removeEventListener('keydown', onKey, true); resolve(v); };
+    const onKey = e => { if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); done(false); } };
+    back.addEventListener('click', e => { const r = e.target.closest('[data-r]'); if (r) done(r.dataset.r === '1'); else if (e.target === back) done(false); });
+    document.addEventListener('keydown', onKey, true);
+    document.body.appendChild(back);
+    back.querySelector('[data-r="1"]').focus();
+  });
+}
+function showHelp() {
+  const k = isMac ? '⌘' : 'Ctrl';
+  const rows = [[`${k} K`, 'Buscar notas'], ['/', 'Buscar notas'], ['N', 'Nova nota'], ['D', 'Diário de hoje'], ['R', 'Nota aleatória'], ['E', 'Editar a nota aberta'], ['L', 'Ver só a vizinhança da nota aberta'], ['A', 'Perguntar ao seu cérebro'], ['G', 'Enquadrar o grafo'], [`${k} S`, 'Salvar agora (no editor)'], ['[[', 'Ligar a outra nota (no editor)'], ['Esc', 'Fechar ou concluir']];
+  const back = document.createElement('div');
+  back.className = 'modal-back';
+  back.innerHTML = `<div class="modal" role="dialog" aria-modal="true" aria-labelledby="hlT"><h2 id="hlT">Atalhos de teclado</h2><div class="keys">${rows.map(([a, b]) => `<kbd>${esc(a)}</kbd><span>${esc(b)}</span>`).join('')}</div><div class="acts"><button class="btn primary" data-r="1">Entendi</button></div></div>`;
+  const done = () => { back.remove(); document.removeEventListener('keydown', onKey, true); };
+  const onKey = e => { if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); done(); } };
+  back.addEventListener('click', e => { if (e.target === back || e.target.closest('[data-r]')) done(); });
+  document.addEventListener('keydown', onKey, true);
+  document.body.appendChild(back);
+  back.querySelector('[data-r]').focus();
+}
+
+/* ---------- drawer ---------- */
+const drawer = { stack: [], cur: null };
+let editor = null, draftNote = null;
+const entryKey = e => e ? e.kind + ':' + (e.id || e.title || '') : '';
+function setHead(crumb, color, acts) {
+  const c = $('#crumb'); c.innerHTML = crumb; c.style.setProperty('--c', color);
+  $('#headActs').innerHTML = acts.join('');
+}
+const hbtn = (act, label, svg, cls = '', pressed = null) => `<button class="icon-btn ${cls}" data-act="${act}" aria-label="${esc(label)}" title="${esc(label)}"${pressed !== null ? ` aria-pressed="${!!pressed}"` : ''}>${svg}</button>`;
+
+function openEntry(entry, prep) {
+  const ed = finishEdit();
+  const discarded = ed && !state.notes.has(ed.id);
+  if (drawer.cur && entryKey(drawer.cur) !== entryKey(entry) && !discarded) drawer.stack.push(drawer.cur);
+  if (drawer.stack.length > 40) drawer.stack.shift();
+  drawer.cur = entry;
+  if (prep) prep();
+  state.selectedId = entry.kind === 'note' ? entry.id : null;
+  computeHighlight();
+  renderDrawer();
+}
+function openNote(id, { center = false } = {}) {
+  if (!state.notes.has(id)) return;
+  openEntry({ kind: 'note', id });
+  if (center) requestAnimationFrame(() => centerOn(id));
+  if (mqMobile.matches) closeRail();
+}
+function openByTitle(title) { const n = idx.byKey.get(norm(title)); if (n) openNote(n.id, { center: true }); else openGhost(title); }
+function openGhost(title) { openEntry({ kind: 'ghost', title }); }
+function openAsk() { if (!state.sample) return; openEntry({ kind: 'ask' }); setTimeout(() => { const a = $('#askInput'); if (a && !isTouch) a.focus(); }, 60); }
+function closeDrawer() {
+  finishEdit();
+  drawer.stack = []; drawer.cur = null; state.selectedId = null;
+  computeHighlight();
+  $('#drawer').hidden = true;
+  $('#app').classList.remove('drawer-open');
+}
+function goBack() {
+  finishEdit();
+  drawer.cur = drawer.stack.pop() || null;
+  if (!drawer.cur) { closeDrawer(); return; }
+  state.selectedId = drawer.cur.kind === 'note' ? drawer.cur.id : null;
+  computeHighlight();
+  renderDrawer();
+}
+function refreshDrawer() {
+  const cur = drawer.cur;
+  if (!cur || editor) return;
+  if (cur.kind === 'ask') { const out = $('#askOut'); if (out) out.innerHTML = renderAskOut(); return; }
+  if (cur.kind === 'note' && !state.notes.has(cur.id)) {
+    drawer.cur = drawer.stack.pop() || null;
+    if (!drawer.cur) { closeDrawer(); return; }
+    state.selectedId = drawer.cur.kind === 'note' ? drawer.cur.id : null;
+    computeHighlight();
+  }
+  if (drawer.cur.kind === 'ghost') { const ex = idx.byKey.get(norm(drawer.cur.title)); if (ex) { drawer.cur = { kind: 'note', id: ex.id }; state.selectedId = ex.id; computeHighlight(); } }
+  renderDrawer();
+}
+function renderDrawer() {
+  const d = $('#drawer'), cur = drawer.cur, body = $('#drawerBody');
+  $('#app').classList.toggle('drawer-open', !!cur);
+  if (!cur) { d.hidden = true; return; }
+  d.hidden = false;
+  const key = entryKey(cur) + (editor ? ':edit' : '');
+  const keep = d.dataset.key === key ? body.scrollTop : 0;
+  d.dataset.key = key;
+  body.classList.toggle('editing', !!(editor && cur.kind === 'note' && editor.id === cur.id));
+  if (cur.kind === 'note' && editor && editor.id === cur.id) renderEditor();
+  else if (cur.kind === 'note') renderNoteView(state.notes.get(cur.id));
+  else if (cur.kind === 'ghost') renderGhostView(cur.title);
+  else if (cur.kind === 'ask') renderAskView();
+  $('#btnBack').hidden = !drawer.stack.length;
+  body.scrollTop = keep;
+}
+
+const refCard = (o, ctx, extra = '') => `<div class="ref"><button class="ref-main" data-open="${esc(o.id)}"><span class="rt"><span class="dot" style="--c:${TYPE[o.type].color}"></span>${esc(o.title)}</span><span class="rs">${ctx}</span></button>${extra}</div>`;
+function linkContext(body, title) {
+  const key = norm(title);
+  for (const line of body.split('\n')) {
+    for (const m of line.matchAll(LINK_RE)) {
+      const p = parseLink(m[1]);
+      if (norm(p.target) === key) { const t = plain(line); return highlight(t.length > 220 ? t.slice(0, 220) + '…' : t, [norm(p.alias)]); }
+    }
+  }
+  return esc(excerpt(body, 160));
+}
+const mentionRe = title => new RegExp('(^|[^\\p{L}\\p{N}])(' + escRe(title) + ')(?=$|[^\\p{L}\\p{N}])', 'iu');
+function findUnlinked(n) {
+  if (n.title.length < 3) return [];
+  const re = mentionRe(n.title), key = norm(n.title), out = [];
+  for (const o of state.notes.values()) {
+    if (o.id === n.id || (idx.out.get(o.id) || new Map()).has(key)) continue;
+    const stripped = o.body.replace(LINK_RE, m => ' '.repeat(m.length));
+    const m = re.exec(stripped);
+    if (!m) continue;
+    const i = m.index + m[1].length, len = m[2].length;
+    const a = Math.max(0, i - 70), b = Math.min(stripped.length, i + len + 90);
+    const clean = s => s.replace(/[#*_`>\[\]]/g, '').replace(/\s+/g, ' ');
+    out.push({ note: o, ctx: (a > 0 ? '…' : '') + esc(clean(stripped.slice(a, i))) + '<mark>' + esc(stripped.slice(i, i + len)) + '</mark>' + esc(clean(stripped.slice(i + len, b))) + (b < stripped.length ? '…' : '') });
+    if (out.length >= 12) break;
+  }
+  return out;
+}
+
+function renderNoteView(n) {
+  if (!n) { closeDrawer(); return; }
+  const t = TYPE[n.type], body = $('#drawerBody');
+  const isLocal = !!state.local && state.local.id === n.id;
+  setHead(`<span class="dot" style="--c:${t.color}"></span>${t.label}`, t.color, [
+    hbtn('fav', n.fav ? 'Tirar dos favoritos' : 'Favoritar', icon('star', n.fav ? 'currentColor' : 'none'), 'w', n.fav),
+    hbtn('local', isLocal ? 'Voltar ao grafo completo (L)' : 'Ver só a vizinhança no grafo (L)', icon('focus'), '', isLocal),
+    hbtn('edit', 'Editar (E)', icon('edit'), 'w'),
+    hbtn('delete', 'Excluir nota', icon('trash'), 'w'),
+  ]);
+  const outLinks = [...(idx.out.get(n.id) || [])].map(([k, disp]) => ({ disp, note: idx.byKey.get(k) }));
+  const backs = [...(idx.back.get(norm(n.title)) || [])].filter(id => id !== n.id).map(id => state.notes.get(id)).filter(Boolean).sort((a, b) => b.updated - a.updated);
+  const unlinked = findUnlinked(n);
+  body.innerHTML = `
+    <article>
+      <h1 class="note-title">${esc(n.title)}</h1>
+      <div class="note-meta">${n.updated ? `<span>Atualizada ${esc(ago(n.updated))}</span>` : ''}${n.created ? `<span>Criada em ${esc(fmtDate(n.created))}</span>` : ''}<span>${countWords(n.body)} palavras</span></div>
+      ${n.tags.length ? `<div class="chips" style="margin-bottom:20px">${n.tags.map(tg => `<button class="chip" data-tag="${esc(tg)}">#${esc(tg)}</button>`).join('')}</div>` : ''}
+      <div class="prose" id="prose">${n.body.trim() ? renderMd(n.body) : `<p class="empty-body">Nota vazia.${state.canWrite ? ' Use o lápis lá em cima para escrever.' : ''}</p>`}</div>
+    </article>
+    <section class="section"><h3>Conexões <span class="n">${outLinks.length}</span></h3>${outLinks.length ? `<div class="chips">${outLinks.map(o => `<button class="chip link-chip${o.note ? '' : ' missing'}" data-title="${esc(o.note ? o.note.title : o.disp)}"><span class="dot${o.note ? '' : ' ghost'}" style="--c:${o.note ? TYPE[o.note.type].color : 'transparent'}"></span>${esc(o.note ? o.note.title : o.disp)}</button>`).join('')}</div>` : `<p class="muted">Nenhum link saindo desta nota. Escreva [[Título]] no texto para conectar.</p>`}</section>
+    <section class="section"><h3>Mencionada em <span class="n">${backs.length}</span></h3>${backs.length ? backs.map(b => refCard(b, linkContext(b.body, n.title))).join('') : `<p class="muted">Nenhuma nota aponta para esta ainda.</p>`}</section>
+    ${unlinked.length ? `<section class="section"><h3>Menções sem link <span class="n">${unlinked.length}</span></h3>${unlinked.map(u => refCard(u.note, u.ctx, state.canWrite ? `<button class="btn small w" data-linkify="${esc(u.note.id)}" title="Transformar esta menção em link">${icon('link')}Ligar</button>` : '')).join('')}</section>` : ''}
+    ${state.sample ? `<section class="section" id="suggest">${suggestHTML(n)}</section>` : ''}`;
+  $$('#prose input[type=checkbox]').forEach((cb, i) => { cb.disabled = !state.canWrite; cb.dataset.task = i; });
+}
+function renderGhostView(title) {
+  const body = $('#drawerBody');
+  setHead(`<span class="dot ghost"></span>Ideia pendente`, C.dust, []);
+  const key = norm(title);
+  const backs = [...(idx.back.get(key) || [])].map(id => state.notes.get(id)).filter(Boolean);
+  body.innerHTML = `<h1 class="note-title ghost-title">${esc(title)}</h1>
+    <p class="lede">${backs.length ? `Esta ideia é citada em ${backs.length} ${backs.length === 1 ? 'nota' : 'notas'}, mas ainda não tem uma página própria.` : 'Esta nota ainda não existe.'}</p>
+    ${state.canWrite ? `<div class="row-acts"><button class="btn primary" data-create="${esc(title)}">${icon('plus')}Criar esta nota</button></div>` : ''}
+    ${backs.length ? `<section class="section"><h3>Mencionada em <span class="n">${backs.length}</span></h3>${backs.map(b => refCard(b, linkContext(b.body, title))).join('')}</section>` : ''}`;
+}
+
+/* ---------- editing ---------- */
+function createDraft({ title = '', type = 'nota', body = '', tags = [] } = {}) {
+  if (!state.canWrite) return;
+  const ex = title && idx.byKey.get(norm(title));
+  if (ex) { openNote(ex.id, { center: true }); return; }
+  const id = uid(), now = Date.now();
+  openEntry({ kind: 'note', id }, () => {
+    draftNote = { id, title, body, type, tags, fav: false, created: now, updated: now };
+    editor = { id, draft: true, origTitle: null, err: '' };
+  });
+  const el = title ? $('#edBody') : $('#edTitle');
+  if (el) el.focus();
+  if (mqMobile.matches) closeRail();
+}
+function startEdit(id) {
+  const n = state.notes.get(id);
+  if (!n || !state.canWrite) return;
+  if (!drawer.cur || drawer.cur.id !== id) openEntry({ kind: 'note', id });
+  editor = { id, draft: false, origTitle: n.title, err: '' };
+  renderDrawer();
+  const el = $('#edBody');
+  if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
+}
+function renderEditor() {
+  const n = editor.draft ? draftNote : state.notes.get(editor.id);
+  if (!n) { editor = null; renderDrawer(); return; }
+  const t = TYPE[n.type];
+  setHead(`<span class="dot" style="--c:${t.color}"></span>${editor.draft ? 'Nova nota' : 'Editando'}`, t.color, [`<button class="btn small primary" data-act="done">${icon('check')}Concluir</button>`]);
+  $('#drawerBody').innerHTML = `
+  <div class="editor">
+    <div class="field"><label for="edTitle">Título</label><input id="edTitle" class="inp title" placeholder="Ex.: Efeito Zeigarnik" maxlength="200" autocomplete="off"><p class="err" id="edErr"${editor.err ? '' : ' hidden'}>${esc(editor.err)}</p></div>
+    <div class="row">
+      <div class="field"><label for="edType">Tipo</label><select id="edType" class="inp">${TYPE_LIST.map(x => `<option value="${x.key}"${x.key === n.type ? ' selected' : ''}>${x.label}</option>`).join('')}</select></div>
+      <div class="field wide"><label for="edTags">Tags</label><input id="edTags" class="inp" placeholder="leitura, produtividade" autocomplete="off"></div>
+    </div>
+    <div class="field grow"><label for="edBody">Texto <span class="hint">[[ liga notas · ## título · - [ ] tarefa</span></label>
+      <div class="ta-wrap"><textarea id="edBody" class="inp" spellcheck="true" placeholder="Escreva aqui. Digite [[ para conectar com outra nota."></textarea><div class="ac" id="ac" role="listbox" hidden></div></div>
+    </div>
+    <div class="edit-foot"><span id="edStatus">${editor.draft ? 'Rascunho: salva quando tiver título' : 'Tudo salvo'}</span><span>${isMac ? '⌘' : 'Ctrl'}+S salva · Esc conclui</span></div>
+  </div>`;
+  $('#edTitle').value = n.title;
+  $('#edTags').value = n.tags.join(', ');
+  $('#edBody').value = n.body;
+}
+const setStatus = s => { const el = $('#edStatus'); if (el) el.textContent = s; };
+const setEdErr = s => { const el = $('#edErr'); if (el) { el.textContent = s; el.hidden = !s; } };
+function collectEditor() {
+  if (!editor) return null;
+  const base = editor.draft ? draftNote : state.notes.get(editor.id);
+  const tEl = $('#edTitle');
+  if (!base || !tEl) return null;
+  const title = tEl.value.trim().replace(/\s+/g, ' ');
+  const body = $('#edBody').value, type = $('#edType').value, tags = cleanTags($('#edTags').value);
+  let err = '', finalTitle = title;
+  if (!title) { err = editor.draft ? '' : 'Dê um título à nota. O título anterior foi mantido.'; finalTitle = editor.draft ? '' : base.title; }
+  else {
+    const clash = idx.byKey.get(norm(title));
+    if (clash && clash.id !== editor.id) { err = `Já existe uma nota chamada “${clash.title}”. Escolha outro título.`; finalTitle = editor.draft ? '' : base.title; }
+  }
+  if (body.length > 200000) err = 'O texto passou de 200 mil caracteres. Divida em notas menores.';
+  editor.err = err; setEdErr(err);
+  if (body.length > 200000) return null;
+  if (editor.draft) {
+    draftNote = { ...base, title, body, type, tags };
+    if (!finalTitle) { setStatus(err ? 'Rascunho não salvo' : 'Rascunho: salva quando tiver título'); return null; }
+  }
+  const next = { ...base, title: finalTitle, body, type, tags };
+  if (!editor.draft && next.title === base.title && next.body === base.body && next.type === base.type && next.tags.join('\u0001') === base.tags.join('\u0001')) { setStatus(err ? 'Título não salvo' : 'Tudo salvo'); return null; }
+  next.updated = Date.now();
+  if (editor.draft) { next.created = Date.now(); editor.draft = false; draftNote = null; }
+  return next;
+}
+async function autosave() {
+  scheduleSave.cancel();
+  if (!editor) return;
+  const id = editor.id;
+  const next = collectEditor();
+  if (!next) return;
+  setStatus('Salvando…');
+  const ok = await store.put(next);
+  if (editor && editor.id === id) setStatus(ok ? 'Salvo às ' + hm() : 'Não foi possível salvar');
+}
+const scheduleSave = debounce(autosave, 900);
+function finishEdit() {
+  if (!editor) return null;
+  const ed = editor;
+  const next = collectEditor();
+  scheduleSave.cancel();
+  editor = null; draftNote = null;
+  hideAC();
+  $('#drawerBody').classList.remove('editing');
+  const p = next ? store.put(next) : Promise.resolve(true);
+  const final = next ? next.title : state.notes.get(ed.id)?.title;
+  if (ed.origTitle && final && norm(ed.origTitle) !== norm(final)) p.then(() => propagateRename(ed.origTitle, final, ed.id));
+  return ed;
+}
+function doneEditing() {
+  const ed = finishEdit();
+  if (ed && !state.notes.has(ed.id)) {
+    drawer.cur = drawer.stack.pop() || null;
+    if (!drawer.cur) { closeDrawer(); return; }
+  }
+  state.selectedId = drawer.cur && drawer.cur.kind === 'note' ? drawer.cur.id : null;
+  computeHighlight();
+  renderDrawer();
+  if (state.selectedId) requestAnimationFrame(() => centerOn(state.selectedId, G ? G.zoom() : 1));
+}
+function renameInBody(body, oldT, newT) {
+  const key = norm(oldT);
+  return body.replace(LINK_RE, (m, inner) => {
+    const bar = inner.indexOf('|');
+    const left = bar >= 0 ? inner.slice(0, bar) : inner, rest = bar >= 0 ? inner.slice(bar) : '';
+    const h = left.indexOf('#');
+    const tgt = h >= 0 ? left.slice(0, h) : left, hash = h >= 0 ? left.slice(h) : '';
+    return norm(tgt) === key ? '[[' + newT + hash + rest + ']]' : m;
+  });
+}
+function propagateRename(oldT, newT, selfId) {
+  let count = 0;
+  for (const id of [...(idx.back.get(norm(oldT)) || [])]) {
+    const o = state.notes.get(id);
+    if (!o || id === selfId) continue;
+    const body = renameInBody(o.body, oldT, newT);
+    if (body !== o.body) { store.put({ ...o, body, updated: Date.now() }); count++; }
+  }
+  if (count) toast(`Links atualizados em ${count} ${count === 1 ? 'nota' : 'notas'} para “${newT}”`);
+}
+
+/* [[ autocomplete */
+const ac = { items: [], active: 0, start: 0 };
+function caretXY(ta) {
+  const div = document.createElement('div'), cs = getComputedStyle(ta);
+  for (const p of ['boxSizing', 'width', 'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft', 'borderTopWidth', 'borderRightWidth', 'borderBottomWidth', 'borderLeftWidth', 'fontFamily', 'fontSize', 'fontWeight', 'lineHeight', 'letterSpacing', 'tabSize', 'wordSpacing']) div.style[p] = cs[p];
+  Object.assign(div.style, { position: 'absolute', visibility: 'hidden', whiteSpace: 'pre-wrap', overflowWrap: 'break-word', top: '0', left: '-9999px' });
+  div.textContent = ta.value.slice(0, ta.selectionStart);
+  const span = document.createElement('span'); span.textContent = '​'; div.appendChild(span);
+  document.body.appendChild(div);
+  const x = span.offsetLeft, y = span.offsetTop, lh = parseFloat(cs.lineHeight) || 22;
+  div.remove();
+  return { x: x - ta.scrollLeft, y: y - ta.scrollTop + lh };
+}
+function updateAC() {
+  const ta = $('#edBody'), box = $('#ac');
+  if (!ta || !box) return;
+  const pos = ta.selectionStart;
+  const m = /\[\[([^\[\]\n|#]*)$/.exec(ta.value.slice(0, pos));
+  if (!m || pos !== ta.selectionEnd) { hideAC(); return; }
+  const raw = m[1], q = norm(raw);
+  ac.start = pos - raw.length;
+  const self = norm($('#edTitle').value);
+  let items = [...state.notes.values()].filter(n => norm(n.title) !== self && (!q || norm(n.title).includes(q)));
+  items.sort((a, b) => (norm(b.title).startsWith(q) - norm(a.title).startsWith(q)) || (b.updated - a.updated));
+  items = items.slice(0, 7).map(n => ({ title: n.title, type: n.type }));
+  if (raw.trim() && !idx.byKey.has(q)) items.push({ title: raw.trim(), create: true });
+  if (!items.length) { hideAC(); return; }
+  ac.items = items; ac.active = 0;
+  box.innerHTML = items.map((it, i) => `<button type="button" role="option" data-ac="${i}" aria-selected="${i === 0}">${it.create ? `${icon('plus')}<span>Nova ideia “${esc(it.title)}”</span>` : `<span class="dot" style="--c:${TYPE[it.type].color}"></span><span>${esc(it.title)}</span>`}</button>`).join('');
+  box.hidden = false;
+  const { x, y } = caretXY(ta);
+  const lh = parseFloat(getComputedStyle(ta).lineHeight) || 22;
+  const maxLeft = ta.offsetLeft + ta.clientWidth - box.offsetWidth - 4;
+  box.style.left = Math.max(ta.offsetLeft + 4, Math.min(ta.offsetLeft + x, maxLeft)) + 'px';
+  let top = y + 4;
+  if (top + box.offsetHeight > ta.clientHeight) top = Math.max(4, y - lh - box.offsetHeight - 4);
+  box.style.top = (ta.offsetTop + top) + 'px';
+}
+function hideAC() { const b = $('#ac'); if (b) b.hidden = true; ac.items = []; }
+function moveAC(d) {
+  if (!ac.items.length) return;
+  ac.active = (ac.active + d + ac.items.length) % ac.items.length;
+  $$('#ac [data-ac]').forEach((b, i) => b.setAttribute('aria-selected', i === ac.active));
+}
+function pickAC(i) {
+  const it = ac.items[i], ta = $('#edBody');
+  if (!it || !ta) return;
+  const pos = ta.selectionStart, after = ta.value.slice(pos);
+  const close = after.startsWith(']]') ? '' : ']]';
+  ta.value = ta.value.slice(0, ac.start) + it.title + close + after;
+  const caret = ac.start + it.title.length + 2;
+  ta.setSelectionRange(caret, caret);
+  ta.focus();
+  hideAC();
+  setStatus('Editando…'); scheduleSave();
+}
+
+/* ---------- note actions ---------- */
+function toggleFav(id) { const n = state.notes.get(id); if (n) store.put({ ...n, fav: !n.fav }); }
+function toggleTask(id, i, checked) {
+  const n = state.notes.get(id);
+  if (!n) return;
+  let c = -1;
+  const body = n.body.replace(/^(\s*(?:[-*+]|\d+[.)])\s+\[)([ xX])(\])/gm, (m, a, x, b) => { c++; return c === i ? a + (checked ? 'x' : ' ') + b : m; });
+  if (body !== n.body) store.put({ ...n, body, updated: Date.now() });
+}
+async function deleteNote(id) {
+  const n = state.notes.get(id);
+  if (!n) return;
+  const ok = await confirmBox({ title: 'Excluir esta nota?', body: `“${n.title}” será apagada. Os links que apontam para ela continuam no texto das outras notas e aparecem como ideias pendentes.`, confirm: 'Excluir nota', danger: true });
+  if (!ok) return;
+  if (editor && editor.id === id) { editor = null; draftNote = null; }
+  drawer.stack = drawer.stack.filter(e => !(e.kind === 'note' && e.id === id));
+  drawer.cur = drawer.stack.pop() || null;
+  state.selectedId = drawer.cur && drawer.cur.kind === 'note' ? drawer.cur.id : null;
+  if (state.local && state.local.id === id) state.local = null;
+  store.remove(id);
+  toast(`“${n.title}” foi excluída`);
+  renderDrawer();
+}
+function linkify(otherId, title) {
+  const o = state.notes.get(otherId);
+  if (!o) return;
+  const re = mentionRe(title);
+  const parts = o.body.split(/(\[\[[^\[\]\n]+?\]\])/);
+  let done = false;
+  for (let i = 0; i < parts.length && !done; i += 2) {
+    parts[i] = parts[i].replace(re, (m, pre, word) => { done = true; return pre + (word === title ? `[[${title}]]` : `[[${title}|${word}]]`); });
+  }
+  if (!done) { toast('Não encontrei a menção exata para ligar.', 'error'); return; }
+  store.put({ ...o, body: parts.join(''), updated: Date.now() });
+  toast(`Link criado em “${o.title}”`);
+}
+function addLinkToNote(id, title, reason) {
+  const n = state.notes.get(id);
+  if (!n) return;
+  const line = `- [[${title}]]${reason ? ' — ' + reason : ''}`;
+  let body = n.body.replace(/\s+$/, '');
+  const m = /^##\s+Conex(?:õ|o)es\s*$/im.exec(body);
+  if (m) {
+    const start = m.index + m[0].length;
+    const nextH = body.slice(start).search(/\n#{1,6}\s/);
+    const end = nextH === -1 ? body.length : start + nextH;
+    body = body.slice(0, end).replace(/\s+$/, '') + '\n' + line + body.slice(end);
+  } else body = (body ? body + '\n\n' : '') + '## Conexões\n' + line;
+  store.put({ ...n, body: body + '\n', updated: Date.now() });
+  toast(`Ligada a “${title}”`);
+}
+function uniqueTitle(base) {
+  let t = base.slice(0, 190), i = 2;
+  while (idx.byKey.has(norm(t)) || [...state.notes.values()].some(n => norm(n.title) === norm(t))) t = `${base.slice(0, 185)} (${i++})`;
+  return t;
+}
+function openDaily() {
+  const t = todayISO(), ex = idx.byKey.get(norm(t));
+  if (ex) { openNote(ex.id, { center: true }); return; }
+  if (!state.canWrite) { toast('Somente leitura: não dá para criar o diário.'); return; }
+  const nice = new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' });
+  const id = uid(), now = Date.now();
+  store.put({ id, title: t, type: 'diario', tags: ['diario'], fav: false, created: now, updated: now, body: `*${nice}*\n\n## Foco de hoje\n- [ ] \n\n## O que aprendi\n\n\n## Ideias soltas\n` });
+  openNote(id);
+  startEdit(id);
+  setTimeout(() => centerOn(id), 500);
+}
+function openRandom() {
+  const arr = [...state.notes.values()].filter(n => !state.hidden.has(n.type));
+  if (!arr.length) return;
+  let n = arr[Math.floor(Math.random() * arr.length)];
+  if (arr.length > 1 && drawer.cur && drawer.cur.id === n.id) n = arr[(arr.indexOf(n) + 1) % arr.length];
+  openNote(n.id, { center: true });
+}
+
+/* ---------- AI: ask + suggestions ---------- */
+const STOP = new Set('que com para por uma uns umas dos das nos nas como qual quais sobre mais meu minha meus minhas isso esse essa este esta estes estas ser tem ter sao foi nao sim onde quando porque ate entre sem sua seu suas seus eles elas voce voces ainda tambem pelo pela pelos pelas aos qualquer muito muita muitos muitas algum alguma tudo todo toda todos todas ja so ou the and from what how'.split(' '));
+function pickContext(q) {
+  const words = norm(q).split(/[^a-z0-9]+/).filter(w => w.length >= 3 && !STOP.has(w));
+  const mentioned = new Set([...q.matchAll(LINK_RE)].map(m => norm(parseLink(m[1]).target)));
+  const scored = [];
+  for (const n of state.notes.values()) {
+    const nt = norm(n.title), nb = norm(n.body), tg = n.tags.map(norm).join(' ');
+    let s = mentioned.has(nt) ? 100 : 0;
+    for (const w of words) { if (nt.includes(w)) s += 10; if (tg.includes(w)) s += 5; s += Math.min(countOcc(nb, w), 10); }
+    if (s > 0) scored.push({ n, s });
+  }
+  scored.sort((a, b) => b.s - a.s);
+  const picked = scored.slice(0, 12).map(x => x.n);
+  if (picked.length < 5) {
+    const hubs = [...state.notes.values()].sort((a, b) => ((idx.back.get(norm(b.title)) || new Set()).size + (idx.out.get(b.id) || new Map()).size) - ((idx.back.get(norm(a.title)) || new Set()).size + (idx.out.get(a.id) || new Map()).size));
+    for (const h of hubs) { if (picked.length >= 8) break; if (!picked.includes(h)) picked.push(h); }
+  }
+  return picked;
+}
+function buildAskPrompt(q, picked) {
+  const titles = [...state.notes.values()].map(n => n.title).slice(0, 500).join(' · ');
+  const ctx = picked.map(n => `### [[${n.title}]] (${TYPE[n.type].label}${n.tags.length ? ', #' + n.tags.join(' #') : ''})\n${n.body.slice(0, 2200)}`).join('\n\n');
+  return `Você é o assistente do "segundo cérebro" de uma pessoa: uma rede de notas ligadas por [[links]].
+Responda à pergunta dela usando as notas abaixo como fonte principal.
+
+Regras:
+- Escreva em português do Brasil, em markdown simples (parágrafos curtos e listas), com no máximo 250 palavras.
+- Sempre que usar uma ideia de uma nota, cite a nota no formato [[Título exato]].
+- Se as notas não bastarem, diga isso claramente e sugira de 1 a 3 notas novas que valeria criar, também no formato [[Título sugerido]].
+- Não atribua às notas coisas que elas não dizem.
+
+Títulos de todas as notas: ${titles || '(nenhuma)'}
+
+Notas relevantes:
+
+${ctx || '(nenhuma nota relevante encontrada)'}
+
+Pergunta: ${q}`;
+}
+function sampleErrorText(e) {
+  switch (e && e.code) {
+    case 'rate_limited': return 'Muitos pedidos seguidos ou limite de uso atingido. Tente de novo daqui a pouco.';
+    case 'session_expired': return 'Sua sessão expirou. Entre de novo no claude.ai e recarregue a página.';
+    case 'refused': return 'A IA não respondeu a esse pedido. Tente reformular.';
+    case 'prompt_too_large': return 'Há texto demais para analisar de uma vez. Faça uma pergunta mais específica.';
+    case 'invalid_json': return 'A resposta veio num formato que não consegui ler. Tente de novo.';
+    case 'empty_completion': return 'A IA não escreveu nada. Tente reformular.';
+    case 'not_granted': case 'sampling_disabled': case 'not_declared': case 'capability_disabled': case 'capability_removed': return 'A IA não está liberada nesta página.';
+    default: return 'A conexão com a IA falhou. Tente de novo.';
+  }
+}
+const isPermanent = e => ['not_granted', 'sampling_disabled', 'not_declared', 'capability_disabled', 'capability_removed'].includes(e && e.code);
+function disableAI() { state.sample = null; $('#btnAsk').hidden = true; }
+
+const ask = { q: '', text: '', status: 'idle', used: [], ctl: null, err: '' };
+function renderAskView() {
+  setHead(`${icon('spark')}Perguntar ao seu cérebro`, C.amber, []);
+  const busy = ask.status === 'thinking' || ask.status === 'streaming';
+  $('#drawerBody').innerHTML = `
+    <p class="lede">Faça uma pergunta. A IA lê as notas mais ligadas ao assunto e responde citando de onde tirou cada ideia.</p>
+    <form id="askForm" class="ask-form">
+      <label for="askInput" class="field" style="display:none">Pergunta</label>
+      <textarea id="askInput" class="inp" rows="3" placeholder="Ex.: Como o método PARA conversa com o Zettelkasten?"></textarea>
+      <div class="ask-acts"><span class="hint">Usa o seu plano do Claude</span><button type="button" class="btn small" data-act="ask-stop" id="askStop"${busy ? '' : ' hidden'}>Parar</button><button class="btn primary small" id="askGo"${busy ? ' disabled' : ''}>${icon('spark')}Perguntar</button></div>
+    </form>
+    <div id="askOut" class="ask-out">${renderAskOut()}</div>`;
+  $('#askInput').value = ask.q;
+}
+function renderAskOut() {
+  if (!state.sample && !ask.text && !ask.err) return `<p class="muted">A IA não está disponível nesta visualização.</p>`;
+  if (ask.status === 'thinking') return `<div class="thinking"><span class="pulse"></span>Lendo ${ask.used.length} notas e pensando…</div>`;
+  if (ask.status === 'idle' && !ask.text && !ask.err) {
+    const hub = [...state.notes.values()].sort((a, b) => ((idx.back.get(norm(b.title)) || new Set()).size) - ((idx.back.get(norm(a.title)) || new Set()).size))[0];
+    const ex = ['Quais ideias aparecem em mais notas e como elas se ligam?', hub ? `O que eu já sei sobre ${hub.title}?` : null, 'Que conexões entre as notas eu ainda não fiz?'].filter(Boolean);
+    return `<div class="ask-examples">${ex.map(x => `<button data-ask="${esc(x)}">${esc(x)}</button>`).join('')}</div>`;
+  }
+  let html = '';
+  if (ask.text) html += `<div class="prose answer">${renderMd(ask.text)}</div>`;
+  if (ask.err) html += `<p class="err">${esc(ask.err)}</p>`;
+  const used = ask.used.map(id => state.notes.get(id)).filter(Boolean);
+  if (used.length && ask.text) html += `<section class="section"><h3>Notas consultadas <span class="n">${used.length}</span></h3><div class="chips">${used.map(n => `<button class="chip link-chip" data-open="${esc(n.id)}"><span class="dot" style="--c:${TYPE[n.type].color}"></span>${esc(n.title)}</button>`).join('')}</div></section>`;
+  if (ask.status === 'done' && ask.text && state.canWrite) html += `<div class="row-acts" style="margin-top:18px"><button class="btn small w" data-act="save-answer">${icon('plus')}Salvar como nota</button></div>`;
+  return html;
+}
+function renderAskPart() {
+  if (!drawer.cur || drawer.cur.kind !== 'ask') return;
+  const out = $('#askOut'); if (out) out.innerHTML = renderAskOut();
+  const busy = ask.status === 'thinking' || ask.status === 'streaming';
+  const stop = $('#askStop'), go = $('#askGo');
+  if (stop) stop.hidden = !busy;
+  if (go) go.disabled = busy;
+}
+let askRenderT = 0;
+async function runAsk(q) {
+  q = q.trim();
+  if (!q || !state.sample) return;
+  if (ask.ctl) ask.ctl.abort();
+  const ctl = new AbortController();
+  const picked = pickContext(q);
+  Object.assign(ask, { q, text: '', status: 'thinking', used: picked.map(n => n.id), err: '', ctl });
+  renderAskPart();
+  try {
+    const res = await state.sample(buildAskPrompt(q, picked), {
+      signal: ctl.signal,
+      onText: ({ text }) => {
+        if (ask.ctl !== ctl) return;
+        ask.text = text; ask.status = 'streaming';
+        const now = Date.now();
+        if (now - askRenderT > 120) { askRenderT = now; renderAskPart(); }
+      },
+    });
+    if (ask.ctl !== ctl) return;
+    ask.text = res.text; ask.status = 'done';
+    if (res.truncated) ask.err = 'A resposta foi cortada no limite. Tente uma pergunta mais específica.';
+  } catch (e) {
+    if (ask.ctl !== ctl) return;
+    ask.text = e && e.code === 'refused' ? '' : (e && e.text) || '';
+    ask.status = ask.text ? 'done' : 'idle';
+    if (!e || e.code !== 'cancelled') ask.err = sampleErrorText(e);
+    if (isPermanent(e)) disableAI();
+  }
+  ask.ctl = null;
+  renderAskPart();
+}
+function saveAnswer() {
+  if (!ask.text || !state.canWrite) return;
+  const used = ask.used.map(id => state.notes.get(id)).filter(Boolean);
+  const id = uid(), now = Date.now();
+  const title = uniqueTitle('Pergunta: ' + ask.q.replace(/\s+/g, ' ').slice(0, 80));
+  store.put({ id, title, type: 'nota', tags: ['ia'], fav: false, created: now, updated: now, body: `> ${ask.q}\n\n${ask.text.trim()}\n\n---\nNotas consultadas: ${used.map(n => `[[${n.title}]]`).join(', ')}\n` });
+  openNote(id, { center: true });
+  toast('Resposta salva como nota');
+}
+
+const sug = new Map();
+function suggestHTML(n) {
+  const head = `<h3>${icon('spark')} Conexões sugeridas pela IA</h3>`;
+  const s = sug.get(n.id);
+  if (!s || s.status === 'idle') return head + `<p class="muted">A IA compara esta nota com as outras e aponta ligações que você ainda não fez.</p><button class="btn small" data-act="suggest">${icon('spark')}Sugerir conexões</button>`;
+  if (s.status === 'loading') return head + `<div class="thinking"><span class="pulse"></span>Comparando com ${s.count} notas…</div><div class="row-acts" style="margin-top:10px"><button class="btn small" data-act="suggest-stop">Parar</button></div>`;
+  if (s.status === 'error') return head + `<p class="err">${esc(s.err)}</p><div class="row-acts" style="margin-top:10px"><button class="btn small" data-act="suggest">Tentar de novo</button></div>`;
+  const outs = idx.out.get(n.id) || new Map();
+  const items = s.items.filter(it => idx.byKey.has(norm(it.title)) && !outs.has(norm(it.title)));
+  if (!items.length) return head + `<p class="muted">${s.items.length ? 'Você já ligou todas as sugestões.' : 'Nenhuma ligação forte encontrada com as outras notas.'}</p><button class="btn small" data-act="suggest">Sugerir de novo</button>`;
+  return head + items.map(it => {
+    const t = idx.byKey.get(norm(it.title));
+    return refCard(t, esc(it.reason), state.canWrite ? `<button class="btn small w" data-addlink="${esc(t.title)}" data-reason="${esc(it.reason)}">${icon('link')}Ligar</button>` : '');
+  }).join('') + `<button class="btn small" data-act="suggest">Sugerir de novo</button>`;
+}
+function rerenderSuggest(id) {
+  if (!drawer.cur || drawer.cur.kind !== 'note' || drawer.cur.id !== id || editor) return;
+  const el = $('#suggest'), n = state.notes.get(id);
+  if (el && n) el.innerHTML = suggestHTML(n);
+}
+async function runSuggest(n) {
+  if (!n || !state.sample) return;
+  const prevS = sug.get(n.id);
+  if (prevS && prevS.ctl) prevS.ctl.abort();
+  const outs = idx.out.get(n.id) || new Map();
+  let cands = [...state.notes.values()].filter(o => o.id !== n.id && !outs.has(norm(o.title)));
+  if (cands.length > 160) {
+    const words = new Set(norm(n.title + ' ' + n.body).split(/[^a-z0-9]+/).filter(w => w.length >= 4 && !STOP.has(w)));
+    cands = cands.map(o => { const t = norm(o.title + ' ' + o.body); let s = 0; for (const w of words) if (t.includes(w)) s++; return { o, s }; }).sort((a, b) => b.s - a.s).slice(0, 160).map(x => x.o);
+  }
+  if (!cands.length) { sug.set(n.id, { status: 'done', items: [] }); rerenderSuggest(n.id); return; }
+  const s = { status: 'loading', items: [], err: '', count: cands.length, ctl: new AbortController() };
+  sug.set(n.id, s);
+  rerenderSuggest(n.id);
+  const prompt = `Você ajuda a conectar notas de um segundo cérebro.
+
+Nota atual: "${n.title}" (${TYPE[n.type].label})
+Texto:
+${n.body.slice(0, 3000) || '(vazia)'}
+
+Outras notas disponíveis (título — começo do texto):
+${cands.map(c => `- ${c.title} — ${excerpt(c.body, 110)}`).join('\n')}
+
+Escolha até 6 notas da lista que tenham uma relação real e útil com a nota atual (causa, exemplo, contraste, aplicação, autor, fonte). Ignore relações fracas.
+Responda apenas com um array JSON, sem texto extra, neste formato:
+[{"titulo": "título exato da lista", "motivo": "por que ligar, em até 90 caracteres"}]`;
+  try {
+    const out = await state.sample.json(prompt, { signal: s.ctl.signal });
+    const arr = Array.isArray(out) ? out : (out && Array.isArray(out.sugestoes) ? out.sugestoes : []);
+    s.items = arr.map(x => ({ title: String((x && (x.titulo ?? x.title)) ?? '').trim(), reason: String((x && (x.motivo ?? x.reason)) ?? '').trim().slice(0, 140) }))
+      .filter(x => x.title && idx.byKey.has(norm(x.title))).slice(0, 6);
+    s.status = 'done';
+  } catch (e) {
+    if (e && e.code === 'cancelled') s.status = 'idle';
+    else { s.status = 'error'; s.err = sampleErrorText(e); if (isPermanent(e)) disableAI(); }
+  }
+  s.ctl = null;
+  rerenderSuggest(n.id);
+}
+
+/* ---------- import / export ---------- */
+function parseMarkdownFile(name, text, mtime) {
+  let title = name.replace(/\.(md|markdown|txt)$/i, '').trim();
+  let body = text.replace(/\r\n?/g, '\n');
+  const tags = []; let type = 'nota', typeGiven = false, created = mtime || Date.now();
+  const fm = /^---\n([\s\S]*?)\n---[ \t]*\n?/.exec(body);
+  if (fm) {
+    body = body.slice(fm[0].length);
+    const y = fm[1];
+    const tl = /^title:\s*(.+)$/mi.exec(y); if (tl) title = tl[1].trim().replace(/^["']|["']$/g, '') || title;
+    const ty = /^(?:tipo|type):\s*(.+)$/mi.exec(y);
+    if (ty) { const v = norm(ty[1].replace(/["']/g, '')); const f = TYPE_LIST.find(t => t.key === v || norm(t.label) === v); if (f) { type = f.key; typeGiven = true; } }
+    const inl = /^tags:\s*\[(.*)\]\s*$/mi.exec(y);
+    if (inl) tags.push(...inl[1].split(','));
+    else {
+      const blk = /^tags:[ \t]*\n((?:[ \t]*-[ \t]*.+(?:\n|$))+)/mi.exec(y);
+      if (blk) tags.push(...blk[1].split('\n').map(s => s.replace(/^\s*-\s*/, '')));
+      else { const one = /^tags:[ \t]*(\S.*)$/mi.exec(y); if (one) tags.push(...one[1].split(/[,\s]+/)); }
+    }
+    const cr = /^(?:criado|created|date):\s*(.+)$/mi.exec(y);
+    if (cr) { const t = Date.parse(cr[1].trim().replace(/["']/g, '')); if (t) created = t; }
+  }
+  for (const m of body.matchAll(/(^|\s)#([\p{L}\p{N}_\-\/]+)/gu)) if (!/^\d+$/.test(m[2])) tags.push(m[2]);
+  if (/^\d{4}-\d{2}-\d{2}$/.test(title) && !typeGiven) { type = 'diario'; typeGiven = true; }
+  return { title: title.replace(/\s+/g, ' ').slice(0, 200) || 'Sem título', body: body.trim(), type, typeGiven, tags: cleanTags(tags.map(t => String(t).trim().replace(/^["'#]+|["']+$/g, ''))), created };
+}
+async function importFiles(fileList) {
+  if (!state.canWrite) return;
+  const files = [...fileList].filter(f => /\.(md|markdown|txt|json)$/i.test(f.name) && !/(^|\/)\.(obsidian|trash|git)\//.test(f.webkitRelativePath || ''));
+  if (!files.length) { toast('Nenhum arquivo .md, .txt ou .json encontrado.', 'error'); return; }
+  toast(`Lendo ${files.length} ${files.length === 1 ? 'arquivo' : 'arquivos'}…`, '', 60000);
+  const incoming = [];
+  for (const f of files) {
+    let text;
+    try { text = await f.text(); } catch { continue; }
+    if (/\.json$/i.test(f.name)) {
+      try {
+        const data = JSON.parse(text);
+        const arr = Array.isArray(data) ? data : Array.isArray(data.notes) ? data.notes : [];
+        for (const d of arr) { const n = coerce('x', d); if (n) incoming.push({ title: n.title, body: n.body, type: n.type, typeGiven: true, tags: n.tags, created: n.created || Date.now(), fav: n.fav }); }
+      } catch { toast(`“${f.name}” não é um backup JSON válido.`, 'error'); }
+      continue;
+    }
+    incoming.push(parseMarkdownFile(f.name, text, f.lastModified));
+  }
+  const byKey = new Map(idx.byKey);
+  const ops = [];
+  let created = 0, updated = 0;
+  for (const inc of incoming) {
+    const k = norm(inc.title), ex = byKey.get(k), now = Date.now();
+    let note;
+    if (ex) { note = { ...ex, body: inc.body || ex.body, tags: cleanTags([...ex.tags, ...inc.tags]), type: inc.typeGiven ? inc.type : ex.type, fav: ex.fav || !!inc.fav, updated: now }; updated++; }
+    else { note = { id: uid(), title: inc.title, body: inc.body, type: inc.type, tags: inc.tags, fav: !!inc.fav, created: inc.created || now, updated: now }; created++; }
+    byKey.set(k, note); ops.push(note);
+  }
+  let done = 0;
+  const it = ops[Symbol.iterator]();
+  const worker = async () => { for (let r = it.next(); !r.done; r = it.next()) { await store.put(r.value); done++; if (done % 10 === 0) toast(`Importando… ${done} de ${ops.length}`, '', 60000); } };
+  await Promise.all([worker(), worker(), worker()]);
+  toast(`Importação concluída: ${created} ${created === 1 ? 'nota nova' : 'notas novas'}, ${updated} ${updated === 1 ? 'atualizada' : 'atualizadas'}.`, '', 5000);
+  if (G) setTimeout(() => fit(900), 1400);
+}
+function downloadsError(e) {
+  const c = e && e.code;
+  if (c === 'declined') return;
+  if (c === 'rate_limited') toast('Já existe uma janela de download aberta. Responda a ela primeiro.', 'error');
+  else toast('Não consegui gerar o arquivo nesta visualização.', 'error');
+}
+async function exportZip() {
+  if (!state.downloads || typeof JSZip === 'undefined') { toast('Exportação indisponível nesta visualização.', 'error'); return; }
+  if (!state.notes.size) { toast('Não há notas para exportar.'); return; }
+  toast('Preparando o arquivo…', '', 20000);
+  const zip = new JSZip(), used = new Set();
+  for (const n of [...state.notes.values()].sort((a, b) => a.title.localeCompare(b.title, 'pt-BR'))) {
+    const folder = TYPE[n.type].plural;
+    const base = n.title.replace(/[\\/:*?"<>|#^\[\]]/g, '-').replace(/\s+/g, ' ').trim().slice(0, 120) || 'Sem título';
+    let path = `${folder}/${base}.md`, i = 2;
+    while (used.has(path.toLowerCase())) path = `${folder}/${base} ${i++}.md`;
+    used.add(path.toLowerCase());
+    const fm = ['---', `tipo: ${n.type}`, `tags: [${n.tags.join(', ')}]`, base !== n.title ? `aliases: [${JSON.stringify(n.title)}]` : null, n.fav ? 'favorita: true' : null, n.created ? `criado: ${new Date(n.created).toISOString()}` : null, n.updated ? `atualizado: ${new Date(n.updated).toISOString()}` : null, '---'].filter(Boolean).join('\n');
+    zip.file(path, fm + '\n\n' + n.body + '\n');
+  }
+  try {
+    const blob = await zip.generateAsync({ type: 'blob' });
+    await state.downloads.save({ filename: `cerebro-vertice-${todayISO()}.zip`, data: blob });
+    toast('Pronto. Descompacte e abra a pasta como cofre no Obsidian.', '', 6000);
+  } catch (e) { downloadsError(e); }
+}
+async function exportJSON() {
+  if (!state.downloads) { toast('Exportação indisponível nesta visualização.', 'error'); return; }
+  const data = { app: 'Cérebro Vértice', exportado: new Date().toISOString(), notes: [...state.notes.values()] };
+  try { await state.downloads.save({ filename: `cerebro-vertice-backup-${todayISO()}.json`, data: JSON.stringify(data, null, 2) }); toast('Backup salvo.'); }
+  catch (e) { downloadsError(e); }
+}
+async function removeExamples() {
+  const ex = [...state.notes.values()].filter(n => n.tags.includes('exemplo'));
+  if (!ex.length) { toast('Não há notas de exemplo.'); return; }
+  const ok = await confirmBox({ title: 'Remover as notas de exemplo?', body: `${ex.length} notas com a tag #exemplo serão apagadas. Suas próprias notas ficam intactas. Para manter alguma, tire a tag #exemplo dela antes.`, confirm: 'Remover exemplos', danger: true });
+  if (!ok) return;
+  const ids = new Set(ex.map(n => n.id));
+  if (drawer.cur && ids.has(drawer.cur.id)) closeDrawer();
+  drawer.stack = drawer.stack.filter(e => !ids.has(e.id));
+  if (state.local && ids.has(state.local.id)) state.local = null;
+  const it = ex[Symbol.iterator]();
+  const worker = async () => { for (let r = it.next(); !r.done; r = it.next()) await store.remove(r.value.id); };
+  await Promise.all([worker(), worker(), worker()]);
+  toast(`${ex.length} notas de exemplo removidas.`);
+}
+
+/* ---------- menu ---------- */
+function renderMenu() {
+  const m = $('#menu');
+  const exp = state.downloads && typeof JSZip !== 'undefined';
+  m.innerHTML = `
+    <button role="menuitem" data-menu="random">${icon('shuffle')}<span>Nota aleatória</span></button>
+    <button role="menuitem" class="w" data-menu="daily">${icon('calendar')}<span>Diário de hoje</span></button>
+    <hr>
+    <div class="label w">Obsidian e arquivos</div>
+    <button role="menuitem" class="w" data-menu="import">${icon('upload')}<span>Importar arquivos<small>.md do Obsidian ou backup .json</small></span></button>
+    <button role="menuitem" class="w" data-menu="import-dir">${icon('folder')}<span>Importar pasta inteira<small>Escolha a pasta do seu cofre</small></span></button>
+    ${exp ? `<button role="menuitem" data-menu="export-zip">${icon('download')}<span>Exportar para o Obsidian<small>.zip com um .md por nota</small></span></button>
+    <button role="menuitem" data-menu="export-json">${icon('archive')}<span>Baixar backup<small>Arquivo .json com tudo</small></span></button>` : ''}
+    <hr>
+    <button role="menuitem" class="w" data-menu="examples">${icon('trash')}<span>Remover notas de exemplo</span></button>
+    <button role="menuitem" data-menu="help">${icon('keyboard')}<span>Atalhos de teclado</span></button>`;
+}
+function toggleMenu(open) {
+  const m = $('#menu'), b = $('#btnMenu');
+  const v = open ?? m.hidden;
+  m.hidden = !v; b.setAttribute('aria-expanded', String(v));
+}
+
+/* ---------- events ---------- */
+function wire() {
+  $$('[data-icon]').forEach(el => { if (el.tagName === 'SPAN') el.outerHTML = icon(el.dataset.icon); else el.insertAdjacentHTML('afterbegin', icon(el.dataset.icon)); });
+  $('#kbdK').textContent = isMac ? '⌘K' : 'Ctrl K';
+
+  const q = $('#q');
+  q.addEventListener('input', () => { state.search.active = 0; $('#qClear').hidden = !q.value; runSearch(q.value); });
+  q.addEventListener('focus', () => renderResults());
+  q.addEventListener('blur', () => setTimeout(closeResults, 120));
+  q.addEventListener('keydown', e => {
+    const n = state.search.results.length + (state.search.createIdx >= 0 ? 1 : 0);
+    if (e.key === 'ArrowDown' && n) { e.preventDefault(); state.search.active = (state.search.active + 1) % n; renderResults(); }
+    else if (e.key === 'ArrowUp' && n) { e.preventDefault(); state.search.active = (state.search.active - 1 + n) % n; renderResults(); }
+    else if (e.key === 'Enter') { e.preventDefault(); if (n) activateResult(state.search.active); }
+    else if (e.key === 'Escape') { e.preventDefault(); if (q.value) setSearch(''); else q.blur(); }
+  });
+  $('#qClear').addEventListener('click', () => { setSearch(''); q.focus(); });
+  $('#results').addEventListener('mousedown', e => e.preventDefault());
+  $('#results').addEventListener('click', e => {
+    const o = e.target.closest('[data-open]'); if (o) { openNote(o.dataset.open, { center: true }); q.blur(); closeResults(); return; }
+    const b = e.target.closest('[data-i]'); if (b) activateResult(+b.dataset.i);
+  });
+
+  $('#btnRail').addEventListener('click', () => {
+    if (mqMobile.matches) { root.querySelector('#app').classList.contains('rail-open') ? closeRail() : openRail(); }
+    else { const app = $('#app'); app.classList.toggle('rail-collapsed'); lsSet('railCollapsed', app.classList.contains('rail-collapsed')); }
+  });
+  $('#scrim').addEventListener('click', closeRail);
+  $('#btnNew').addEventListener('click', () => createDraft());
+  $('#btnAsk').addEventListener('click', openAsk);
+  $('#btnRandom').addEventListener('click', openRandom);
+  $('#btnDaily').addEventListener('click', openDaily);
+  $('#btnMenu').addEventListener('click', e => { e.stopPropagation(); toggleMenu(); });
+  document.addEventListener('click', e => { if (!$('#menu').hidden && !e.target.closest('#menu')) toggleMenu(false); });
+  $('#menu').addEventListener('click', e => {
+    const b = e.target.closest('[data-menu]'); if (!b) return;
+    toggleMenu(false);
+    switch (b.dataset.menu) {
+      case 'random': openRandom(); break;
+      case 'daily': openDaily(); break;
+      case 'import': $('#fileMd').click(); break;
+      case 'import-dir': $('#fileDir').click(); break;
+      case 'export-zip': exportZip(); break;
+      case 'export-json': exportJSON(); break;
+      case 'examples': removeExamples(); break;
+      case 'help': showHelp(); break;
+    }
+  });
+  for (const id of ['fileMd', 'fileDir']) $('#' + id).addEventListener('change', e => { const f = e.target.files; if (f && f.length) importFiles(f); e.target.value = ''; });
+
+  $('#overlay').addEventListener('click', e => {
+    const b = e.target.closest('[data-act]'); if (!b) return;
+    if (b.dataset.act === 'new') createDraft(); else if (b.dataset.act === 'import') $('#fileMd').click();
+  });
+
+  $('#rail').addEventListener('click', e => {
+    const r = e.target.closest('[data-type]');
+    if (r) { const k = r.dataset.type; state.hidden.has(k) ? state.hidden.delete(k) : state.hidden.add(k); lsSet('hidden', [...state.hidden]); refresh(); return; }
+    const o = e.target.closest('[data-open]'); if (o) { openNote(o.dataset.open, { center: true }); return; }
+    const t = e.target.closest('[data-tag]'); if (t) setSearch('#' + t.dataset.tag, true);
+  });
+  const saveS = () => lsSet('settings', S);
+  $('#rail').addEventListener('change', e => {
+    const id = e.target.id, v = e.target.checked;
+    if (id === 'optRegions') { S.regions = v; saveS(); if (G) { computeCenters(G.graphData().nodes); G.d3ReheatSimulation(); setTimeout(() => fit(800), 1600); } }
+    else if (id === 'optTags') { S.tagNodes = v; saveS(); updateGraph(); }
+    else if (id === 'optGhosts') { S.ghosts = v; saveS(); updateGraph(); }
+    else if (id === 'optOrphans') { S.orphans = v; saveS(); updateGraph(); }
+    else if (id === 'optLabels') { S.labels = v; saveS(); }
+    else if (id === 'optSignals') { S.signals = v; saveS(); if (G) G.linkDirectionalParticles(v ? 2 : 0); }
+    else if (id === 'optRepel' || id === 'optDist') saveS();
+  });
+  $('#rail').addEventListener('input', e => {
+    if (!G) return;
+    if (e.target.id === 'optRepel') { S.repel = +e.target.value; G.d3Force('charge').strength(-S.repel); G.d3ReheatSimulation(); }
+    if (e.target.id === 'optDist') { S.dist = +e.target.value; G.d3Force('link').distance(S.dist); G.d3ReheatSimulation(); }
+  });
+
+  $('#zIn').addEventListener('click', () => G && G.zoom(G.zoom() * 1.5, 300));
+  $('#zOut').addEventListener('click', () => G && G.zoom(G.zoom() / 1.5, 300));
+  $('#zFit').addEventListener('click', () => G && fit(600));
+  $('#focusChip').addEventListener('click', e => {
+    const d = e.target.closest('[data-depth]');
+    if (d && state.local) { state.local.depth = +d.dataset.depth; updateGraph(); if (G) setTimeout(() => fit(700), 450); return; }
+    if (e.target.closest('[data-act="clear-local"]')) { state.local = null; updateGraph(); if (drawer.cur && !editor) renderDrawer(); if (G) setTimeout(() => fit(800), 450); }
+  });
+  const stage = $('#stage');
+  stage.addEventListener('pointermove', e => { const r = stage.getBoundingClientRect(); mouse.x = e.clientX - r.left; mouse.y = e.clientY - r.top; if (!$('#hovercard').hidden) placeHoverCard(); });
+  stage.addEventListener('pointerleave', () => { $('#hovercard').hidden = true; });
+
+  const dr = $('#drawer');
+  dr.addEventListener('mousedown', e => { if (e.target.closest('[data-ac]')) e.preventDefault(); });
+  dr.addEventListener('click', e => {
+    const a = e.target.closest('a.wl');
+    if (a) { e.preventDefault(); openByTitle(a.dataset.target); return; }
+    const t = e.target.closest('[data-act],[data-open],[data-tag],[data-title],[data-create],[data-linkify],[data-addlink],[data-ask],[data-ac]');
+    if (!t) return;
+    const cur = drawer.cur;
+    if (t.dataset.ac != null) { pickAC(+t.dataset.ac); return; }
+    if (t.dataset.open) { openNote(t.dataset.open, { center: true }); return; }
+    if (t.dataset.tag) { setSearch('#' + t.dataset.tag, true); return; }
+    if (t.dataset.title) { openByTitle(t.dataset.title); return; }
+    if (t.dataset.create) { createDraft({ title: t.dataset.create, type: 'conceito' }); return; }
+    if (t.dataset.linkify && cur) { const n = state.notes.get(cur.id); if (n) linkify(t.dataset.linkify, n.title); return; }
+    if (t.dataset.addlink && cur) { addLinkToNote(cur.id, t.dataset.addlink, t.dataset.reason); return; }
+    if (t.dataset.ask) { const ai = $('#askInput'); if (ai) ai.value = t.dataset.ask; runAsk(t.dataset.ask); return; }
+    switch (t.dataset.act) {
+      case 'close': closeDrawer(); break;
+      case 'back': goBack(); break;
+      case 'fav': if (cur) toggleFav(cur.id); break;
+      case 'local': if (cur) toggleLocal(cur.id); break;
+      case 'edit': if (cur) startEdit(cur.id); break;
+      case 'delete': if (cur) deleteNote(cur.id); break;
+      case 'done': doneEditing(); break;
+      case 'suggest': if (cur) runSuggest(state.notes.get(cur.id)); break;
+      case 'suggest-stop': if (cur) { const s = sug.get(cur.id); if (s && s.ctl) s.ctl.abort(); } break;
+      case 'ask-stop': if (ask.ctl) ask.ctl.abort(); break;
+      case 'save-answer': saveAnswer(); break;
+    }
+  });
+  dr.addEventListener('submit', e => { if (e.target.id === 'askForm') { e.preventDefault(); runAsk($('#askInput').value); } });
+  dr.addEventListener('input', e => {
+    const id = e.target.id;
+    if (id === 'askInput') { ask.q = e.target.value; return; }
+    if (!editor) return;
+    if (id === 'edTitle' || id === 'edTags' || id === 'edBody') { setStatus('Editando…'); scheduleSave(); }
+    if (id === 'edBody') updateAC();
+  });
+  dr.addEventListener('change', e => {
+    if (e.target.id === 'edType' && editor) { const t = TYPE[e.target.value]; setHead(`<span class="dot" style="--c:${t.color}"></span>Editando`, t.color, [`<button class="btn small primary" data-act="done">${icon('check')}Concluir</button>`]); scheduleSave(); return; }
+    if (e.target.matches('#prose input[type=checkbox]') && drawer.cur) toggleTask(drawer.cur.id, +e.target.dataset.task, e.target.checked);
+  });
+  dr.addEventListener('click', e => { if (e.target.id === 'edBody') updateAC(); });
+  dr.addEventListener('keydown', e => {
+    if (e.target.id === 'askInput' && e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); runAsk(e.target.value); return; }
+    if (!editor || !['edBody', 'edTitle', 'edTags', 'edType'].includes(e.target.id)) return;
+    const acOpen = !!ac.items.length && !$('#ac').hidden;
+    if (e.target.id === 'edBody' && acOpen) {
+      if (e.key === 'ArrowDown') { e.preventDefault(); moveAC(1); return; }
+      if (e.key === 'ArrowUp') { e.preventDefault(); moveAC(-1); return; }
+      if (e.key === 'Enter' || e.key === 'Tab') { e.preventDefault(); pickAC(ac.active); return; }
+      if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); hideAC(); return; }
+    }
+    if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); doneEditing(); return; }
+    if (e.target.id === 'edTitle' && e.key === 'Enter') { e.preventDefault(); $('#edBody').focus(); }
+  });
+  dr.addEventListener('keyup', e => { if (e.target.id === 'edBody' && ['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key)) updateAC(); });
+
+  document.addEventListener('keydown', e => {
+    const mod = e.metaKey || e.ctrlKey;
+    if (mod && e.key.toLowerCase() === 'k') { e.preventDefault(); q.focus(); q.select(); return; }
+    if (mod && e.key.toLowerCase() === 's') { e.preventDefault(); if (editor) autosave(); return; }
+    if (document.querySelector('.modal-back')) return;
+    const typing = e.target.closest && e.target.closest('input, textarea, select, [contenteditable]');
+    if (e.key === 'Escape') {
+      if (!$('#menu').hidden) { toggleMenu(false); return; }
+      if (typing) return;
+      if ($('#app').classList.contains('rail-open')) { closeRail(); return; }
+      if (drawer.cur) { closeDrawer(); return; }
+      if (state.local) { state.local = null; updateGraph(); if (G) setTimeout(() => fit(800), 450); return; }
+      if (state.search.q) { setSearch(''); return; }
+      return;
+    }
+    if (typing || mod || e.altKey) return;
+    switch (e.key) {
+      case '/': e.preventDefault(); q.focus(); break;
+      case 'n': case 'N': if (state.canWrite) { e.preventDefault(); createDraft(); } break;
+      case 'd': case 'D': e.preventDefault(); openDaily(); break;
+      case 'r': case 'R': openRandom(); break;
+      case 'e': case 'E': if (drawer.cur && drawer.cur.kind === 'note' && state.canWrite) { e.preventDefault(); startEdit(drawer.cur.id); } break;
+      case 'l': case 'L': if (drawer.cur && drawer.cur.kind === 'note') toggleLocal(drawer.cur.id); break;
+      case 'a': case 'A': if (state.sample) { e.preventDefault(); openAsk(); } break;
+      case 'g': case 'G': if (G) fit(600); break;
+      case '?': showHelp(); break;
+    }
+  });
+  mqMobile.addEventListener('change', () => closeRail());
+}
+
+/* ---------- boot ---------- */
+function boot() {
+  if (lsGet('railCollapsed', false) && !mqMobile.matches) $('#app').classList.add('rail-collapsed');
+  wire();
+  applySettingsToUI();
+  renderMenu();
+  drawStars();
+  initGraph();
+  renderRail();
+  store.start();
+  const use = name => (window.claude && typeof window.claude.use === 'function') ? window.claude.use(name).catch(() => null) : Promise.resolve(null);
+  use('sample').then(s => { if (s) { state.sample = s; $('#btnAsk').hidden = false; if (!editor) refreshDrawer(); } });
+  use('downloads').then(d => { if (d) { state.downloads = d; renderMenu(); } });
+}
+boot();
+})();
+</script>

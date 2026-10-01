@@ -1,0 +1,497 @@
+{
+  "app": "Cérebro Vértice",
+  "notes": [
+    {
+      "title": "Comece aqui",
+      "body": "Bem-vindo ao seu segundo cérebro. Cada ponto do grafo é uma nota, e cada linha é uma ligação escrita dentro de uma nota com colchetes duplos.\n\n## Como usar\n- **Clique num ponto** para abrir a nota aqui do lado. Passe o mouse para ver as conexões acenderem.\n- **Busque** com Ctrl K (⌘ K no Mac). Acentos não importam. Use `#tag` ou `tipo:projeto` para filtrar.\n- **Ligue ideias** digitando `[[` no editor e escolhendo uma nota. Se ela ainda não existir, vira uma *ideia pendente* (ponto tracejado) que você cria depois.\n- **Vizinhança**: o botão de alvo no topo da nota mostra só o que está ligado a ela, com 1, 2 ou 3 saltos.\n- **Mencionada em** mostra quem aponta para a nota. **Menções sem link** acha textos que citam o título sem ligar e cria o link com um clique.\n- **Perguntar** usa a IA para responder a partir das suas notas, citando cada fonte.\n- **Diário** (tecla D) cria a nota do dia. **Nota aleatória** (tecla R) ajuda a reencontrar ideias esquecidas.\n- No menu ⋯ você importa arquivos `.md` do Obsidian e exporta tudo de volta como `.zip`.\n\n## Por onde começar\nLeia [[Segundo Cérebro]] e [[Zettelkasten]], depois veja o [[Projeto: Montar meu segundo cérebro]].\n\nTodas estas notas têm a tag exemplo. Quando quiser começar do zero, use **⋯ → Remover notas de exemplo**.\n",
+      "type": "nota",
+      "tags": [
+        "exemplo",
+        "guia"
+      ],
+      "fav": true,
+      "created": 1790600400000,
+      "updated": 1790859600000
+    },
+    {
+      "title": "Segundo Cérebro",
+      "body": "Um sistema externo e confiável para guardar, conectar e reutilizar o que você aprende, para que a cabeça fique livre para pensar em vez de lembrar.\n\nO termo ficou popular com [[Tiago Forte]] e o livro [[Building a Second Brain]]. A ideia central: a memória biológica é ótima para ter ideias e ruim para guardá-las.\n\n## Pilares\n- Um fluxo para processar informação: o [[Método CODE]].\n- Uma forma de organizar pensando em ação: o [[Método PARA]].\n- Notas que conversam entre si: [[Links bidirecionais]] e [[Zettelkasten]].\n\n## Por que funciona\nEscrever obriga a ter clareza ([[Escrever é pensar]]), e ligar notas cria [[Conhecimento em rede]], onde ideias antigas reaparecem por [[Serendipidade]].\n",
+      "type": "conceito",
+      "tags": [
+        "exemplo",
+        "pkm"
+      ],
+      "fav": false,
+      "created": 1789476780000,
+      "updated": 1789822380000
+    },
+    {
+      "title": "Método CODE",
+      "body": "Fluxo de quatro etapas proposto por [[Tiago Forte]] em [[Building a Second Brain]]:\n\n1. [[Capturar]]: guardar só o que ressoa.\n2. [[Organizar]]: arrumar pensando em ação, com o [[Método PARA]].\n3. [[Destilar]]: achar a essência, com a [[Sumarização progressiva]].\n4. [[Expressar]]: transformar notas em algo concreto, de preferência em [[Pacotes intermediários]].\n\nO objetivo não é colecionar informação. É produzir algo com ela.\n",
+      "type": "conceito",
+      "tags": [
+        "exemplo",
+        "pkm",
+        "metodo"
+      ],
+      "fav": false,
+      "created": 1789476360000,
+      "updated": 1789908360000
+    },
+    {
+      "title": "Capturar",
+      "body": "Primeira etapa do [[Método CODE]]. Guarde o que for útil, surpreendente, pessoal ou inspirador. Não tudo.\n\n- Anote uma frase sua explicando por que aquilo importa.\n- Use [[Notas efêmeras]] para pensamentos rápidos e processe depois.\n- Excesso de captura vira um depósito que ninguém abre.\n",
+      "type": "conceito",
+      "tags": [
+        "exemplo",
+        "code"
+      ],
+      "fav": false,
+      "created": 1789389540000,
+      "updated": 1789907940000
+    },
+    {
+      "title": "Organizar",
+      "body": "Segunda etapa do [[Método CODE]]. Em vez de organizar por assunto, como numa biblioteca, organize pelo projeto em que a informação vai ser usada.\n\nÉ aqui que entra o [[Método PARA]]. A pergunta-chave é: em qual projeto isto me ajuda? Se nenhum, vai para [[Recursos]] ou para o [[Arquivo]].\n",
+      "type": "conceito",
+      "tags": [
+        "exemplo",
+        "code"
+      ],
+      "fav": false,
+      "created": 1789389120000,
+      "updated": 1789993920000
+    },
+    {
+      "title": "Destilar",
+      "body": "Terceira etapa do [[Método CODE]]. Destilar é deixar a nota mais fácil de usar no futuro, destacando o essencial.\n\nA técnica mais conhecida é a [[Sumarização progressiva]]. No [[Zettelkasten]], o equivalente é reescrever a ideia com suas palavras numa [[Nota permanente]].\n",
+      "type": "conceito",
+      "tags": [
+        "exemplo",
+        "code"
+      ],
+      "fav": false,
+      "created": 1789820700000,
+      "updated": 1790079900000
+    },
+    {
+      "title": "Expressar",
+      "body": "Última etapa do [[Método CODE]]: usar as notas para criar e compartilhar algo, como um texto, um vídeo ou uma apresentação.\n\nTrabalhe em [[Pacotes intermediários]] em vez de esperar o projeto inteiro ficar pronto. É a mesma lógica de [[Escrever é pensar]].\n",
+      "type": "conceito",
+      "tags": [
+        "exemplo",
+        "code"
+      ],
+      "fav": false,
+      "created": 1789733880000,
+      "updated": 1790079480000
+    },
+    {
+      "title": "Método PARA",
+      "body": "Sistema de organização criado por [[Tiago Forte]] com quatro categorias, da mais acionável para a menos:\n\n- **P**rojetos: [[Projetos (PARA)]], com prazo e objetivo.\n- **Á**reas: [[Áreas de responsabilidade]], que não terminam.\n- **R**ecursos: [[Recursos]], temas de interesse.\n- **A**rquivo: o [[Arquivo]], com o que ficou inativo.\n\nFunciona em qualquer ferramenta: pastas, Notion, Obsidian. Ele responde ao \"onde guardar\" do [[Método CODE]], enquanto o [[Zettelkasten]] responde ao \"como pensar\".\n",
+      "type": "conceito",
+      "tags": [
+        "exemplo",
+        "pkm",
+        "metodo"
+      ],
+      "fav": false,
+      "created": 1789560660000,
+      "updated": 1789992660000
+    },
+    {
+      "title": "Projetos (PARA)",
+      "body": "Esforços de curto prazo com objetivo claro e prazo. Exemplos: [[Projeto: Montar meu segundo cérebro]] e [[Projeto: Ensaio sobre aprendizagem]].\n\nQuando um projeto termina, as notas dele vão para o [[Arquivo]]. Faz parte do [[Método PARA]].\n",
+      "type": "conceito",
+      "tags": [
+        "exemplo",
+        "para"
+      ],
+      "fav": false,
+      "created": 1789646640000,
+      "updated": 1790165040000
+    },
+    {
+      "title": "Áreas de responsabilidade",
+      "body": "Responsabilidades contínuas, sem data para acabar: saúde, finanças, carreira, família. Pedem um padrão a manter, não uma entrega.\n\nFaz parte do [[Método PARA]]. A [[Revisão semanal]] é o momento de checar se cada área está em dia.\n",
+      "type": "conceito",
+      "tags": [
+        "exemplo",
+        "para"
+      ],
+      "fav": false,
+      "created": 1789559820000,
+      "updated": 1790164620000
+    },
+    {
+      "title": "Recursos",
+      "body": "Temas que interessam e podem ser úteis um dia, sem projeto ligado agora: design, história, culinária.\n\nFaz parte do [[Método PARA]]. Muitas [[Notas de literatura]] moram aqui até virarem algo maior.\n",
+      "type": "conceito",
+      "tags": [
+        "exemplo",
+        "para"
+      ],
+      "fav": false,
+      "created": 1789905000000,
+      "updated": 1790164200000
+    },
+    {
+      "title": "Arquivo",
+      "body": "Tudo que saiu de uso: projetos concluídos, áreas deixadas de lado, recursos que perderam o interesse. Nada é apagado, só sai do caminho.\n\nFaz parte do [[Método PARA]]. Rever o arquivo de vez em quando é uma fonte de [[Serendipidade]].\n",
+      "type": "conceito",
+      "tags": [
+        "exemplo",
+        "para"
+      ],
+      "fav": false,
+      "created": 1789818180000,
+      "updated": 1790163780000
+    },
+    {
+      "title": "Zettelkasten",
+      "body": "\"Caixa de fichas\", em alemão. Método de notas usado pelo sociólogo [[Niklas Luhmann]], que manteve dezenas de milhares de fichas ligadas por números e referências cruzadas e escreveu uma obra enorme a partir delas.\n\nPopularizado por [[Sönke Ahrens]] no livro [[How to Take Smart Notes]].\n\n## Tipos de nota\n- [[Notas efêmeras]]: rascunhos rápidos.\n- [[Notas de literatura]]: o que você tirou de uma fonte.\n- [[Nota permanente]]: a ideia reescrita, pronta para ser ligada.\n\n## Princípios\n- [[Nota atômica]]: uma ideia por nota.\n- [[Links bidirecionais]] entre as fichas.\n- [[Mapa de conteúdo]] como porta de entrada para um tema.\n",
+      "type": "conceito",
+      "tags": [
+        "exemplo",
+        "pkm",
+        "metodo",
+        "zettelkasten"
+      ],
+      "fav": true,
+      "created": 1789817760000,
+      "updated": 1790249760000
+    },
+    {
+      "title": "Nota atômica",
+      "body": "Cada nota trata de uma única ideia. Assim dá para ligar a ideia em vários contextos sem arrastar assuntos que não têm nada a ver.\n\nTeste rápido: o título da nota pode ser uma frase que resume a ideia? Se não, talvez sejam duas notas.\n\nRelacionadas: [[Zettelkasten]], [[Notas perenes]], [[Nota permanente]].\n",
+      "type": "conceito",
+      "tags": [
+        "exemplo",
+        "zettelkasten"
+      ],
+      "fav": false,
+      "created": 1789817340000,
+      "updated": 1790335740000
+    },
+    {
+      "title": "Nota permanente",
+      "body": "Nota escrita com suas palavras, completa o bastante para fazer sentido daqui a anos sem precisar da fonte original. É o coração do [[Zettelkasten]].\n\nNasce de [[Notas efêmeras]] e [[Notas de literatura]] e deve ser uma [[Nota atômica]] ligada a outras notas permanentes.\n",
+      "type": "conceito",
+      "tags": [
+        "exemplo",
+        "zettelkasten"
+      ],
+      "fav": false,
+      "created": 1789730520000,
+      "updated": 1790335320000
+    },
+    {
+      "title": "Notas de literatura",
+      "body": "Anotações curtas sobre o que você leu, ouviu ou assistiu, sempre com a referência da fonte. Não são cópias: são o que chamou sua atenção, dito com suas palavras.\n\nViram matéria-prima de [[Nota permanente]]. Exemplos aqui: [[Building a Second Brain]], [[How to Take Smart Notes]] e [[As We May Think]].\n",
+      "type": "conceito",
+      "tags": [
+        "exemplo",
+        "zettelkasten",
+        "leitura"
+      ],
+      "fav": false,
+      "created": 1790075700000,
+      "updated": 1790334900000
+    },
+    {
+      "title": "Notas efêmeras",
+      "body": "Lembretes rápidos de uma ideia, feitos para durar poucos dias. Servem só para não perder o pensamento até você ter tempo de processá-lo.\n\nUse o diário para isso e, na [[Revisão semanal]], transforme o que valer a pena em [[Nota permanente]]. No [[Método CODE]], faz parte de [[Capturar]].\n",
+      "type": "conceito",
+      "tags": [
+        "exemplo",
+        "zettelkasten"
+      ],
+      "fav": false,
+      "created": 1790075280000,
+      "updated": 1790420880000
+    },
+    {
+      "title": "Links bidirecionais",
+      "body": "Quando a nota A liga para a nota B, a nota B também mostra que A aponta para ela. Aqui isso aparece na seção \"Mencionada em\" de cada nota.\n\nÉ o que transforma uma pilha de notas em [[Conhecimento em rede]]. A ideia remonta ao [[Memex]] de [[Vannevar Bush]] e está no centro do [[Zettelkasten]] e das [[Notas perenes]].\n",
+      "type": "conceito",
+      "tags": [
+        "exemplo",
+        "pkm"
+      ],
+      "fav": false,
+      "created": 1789988460000,
+      "updated": 1790420460000
+    },
+    {
+      "title": "Mapa de conteúdo",
+      "body": "Uma nota que funciona como índice de um tema: lista e comenta as notas principais sobre ele, numa ordem que faça sentido.\n\nÚtil para temas que cresceram demais. A nota [[Comece aqui]] funciona como um mapa de conteúdo. Ver também [[Zettelkasten]].\n",
+      "type": "conceito",
+      "tags": [
+        "exemplo",
+        "zettelkasten"
+      ],
+      "fav": false,
+      "created": 1789988040000,
+      "updated": 1790506440000
+    },
+    {
+      "title": "Sumarização progressiva",
+      "body": "Técnica de [[Tiago Forte]] para [[Destilar]] notas em camadas, a cada vez que você volta a elas:\n\n1. O texto capturado.\n2. Os trechos importantes em **negrito**.\n3. O melhor do negrito marcado com marca-texto.\n4. Um resumo com suas palavras no topo.\n\nSó faça a próxima camada quando a nota for útil de novo. Faz parte do [[Método CODE]].\n",
+      "type": "conceito",
+      "tags": [
+        "exemplo",
+        "code"
+      ],
+      "fav": false,
+      "created": 1789901220000,
+      "updated": 1790506020000
+    },
+    {
+      "title": "Pacotes intermediários",
+      "body": "Partes reutilizáveis de trabalho: um resumo, o rascunho de uma seção, uma lista de referências, um diagrama. Em vez de começar do zero, você monta projetos juntando pacotes que já existem.\n\nIdeia de [[Tiago Forte]], ligada a [[Expressar]] no [[Método CODE]].\n",
+      "type": "conceito",
+      "tags": [
+        "exemplo",
+        "code"
+      ],
+      "fav": false,
+      "created": 1790246400000,
+      "updated": 1790505600000
+    },
+    {
+      "title": "Revisão semanal",
+      "body": "Uma vez por semana, esvazie as caixas de entrada, revise projetos e áreas e processe as [[Notas efêmeras]].\n\nRoteiro sugerido:\n- [ ] Processar as notas do diário da semana\n- [ ] Atualizar os [[Projetos (PARA)]] ativos\n- [ ] Mover o que acabou para o [[Arquivo]]\n- [ ] Abrir 3 notas aleatórias e procurar novas ligações\n\nMantém o [[Segundo Cérebro]] vivo e ajuda a vencer a [[Curva do esquecimento]].\n",
+      "type": "conceito",
+      "tags": [
+        "exemplo",
+        "habito"
+      ],
+      "fav": false,
+      "created": 1790245980000,
+      "updated": 1790591580000
+    },
+    {
+      "title": "Curva do esquecimento",
+      "body": "Descrita por [[Hermann Ebbinghaus]] no fim do século XIX: sem revisão, esquecemos boa parte do que aprendemos em poucos dias, e a perda é mais rápida logo no começo.\n\nRevisar em intervalos crescentes achata a curva. É a base da [[Repetição espaçada]] e mais um motivo para escrever, já que [[Escrever é pensar]].\n",
+      "type": "conceito",
+      "tags": [
+        "exemplo",
+        "memoria"
+      ],
+      "fav": false,
+      "created": 1790159160000,
+      "updated": 1790591160000
+    },
+    {
+      "title": "Repetição espaçada",
+      "body": "Revisar uma informação em intervalos cada vez maiores, pouco antes de esquecê-la. Combate a [[Curva do esquecimento]].\n\nNum segundo cérebro, a versão leve disso é a [[Revisão semanal]] e o botão de nota aleatória.\n",
+      "type": "conceito",
+      "tags": [
+        "exemplo",
+        "memoria",
+        "habito"
+      ],
+      "fav": false,
+      "created": 1790072340000,
+      "updated": 1790590740000
+    },
+    {
+      "title": "Escrever é pensar",
+      "body": "Escrever não é só registrar o que já foi pensado: é o próprio processo de pensar. Ao tentar explicar uma ideia por escrito, você descobre o que ainda não entendeu.\n\nIdeia central de [[How to Take Smart Notes]] e o motivo para preferir uma [[Nota permanente]] escrita com suas palavras a trechos copiados.\n",
+      "type": "conceito",
+      "tags": [
+        "exemplo",
+        "escrita"
+      ],
+      "fav": false,
+      "created": 1790071920000,
+      "updated": 1790676720000
+    },
+    {
+      "title": "Conhecimento em rede",
+      "body": "Ideias ganham valor pelas conexões, não pelo volume. Uma rede de notas ligadas deixa uma ideia aparecer em contextos que você não previu quando a escreveu.\n\nÉ exatamente o que este grafo mostra. Depende de [[Links bidirecionais]] e de cada nota ser uma [[Nota atômica]]. Favorece a [[Serendipidade]].\n",
+      "type": "conceito",
+      "tags": [
+        "exemplo",
+        "pkm"
+      ],
+      "fav": false,
+      "created": 1790417100000,
+      "updated": 1790676300000
+    },
+    {
+      "title": "Serendipidade",
+      "body": "Encontrar algo valioso sem estar procurando. Num [[Segundo Cérebro]], acontece quando uma nota antiga reaparece por um link, uma busca ou o botão de nota aleatória.\n\nVer [[Conhecimento em rede]] e [[Arquivo]].\n",
+      "type": "conceito",
+      "tags": [
+        "exemplo",
+        "pkm"
+      ],
+      "fav": false,
+      "created": 1790330280000,
+      "updated": 1790675880000
+    },
+    {
+      "title": "Notas perenes",
+      "body": "Conceito de [[Andy Matuschak]] (em inglês, *evergreen notes*): notas escritas para evoluir e se acumular ao longo do tempo.\n\nSegundo ele, elas devem ser:\n- atômicas ([[Nota atômica]]);\n- orientadas a conceitos, não a fontes ou projetos;\n- densamente ligadas ([[Links bidirecionais]]).\n\nSão parentes próximas da [[Nota permanente]] do [[Zettelkasten]].\n",
+      "type": "conceito",
+      "tags": [
+        "exemplo",
+        "zettelkasten"
+      ],
+      "fav": false,
+      "created": 1789984260000,
+      "updated": 1790416260000
+    },
+    {
+      "title": "Memex",
+      "body": "Máquina imaginada por [[Vannevar Bush]] no ensaio [[As We May Think]]: uma mesa capaz de guardar livros, registros e comunicações e de criar \"trilhas associativas\" entre eles.\n\nNunca foi construída, mas inspirou o hipertexto e, de certa forma, os [[Links bidirecionais]] de hoje.\n",
+      "type": "conceito",
+      "tags": [
+        "exemplo",
+        "historia"
+      ],
+      "fav": false,
+      "created": 1789724640000,
+      "updated": 1790243040000
+    },
+    {
+      "title": "Tiago Forte",
+      "body": "Especialista em produtividade que popularizou o termo [[Segundo Cérebro]].\n\nCriou o [[Método CODE]], o [[Método PARA]], a [[Sumarização progressiva]] e a ideia de [[Pacotes intermediários]]. Autor de [[Building a Second Brain]].\n",
+      "type": "pessoa",
+      "tags": [
+        "exemplo"
+      ],
+      "fav": false,
+      "created": 1789205820000,
+      "updated": 1789810620000
+    },
+    {
+      "title": "Niklas Luhmann",
+      "body": "Sociólogo alemão (1927–1998), conhecido pela teoria dos sistemas sociais e pelo seu [[Zettelkasten]], que ele descrevia como um parceiro de conversa.\n\nA produtividade dele é o caso mais citado em [[How to Take Smart Notes]], de [[Sönke Ahrens]].\n",
+      "type": "pessoa",
+      "tags": [
+        "exemplo"
+      ],
+      "fav": false,
+      "created": 1789983000000,
+      "updated": 1790242200000
+    },
+    {
+      "title": "Sönke Ahrens",
+      "body": "Autor de [[How to Take Smart Notes]], livro que apresentou o [[Zettelkasten]] de [[Niklas Luhmann]] para um público amplo.\n",
+      "type": "pessoa",
+      "tags": [
+        "exemplo"
+      ],
+      "fav": false,
+      "created": 1789896180000,
+      "updated": 1790241780000
+    },
+    {
+      "title": "Andy Matuschak",
+      "body": "Pesquisador e designer que publica abertamente as próprias notas de trabalho, organizadas como [[Notas perenes]]. Defende ferramentas que ajudem a pensar, não só a guardar.\n",
+      "type": "pessoa",
+      "tags": [
+        "exemplo"
+      ],
+      "fav": false,
+      "created": 1789982160000,
+      "updated": 1790414160000
+    },
+    {
+      "title": "Vannevar Bush",
+      "body": "Engenheiro americano que, em 1945, publicou o ensaio [[As We May Think]], onde descreveu o [[Memex]].\n",
+      "type": "pessoa",
+      "tags": [
+        "exemplo"
+      ],
+      "fav": false,
+      "created": 1789722540000,
+      "updated": 1790240940000
+    },
+    {
+      "title": "Hermann Ebbinghaus",
+      "body": "Psicólogo alemão pioneiro no estudo experimental da memória. Descreveu a [[Curva do esquecimento]] testando a própria memória com sílabas sem sentido.\n",
+      "type": "pessoa",
+      "tags": [
+        "exemplo"
+      ],
+      "fav": false,
+      "created": 1789981320000,
+      "updated": 1790586120000
+    },
+    {
+      "title": "Building a Second Brain",
+      "body": "Livro de [[Tiago Forte]], lançado em 2022.\n\n## O que levei\n- O [[Método CODE]] como fluxo e o [[Método PARA]] como estrutura.\n- [[Sumarização progressiva]] para não reler tudo do zero.\n- Pensar em [[Pacotes intermediários]] em vez de projetos gigantes.\n- Organizar por ação, não por assunto ([[Organizar]]).\n",
+      "type": "fonte",
+      "tags": [
+        "exemplo",
+        "leitura"
+      ],
+      "fav": false,
+      "created": 1789548900000,
+      "updated": 1789808100000
+    },
+    {
+      "title": "How to Take Smart Notes",
+      "body": "Livro de [[Sönke Ahrens]] (2017) sobre o [[Zettelkasten]] de [[Niklas Luhmann]].\n\n## O que levei\n- [[Escrever é pensar]]: o texto final é consequência das notas.\n- Separar [[Notas efêmeras]], [[Notas de literatura]] e [[Nota permanente]].\n- Ligar cada nova nota a notas que já existem.\n",
+      "type": "fonte",
+      "tags": [
+        "exemplo",
+        "leitura"
+      ],
+      "fav": false,
+      "created": 1789894080000,
+      "updated": 1790239680000
+    },
+    {
+      "title": "As We May Think",
+      "body": "Ensaio de [[Vannevar Bush]] publicado na revista The Atlantic em 1945. Apresenta o [[Memex]] e a ideia de trilhas associativas entre documentos.\n",
+      "type": "fonte",
+      "tags": [
+        "exemplo",
+        "leitura",
+        "historia"
+      ],
+      "fav": false,
+      "created": 1789807260000,
+      "updated": 1790239260000
+    },
+    {
+      "title": "Projeto: Montar meu segundo cérebro",
+      "body": "Objetivo: ter um sistema que eu use de verdade em 30 dias.\n\n## Tarefas\n- [x] Escolher a ferramenta\n- [x] Ler o [[Comece aqui]]\n- [ ] Definir minhas [[Áreas de responsabilidade]] principais\n- [ ] Importar as notas antigas do Obsidian (menu ⋯)\n- [ ] Fazer a primeira [[Revisão semanal]]\n- [ ] Escrever 10 notas permanentes ([[Nota permanente]])\n\n## Referências\n[[Método PARA]] · [[Método CODE]] · [[Zettelkasten]]\n",
+      "type": "projeto",
+      "tags": [
+        "exemplo"
+      ],
+      "fav": true,
+      "created": 1790238840000,
+      "updated": 1790757240000
+    },
+    {
+      "title": "Projeto: Ensaio sobre aprendizagem",
+      "body": "Escrever um ensaio curto sobre como aprender melhor, montado a partir das notas que já existem.\n\n## Ideias para usar\n- [[Curva do esquecimento]] e [[Repetição espaçada]]\n- [[Escrever é pensar]]\n- [[Efeito de geração]]\n\n## Situação\nJuntando [[Pacotes intermediários]]. Próximo passo: rascunho da introdução.\n",
+      "type": "projeto",
+      "tags": [
+        "exemplo",
+        "escrita"
+      ],
+      "fav": false,
+      "created": 1790065620000,
+      "updated": 1790670420000
+    },
+    {
+      "title": "2026-09-30",
+      "body": "*quarta-feira, 30 de setembro*\n\n## Foco de hoje\n- [x] Ler o capítulo sobre [[Destilar]]\n- [ ] Revisar as notas da semana\n\n## O que aprendi\nA [[Sumarização progressiva]] só faz sentido quando volto à nota. Não preciso resumir tudo na hora.\n\n## Ideias soltas\nPesquisar sobre [[Modelos mentais]] e ver como se ligam ao [[Conhecimento em rede]].\n",
+      "type": "diario",
+      "tags": [
+        "exemplo",
+        "diario"
+      ],
+      "fav": false,
+      "created": 1790497200000,
+      "updated": 1790756400000
+    }
+  ]
+}
