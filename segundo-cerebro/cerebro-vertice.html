@@ -11,7 +11,7 @@
   --ivory:#ECE7DC; --mist:#9397AA; --dust:#62667A;
   --amber:#F4B860; --amber-soft:rgba(244,184,96,.14); --amber-ink:#1B1307;
   --danger:#F0736A;
-  --t-conceito:#F1ECDF; --t-nota:#86A8D4; --t-projeto:#FF8A4C; --t-fonte:#E66F9A; --t-pessoa:#57C4AE; --t-diario:#A596F0;
+  --t-mapa:#F2C14E; --t-conceito:#F1ECDF; --t-nota:#86A8D4; --t-projeto:#FF8A4C; --t-fonte:#E66F9A; --t-pessoa:#57C4AE; --t-diario:#A596F0;
   --f-read:"Newsreader","Iowan Old Style",Georgia,serif;
   --f-ui:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
   --f-mono:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
@@ -123,7 +123,11 @@ mark{background:rgba(244,184,96,.24);color:var(--ivory);border-radius:2px;paddin
 .focus-chip > span:first-child{overflow:hidden;text-overflow:ellipsis;min-width:0}
 .seg{display:flex;border:1px solid var(--rule);border-radius:999px;overflow:hidden;flex:none}
 .seg button{font:12px var(--f-mono);padding:2px 9px;color:var(--mist)}
-.seg button[aria-pressed="true"]{background:var(--amber);color:var(--amber-ink)}
+.seg button[aria-pressed="true"],.seg button[aria-checked="true"]{background:var(--amber);color:var(--amber-ink)}
+.layout-seg{margin-inline:8px;display:grid;grid-template-columns:repeat(3,1fr)}
+.layout-seg button{padding:6px 4px;font-size:11.5px}
+.seg-hint{margin-top:8px;font-size:12px;line-height:1.45}
+.theme-row .dot{background:none;border:1.5px solid var(--c)}
 @media (min-width:761px){
   #app.drawer-open .focus-chip,#app.drawer-open .banner{left:calc((100% - min(var(--drawer-w),100%)) / 2)}
   #app.drawer-open .focus-chip{max-width:calc(100% - min(var(--drawer-w),100%) - 150px)}
@@ -283,10 +287,16 @@ select.inp{appearance:auto}
   </header>
 
   <aside class="rail" id="rail" aria-label="Filtros e navegação">
-    <section><h3>Regiões <span>tipos</span></h3><div id="regions" class="stack"></div></section>
+    <section><h3>Organizar o grafo</h3>
+      <div class="seg layout-seg" role="radiogroup" aria-label="Organizar o grafo" id="layoutSeg">
+        <button role="radio" data-layout="tema">Por tema</button><button role="radio" data-layout="tipo">Por tipo</button><button role="radio" data-layout="livre">Livre</button>
+      </div>
+      <p class="muted-note seg-hint" id="layoutHint"></p>
+    </section>
+    <section><h3>Temas <span>regiões</span></h3><div id="themes" class="stack"></div></section>
+    <section><h3>Tipos</h3><div id="regions" class="stack"></div></section>
     <section>
       <h3>Exibição</h3>
-      <label class="switch" for="optRegions"><span>Agrupar por tipo</span><input type="checkbox" id="optRegions"></label>
       <label class="switch" for="optTags"><span>Tags como nós</span><input type="checkbox" id="optTags"></label>
       <label class="switch" for="optGhosts"><span>Ideias pendentes</span><input type="checkbox" id="optGhosts"></label>
       <label class="switch" for="optOrphans"><span>Notas soltas</span><input type="checkbox" id="optOrphans"></label>
@@ -344,6 +354,7 @@ const cssVar = n => getComputedStyle(root).getPropertyValue(n).trim();
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const TYPE_LIST = [
+  { key: 'mapa', label: 'Mapa', plural: 'Mapas' },
   { key: 'conceito', label: 'Conceito', plural: 'Conceitos' },
   { key: 'nota', label: 'Nota', plural: 'Notas' },
   { key: 'projeto', label: 'Projeto', plural: 'Projetos' },
@@ -483,7 +494,8 @@ const ICONS = {
 const icon = (n, fill = 'none') => `<svg viewBox="0 0 24 24" fill="${fill}" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[n] || ''}</svg>`;
 
 /* ---------- state ---------- */
-const S = Object.assign({ tagNodes: false, ghosts: true, orphans: true, regions: false, labels: false, signals: true, repel: 75, dist: 44 }, lsGet('settings', {}));
+const S = Object.assign({ layout: 'tema', tagNodes: false, ghosts: false, orphans: true, labels: false, signals: true, repel: 75, dist: 40 }, lsGet('settings2', {}));
+if (!['tema', 'tipo', 'livre'].includes(S.layout)) S.layout = 'tema';
 const state = {
   notes: new Map(), loaded: false, mode: 'loading', canWrite: true,
   hidden: new Set(lsGet('hidden', [])),
@@ -644,14 +656,24 @@ function initGraph() {
     .onBackgroundClick(() => closeResults())
     .onRenderFramePre(drawBackdrop);
   G.d3Force('charge').strength(-S.repel).distanceMax(700);
-  G.d3Force('link').distance(S.dist);
+  applyLinkForce();
   G.d3Force('gravity', gravity);
   new ResizeObserver(() => { G.width(el.clientWidth).height(el.clientHeight); drawStars(); }).observe(el);
 }
+const sameCluster = l => l.source.cl != null && l.source.cl === l.target.cl;
+function applyLinkForce() {
+  if (!G) return;
+  const split = l => S.layout === 'tema' && !sameCluster(l);
+  G.d3Force('link')
+    .distance(l => split(l) ? S.dist * 2.2 : S.dist)
+    .strength(l => (split(l) ? 0.2 : 1) / Math.max(1, Math.min(l.source.deg || 1, l.target.deg || 1)));
+}
+const regionKey = n => S.layout === 'tema' ? n.cl : S.layout === 'tipo' && n.kind === 'note' ? n.type : null;
 function gravity(alpha) {
   for (const n of gravity.nodes) {
     let cx = 0, cy = 0, k = 0.012;
-    if (S.regions && n.kind === 'note') { const c = centers.get(n.type); if (c) { cx = c.x; cy = c.y; k = 0.07; } }
+    const key = regionKey(n), c = key != null && centers.get(key);
+    if (c) { cx = c.x; cy = c.y; k = 0.075; }
     n.vx += (cx - n.x) * k * alpha;
     n.vy += (cy - n.y) * k * alpha;
   }
@@ -659,14 +681,131 @@ function gravity(alpha) {
 gravity.nodes = [];
 gravity.initialize = nodes => { gravity.nodes = nodes; };
 
-function computeCenters(nodes) {
+/* Louvain community detection: groups notes that link densely to each other into themes */
+function louvain(ids, edges) {
+  const index = new Map(ids.map((id, i) => [id, i]));
+  let n = ids.length, adj = Array.from({ length: n }, () => new Map());
+  for (const [a, b] of edges) {
+    const i = index.get(a), j = index.get(b);
+    adj[i].set(j, (adj[i].get(j) || 0) + 1); adj[j].set(i, (adj[j].get(i) || 0) + 1);
+  }
+  let member = ids.map((_, i) => i);
+  for (let level = 0; level < 8; level++) {
+    const deg = adj.map(m => { let s = 0; for (const w of m.values()) s += w; return s; });
+    const m2 = deg.reduce((a, b) => a + b, 0) || 1;
+    const comm = adj.map((_, i) => i), tot = deg.slice();
+    let movedAny = false;
+    for (let pass = 0; pass < 40; pass++) {
+      let moved = false;
+      for (let v = 0; v < n; v++) {
+        const kv = deg[v];
+        if (!kv) continue;
+        const cv = comm[v], links = new Map();
+        for (const [u, w] of adj[v]) if (u !== v) links.set(comm[u], (links.get(comm[u]) || 0) + w);
+        tot[cv] -= kv;
+        let best = cv, bestGain = (links.get(cv) || 0) - tot[cv] * kv / m2;
+        for (const [c, k] of links) { const g = k - tot[c] * kv / m2; if (g > bestGain + 1e-9) { best = c; bestGain = g; } }
+        tot[best] += kv;
+        if (best !== cv) { comm[v] = best; moved = movedAny = true; }
+      }
+      if (!moved) break;
+    }
+    if (!movedAny) break;
+    const renum = new Map();
+    comm.forEach(c => { if (!renum.has(c)) renum.set(c, renum.size); });
+    const nadj = Array.from({ length: renum.size }, () => new Map());
+    for (let v = 0; v < n; v++) for (const [u, w] of adj[v]) { const a = renum.get(comm[v]), b = renum.get(comm[u]); nadj[a].set(b, (nadj[a].get(b) || 0) + w); }
+    member = member.map(s => renum.get(comm[s]));
+    adj = nadj; n = renum.size;
+  }
+  return new Map(ids.map((id, i) => [id, member[i]]));
+}
+
+let clusters = [];
+const clusterName = t => t.replace(/^mapa\s+(?:d[aoe]s?\s+)?/i, '').replace(/^\p{Ll}/u, c => c.toUpperCase());
+function computeClusters(finalNodes, finalLinks) {
+  const notes = finalNodes.filter(n => n.kind === 'note');
+  const ids = notes.map(n => n.id).sort(), set = new Set(ids);
+  const comm = louvain(ids, finalLinks.filter(([a, b]) => set.has(a) && set.has(b)));
+  const groups = new Map();
+  for (const n of notes) { const c = comm.get(n.id); if (!groups.has(c)) groups.set(c, []); groups.get(c).push(n); }
+  const big = c => (groups.get(c) || []).length >= 3;
+  for (const n of finalNodes) n.cl = null;
+  for (const [c, g] of groups) {
+    for (const n of g) {
+      if (big(c)) { n.cl = 'c' + c; continue; }
+      const cnt = new Map();
+      for (const nb of graphAdj.get(n.id)) { const cc = comm.get(nb); if (cc != null && big(cc)) cnt.set(cc, (cnt.get(cc) || 0) + 1); }
+      let best = null, bk = 0;
+      for (const [cc, k] of cnt) if (k > bk) { best = cc; bk = k; }
+      n.cl = best != null ? 'c' + best : 'solto';
+    }
+  }
+  const byId = new Map(notes.map(n => [n.id, n]));
+  for (const n of notes) {
+    let maps = 0;
+    for (const nb of graphAdj.get(n.id)) if (byId.get(nb)?.type === 'mapa') maps++;
+    if (maps >= 3 && n.type !== 'mapa') n.cl = 'nucleo';
+  }
+  for (const n of notes) {
+    const nbs = [...graphAdj.get(n.id)].map(id => byId.get(id)).filter(Boolean);
+    if (n.cl !== 'nucleo' && nbs.length && nbs.every(x => x.cl === 'nucleo')) n.cl = 'nucleo';
+  }
+  const byKey = new Map();
+  for (const n of notes) { if (!byKey.has(n.cl)) byKey.set(n.cl, []); byKey.get(n.cl).push(n); }
+  clusters = [...byKey].map(([key, g]) => {
+    const head = g.slice().sort((a, b) => ((b.type === 'mapa') - (a.type === 'mapa')) || (b.deg - a.deg) || a.label.localeCompare(b.label))[0];
+    return { key, size: g.length, head: head.id, label: key === 'solto' ? 'Notas soltas' : clusterName(head.label) };
+  }).sort((a, b) => (b.key === 'nucleo') - (a.key === 'nucleo') || (a.key === 'solto') - (b.key === 'solto') || b.size - a.size);
+}
+function computeCenters(nodes, links) {
   centers = new Map();
-  const present = TYPE_LIST.filter(t => nodes.some(n => n.kind === 'note' && n.type === t.key));
-  const R = 110 + 17 * Math.sqrt(nodes.length);
-  present.forEach((t, i) => {
-    const a = -Math.PI / 2 + i * 2 * Math.PI / present.length;
-    centers.set(t.key, present.length === 1 ? { x: 0, y: 0 } : { x: Math.cos(a) * R, y: Math.sin(a) * R });
-  });
+  if (S.layout === 'tipo') {
+    const present = TYPE_LIST.filter(t => nodes.some(n => n.kind === 'note' && n.type === t.key));
+    const R = 110 + 17 * Math.sqrt(nodes.length);
+    present.forEach((t, i) => {
+      const a = -Math.PI / 2 + i * 2 * Math.PI / present.length;
+      centers.set(t.key, present.length === 1 ? { x: 0, y: 0 } : { x: Math.cos(a) * R, y: Math.sin(a) * R });
+    });
+    return;
+  }
+  if (S.layout !== 'tema' || !clusters.length) return;
+  const nucleus = clusters.find(c => c.key === 'nucleo');
+  const real = clusters.filter(c => c.key !== 'solto' && c.key !== 'nucleo');
+  const loose = clusters.find(c => c.key === 'solto');
+  const R = 90 + 30 * Math.sqrt(nodes.length);
+  if (nucleus) centers.set('nucleo', { x: 0, y: 0 });
+  if (real.length <= 1) {
+    if (real[0]) centers.set(real[0].key, { x: 0, y: 0 });
+    if (loose) centers.set('solto', { x: 0, y: R * 1.1 });
+    return;
+  }
+  const byId = new Map(nodes.map(n => [n.id, n]));
+  const w = new Map();
+  for (const [a, b] of links) {
+    const ca = byId.get(a)?.cl, cb = byId.get(b)?.cl;
+    if (!ca || !cb || ca === cb) continue;
+    const k = ca < cb ? ca + '|' + cb : cb + '|' + ca;
+    w.set(k, (w.get(k) || 0) + 1);
+  }
+  const wt = (a, b) => w.get(a < b ? a + '|' + b : b + '|' + a) || 0;
+  const coreNode = nodes.filter(n => n.kind === 'note' && n.cl !== 'solto').sort((a, b) => b.deg - a.deg)[0];
+  const core = !nucleus && real.length >= 4 && coreNode ? coreNode.cl : null;
+  let ring = real.map(c => c.key).filter(k => k !== core);
+  const ordered = [ring.shift()];
+  while (ring.length) {
+    const last = ordered[ordered.length - 1];
+    ring.sort((a, b) => wt(last, b) - wt(last, a));
+    ordered.push(ring.shift());
+  }
+  if (core) centers.set(core, { x: 0, y: 0 });
+  const slots = ordered.length + (loose ? 1 : 0);
+  ordered.forEach((k, i) => { const a = -Math.PI / 2 + i * 2 * Math.PI / slots; centers.set(k, { x: Math.cos(a) * R, y: Math.sin(a) * R }); });
+  if (loose) { const a = -Math.PI / 2 + ordered.length * 2 * Math.PI / slots; centers.set('solto', { x: Math.cos(a) * R * 1.35, y: Math.sin(a) * R * 1.35 }); }
+}
+function fitCluster(key) {
+  if (!G) return;
+  G.zoomToFit(700, mqMobile.matches ? 40 : 110, n => n.cl === key);
 }
 
 function updateGraph() {
@@ -722,8 +861,9 @@ function updateGraph() {
   });
   degs.sort((a, b) => b - a);
   hubDeg = Math.max(4, degs[Math.floor(degs.length * 0.08)] || 0);
-  for (const o of finalNodes) o.hub = o.kind !== 'ghost' && o.deg >= hubDeg;
-  computeCenters(finalNodes);
+  for (const o of finalNodes) { o.hub = o.kind !== 'ghost' && (o.deg >= hubDeg || o.type === 'mapa'); if (o.type === 'mapa') o.r += 2; }
+  computeClusters(finalNodes, finalLinks);
+  computeCenters(finalNodes, finalLinks);
   const sig = finalNodes.map(n => n.id).sort().join(',') + '|' + finalLinks.map(l => l.join('>')).sort().join(',');
   if (sig !== graphSig) {
     graphSig = sig;
@@ -780,7 +920,7 @@ function drawNode(n, ctx, scale) {
   }
   if (sel) { ctx.beginPath(); ctx.arc(n.x, n.y, r + 3 / scale + 1, 0, 2 * Math.PI); ctx.lineWidth = 1.5 / scale; ctx.strokeStyle = C.amber; ctx.stroke(); }
   const show = sel || hov || (!dimmed && (
-    (hiMode === 'hover') || (hiMode === 'search' && hi.size <= 60) || S.labels || scale >= 1.5 || (n.hub && scale >= 0.55)
+    (hiMode === 'hover') || (hiMode === 'search' && hi.size <= 60) || S.labels || scale >= 1.5 || (n.hub && scale >= 0.55 && !(n.type === 'mapa' && S.layout === 'tema'))
   ));
   if (show && !dimmed) {
     const strong = sel || hov;
@@ -798,32 +938,41 @@ function drawNode(n, ctx, scale) {
 }
 
 function drawBackdrop(ctx, scale) {
-  if (!S.regions || !G) return;
+  if (S.layout === 'livre' || !G) return;
   const groups = new Map();
   for (const n of G.graphData().nodes) {
     if (n.kind !== 'note' || n.x == null) continue;
-    let g = groups.get(n.type);
-    if (!g) groups.set(n.type, g = { sx: 0, sy: 0, c: 0, pts: [] });
+    const key = regionKey(n);
+    if (key == null) continue;
+    let g = groups.get(key);
+    if (!g) groups.set(key, g = { sx: 0, sy: 0, c: 0, pts: [] });
     g.sx += n.x; g.sy += n.y; g.c++; g.pts.push(n);
   }
+  const labelOf = new Map(clusters.map(c => [c.key, c.label]));
+  const hoverCl = state.hoverId ? nodeCache.get(state.hoverId)?.cl : null;
   ctx.save();
-  for (const [type, g] of groups) {
+  for (const [key, g] of groups) {
+    if (S.layout === 'tema' && g.c < 2) continue;
     const cx = g.sx / g.c, cy = g.sy / g.c;
     let rad = 0;
     for (const p of g.pts) rad = Math.max(rad, Math.hypot(p.x - cx, p.y - cy));
-    rad += 14;
-    const col = TYPE[type].color;
+    rad += 16;
+    const col = S.layout === 'tipo' ? TYPE[key].color : key === 'solto' ? C.dust : key === hoverCl ? C.amber : C.ivory;
+    const text = S.layout === 'tipo' ? TYPE[key].plural : labelOf.get(key) || '';
     ctx.beginPath(); ctx.arc(cx, cy, rad, 0, 2 * Math.PI);
     ctx.fillStyle = hexA(col, 0.025); ctx.fill();
     ctx.setLineDash([3 / scale, 5 / scale]); ctx.lineWidth = 1 / scale; ctx.strokeStyle = hexA(col, 0.18); ctx.stroke(); ctx.setLineDash([]);
-    const len = Math.hypot(cx, cy) || 1;
-    const dx = Math.hypot(cx, cy) < 1 ? 0 : cx / len, dy = Math.hypot(cx, cy) < 1 ? -1 : cy / len;
-    const lx = cx + dx * (rad + 14 / scale), ly = cy + dy * (rad + 14 / scale);
+    const lx = cx, ly = cy - rad - 12 / scale;
     ctx.font = `500 ${11 / scale}px "IBM Plex Mono", monospace`;
     if ('letterSpacing' in ctx) ctx.letterSpacing = (2 / scale) + 'px';
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillStyle = hexA(col, 0.6);
-    ctx.fillText(TYPE[type].plural.toUpperCase() + '  ' + g.c, lx, ly);
+    ctx.fillStyle = hexA(col, S.layout === 'tema' ? 0.72 : 0.6);
+    const label = text.toUpperCase() + '  ' + g.c;
+    let x = lx;
+    const tl = G.screen2GraphCoords(0, 0), br = G.screen2GraphCoords(G.width(), G.height());
+    const half = ctx.measureText(label).width / 2 + 8 / scale;
+    if (br.x - tl.x > half * 2) x = Math.min(Math.max(x, tl.x + half), br.x - half);
+    ctx.fillText(label, x, ly);
     if ('letterSpacing' in ctx) ctx.letterSpacing = '0px';
   }
   ctx.restore();
@@ -867,7 +1016,8 @@ function renderHoverCard(node) {
     const n = state.notes.get(node.id); if (!n) { el.hidden = true; return; }
     k = TYPE[n.type].label; color = TYPE[n.type].color; title = n.title;
     text = excerpt(n.body, 150) || 'Nota sem texto ainda.';
-    meta = `${node.deg} ${node.deg === 1 ? 'conexão' : 'conexões'} · ${ago(n.updated)}`;
+    const th = clusters.find(c => c.key === node.cl);
+    meta = `${th && th.key !== 'solto' ? 'Tema: ' + th.label + ' · ' : ''}${node.deg} ${node.deg === 1 ? 'conexão' : 'conexões'}`;
   } else if (node.kind === 'ghost') {
     k = 'Ideia pendente'; color = C.dust; title = node.label;
     text = 'Citada em outras notas, mas ainda sem página própria.'; meta = state.canWrite ? 'Clique para criar' : `${node.deg} menções`;
@@ -1054,10 +1204,21 @@ function renderRail() {
     for (const k of outs.keys()) { const t = idx.byKey.get(k); if (t) pairs.add(n.id < t.id ? n.id + '|' + t.id : t.id + '|' + n.id); else pend.add(k); }
     if (!outs.size && !(idx.back.get(norm(n.title)) || new Set()).size) orphans++;
   }
-  $('#stats').innerHTML = `<span>Notas</span><strong>${state.notes.size}</strong><span>Conexões</span><strong>${pairs.size}</strong><span>Ideias pendentes</span><strong>${pend.size}</strong><span>Notas soltas</span><strong>${orphans}</strong>`;
+  $('#stats').innerHTML = `<span>Notas</span><strong>${state.notes.size}</strong><span>Conexões</span><strong>${pairs.size}</strong><span>Temas</span><strong>${clusters.filter(c => c.key !== 'solto').length}</strong><span>Ideias pendentes</span><strong>${pend.size}</strong><span>Notas soltas</span><strong>${orphans}</strong>`;
+  $('#themes').innerHTML = clusters.length ? clusters.map(c => `<button class="region theme-row" data-theme="${esc(c.key)}" title="Enquadrar esta região no grafo"><span class="dot" style="--c:${c.key === 'solto' ? C.dust : C.amber}"></span><span class="t" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0">${esc(c.label)}</span><span class="n">${c.size}</span></button>`).join('') : '<p class="muted-note">Os temas aparecem quando as notas começam a se ligar.</p>';
+}
+const LAYOUT_HINT = {
+  tema: 'Notas muito ligadas entre si formam uma região, com o nome da nota central. Um Mapa vira o centro do seu tema.',
+  tipo: 'Cada tipo de nota ocupa uma região própria.',
+  livre: 'Sem regiões: só as ligações definem onde cada nota fica.',
+};
+function renderLayoutSeg() {
+  $$('#layoutSeg [data-layout]').forEach(b => b.setAttribute('aria-checked', String(b.dataset.layout === S.layout)));
+  $('#layoutHint').textContent = LAYOUT_HINT[S.layout];
 }
 function applySettingsToUI() {
-  $('#optRegions').checked = S.regions; $('#optTags').checked = S.tagNodes; $('#optGhosts').checked = S.ghosts;
+  renderLayoutSeg();
+  $('#optTags').checked = S.tagNodes; $('#optGhosts').checked = S.ghosts;
   $('#optOrphans').checked = S.orphans; $('#optLabels').checked = S.labels; $('#optSignals').checked = S.signals;
   $('#optRepel').value = S.repel; $('#optDist').value = S.dist;
 }
@@ -1227,7 +1388,10 @@ function renderNoteView(n) {
   const outLinks = [...(idx.out.get(n.id) || [])].map(([k, disp]) => ({ disp, note: idx.byKey.get(k) }));
   const backs = [...(idx.back.get(norm(n.title)) || [])].filter(id => id !== n.id).map(id => state.notes.get(id)).filter(Boolean).sort((a, b) => b.updated - a.updated);
   const unlinked = findUnlinked(n);
+  const theme = clusters.find(c => c.key === nodeCache.get(n.id)?.cl && c.key !== 'solto');
   body.innerHTML = `
+    ${theme ? `<button class="chip theme-chip" data-theme-fit="${esc(theme.key)}" title="Enquadrar este tema no grafo" style="margin-bottom:14px">Tema · ${esc(theme.label)}</button>` : ''}`;
+  body.insertAdjacentHTML('beforeend', `
     <article>
       <h1 class="note-title">${esc(n.title)}</h1>
       <div class="note-meta">${n.updated ? `<span>Atualizada ${esc(ago(n.updated))}</span>` : ''}${n.created ? `<span>Criada em ${esc(fmtDate(n.created))}</span>` : ''}<span>${countWords(n.body)} palavras</span></div>
@@ -1237,7 +1401,7 @@ function renderNoteView(n) {
     <section class="section"><h3>Conexões <span class="n">${outLinks.length}</span></h3>${outLinks.length ? `<div class="chips">${outLinks.map(o => `<button class="chip link-chip${o.note ? '' : ' missing'}" data-title="${esc(o.note ? o.note.title : o.disp)}"><span class="dot${o.note ? '' : ' ghost'}" style="--c:${o.note ? TYPE[o.note.type].color : 'transparent'}"></span>${esc(o.note ? o.note.title : o.disp)}</button>`).join('')}</div>` : `<p class="muted">Nenhum link saindo desta nota. Escreva [[Título]] no texto para conectar.</p>`}</section>
     <section class="section"><h3>Mencionada em <span class="n">${backs.length}</span></h3>${backs.length ? backs.map(b => refCard(b, linkContext(b.body, n.title))).join('') : `<p class="muted">Nenhuma nota aponta para esta ainda.</p>`}</section>
     ${unlinked.length ? `<section class="section"><h3>Menções sem link <span class="n">${unlinked.length}</span></h3>${unlinked.map(u => refCard(u.note, u.ctx, state.canWrite ? `<button class="btn small w" data-linkify="${esc(u.note.id)}" title="Transformar esta menção em link">${icon('link')}Ligar</button>` : '')).join('')}</section>` : ''}
-    ${state.sample ? `<section class="section" id="suggest">${suggestHTML(n)}</section>` : ''}`;
+    ${state.sample ? `<section class="section" id="suggest">${suggestHTML(n)}</section>` : ''}`);
   $$('#prose input[type=checkbox]').forEach((cb, i) => { cb.disabled = !state.canWrite; cb.dataset.task = i; });
 }
 function renderGhostView(title) {
@@ -1893,17 +2057,24 @@ function wire() {
     if (b.dataset.act === 'new') createDraft(); else if (b.dataset.act === 'import') $('#fileMd').click();
   });
 
+  const saveS = () => lsSet('settings2', S);
   $('#rail').addEventListener('click', e => {
     const r = e.target.closest('[data-type]');
     if (r) { const k = r.dataset.type; state.hidden.has(k) ? state.hidden.delete(k) : state.hidden.add(k); lsSet('hidden', [...state.hidden]); refresh(); return; }
+    const th = e.target.closest('[data-theme]');
+    if (th) { fitCluster(th.dataset.theme); if (mqMobile.matches) closeRail(); return; }
+    const ly = e.target.closest('[data-layout]');
+    if (ly) {
+      S.layout = ly.dataset.layout; saveS(); renderLayoutSeg();
+      if (G) { computeCenters(G.graphData().nodes, G.graphData().links.map(l => [lid(l.source), lid(l.target)])); applyLinkForce(); G.d3ReheatSimulation(); setTimeout(() => fit(800), 1700); }
+      return;
+    }
     const o = e.target.closest('[data-open]'); if (o) { openNote(o.dataset.open, { center: true }); return; }
     const t = e.target.closest('[data-tag]'); if (t) setSearch('#' + t.dataset.tag, true);
   });
-  const saveS = () => lsSet('settings', S);
   $('#rail').addEventListener('change', e => {
     const id = e.target.id, v = e.target.checked;
-    if (id === 'optRegions') { S.regions = v; saveS(); if (G) { computeCenters(G.graphData().nodes); G.d3ReheatSimulation(); setTimeout(() => fit(800), 1600); } }
-    else if (id === 'optTags') { S.tagNodes = v; saveS(); updateGraph(); }
+    if (id === 'optTags') { S.tagNodes = v; saveS(); updateGraph(); }
     else if (id === 'optGhosts') { S.ghosts = v; saveS(); updateGraph(); }
     else if (id === 'optOrphans') { S.orphans = v; saveS(); updateGraph(); }
     else if (id === 'optLabels') { S.labels = v; saveS(); }
@@ -1913,7 +2084,7 @@ function wire() {
   $('#rail').addEventListener('input', e => {
     if (!G) return;
     if (e.target.id === 'optRepel') { S.repel = +e.target.value; G.d3Force('charge').strength(-S.repel); G.d3ReheatSimulation(); }
-    if (e.target.id === 'optDist') { S.dist = +e.target.value; G.d3Force('link').distance(S.dist); G.d3ReheatSimulation(); }
+    if (e.target.id === 'optDist') { S.dist = +e.target.value; applyLinkForce(); G.d3ReheatSimulation(); }
   });
 
   $('#zIn').addEventListener('click', () => G && G.zoom(G.zoom() * 1.5, 300));
@@ -1933,10 +2104,11 @@ function wire() {
   dr.addEventListener('click', e => {
     const a = e.target.closest('a.wl');
     if (a) { e.preventDefault(); openByTitle(a.dataset.target); return; }
-    const t = e.target.closest('[data-act],[data-open],[data-tag],[data-title],[data-create],[data-linkify],[data-addlink],[data-ask],[data-ac]');
+    const t = e.target.closest('[data-act],[data-open],[data-tag],[data-title],[data-create],[data-linkify],[data-addlink],[data-ask],[data-ac],[data-theme-fit]');
     if (!t) return;
     const cur = drawer.cur;
     if (t.dataset.ac != null) { pickAC(+t.dataset.ac); return; }
+    if (t.dataset.themeFit) { fitCluster(t.dataset.themeFit); if (mqMobile.matches) closeDrawer(); return; }
     if (t.dataset.open) { openNote(t.dataset.open, { center: true }); return; }
     if (t.dataset.tag) { setSearch('#' + t.dataset.tag, true); return; }
     if (t.dataset.title) { openByTitle(t.dataset.title); return; }

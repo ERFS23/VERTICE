@@ -3,7 +3,7 @@
   "notes": [
     {
       "title": "Comece aqui",
-      "body": "Bem-vindo ao seu segundo cérebro. Cada ponto do grafo é uma nota, e cada linha é uma ligação escrita dentro de uma nota com colchetes duplos.\n\n## Como usar\n- **Clique num ponto** para abrir a nota aqui do lado. Passe o mouse para ver as conexões acenderem.\n- **Busque** com Ctrl K (⌘ K no Mac). Acentos não importam. Use `#tag` ou `tipo:projeto` para filtrar.\n- **Ligue ideias** digitando `[[` no editor e escolhendo uma nota. Se ela ainda não existir, vira uma *ideia pendente* (ponto tracejado) que você cria depois.\n- **Vizinhança**: o botão de alvo no topo da nota mostra só o que está ligado a ela, com 1, 2 ou 3 saltos.\n- **Mencionada em** mostra quem aponta para a nota. **Menções sem link** acha textos que citam o título sem ligar e cria o link com um clique.\n- **Perguntar** usa a IA para responder a partir das suas notas, citando cada fonte.\n- **Diário** (tecla D) cria a nota do dia. **Nota aleatória** (tecla R) ajuda a reencontrar ideias esquecidas.\n- No menu ⋯ você importa arquivos `.md` do Obsidian e exporta tudo de volta como `.zip`.\n\n## Por onde começar\nLeia [[Segundo Cérebro]] e [[Zettelkasten]], depois veja o [[Projeto: Montar meu segundo cérebro]].\n\nTodas estas notas têm a tag exemplo. Quando quiser começar do zero, use **⋯ → Remover notas de exemplo**.\n",
+      "body": "Bem-vindo ao seu segundo cérebro. Cada ponto do grafo é uma nota, e cada linha é uma ligação escrita dentro de uma nota com colchetes duplos.\n\n## Como usar\n- **Clique num ponto** para abrir a nota aqui do lado. Passe o mouse para ver as conexões acenderem.\n- **Busque** com Ctrl K (⌘ K no Mac). Acentos não importam. Use `#tag` ou `tipo:projeto` para filtrar.\n- **Ligue ideias** digitando `[[` no editor e escolhendo uma nota. Se ela ainda não existir, o link fica tracejado e vira uma *ideia pendente* que você cria depois com um clique.\n- **Vizinhança**: o botão de alvo no topo da nota mostra só o que está ligado a ela, com 1, 2 ou 3 saltos.\n- **Mencionada em** mostra quem aponta para a nota. **Menções sem link** acha textos que citam o título sem ligar e cria o link com um clique.\n- **Perguntar** usa a IA para responder a partir das suas notas, citando cada fonte.\n- **Diário** (tecla D) cria a nota do dia. **Nota aleatória** (tecla R) ajuda a reencontrar ideias esquecidas.\n- No menu ⋯ você importa arquivos `.md` do Obsidian e exporta tudo de volta como `.zip`.\n\n## Como o grafo se organiza\nO grafo agrupa as notas por **tema**: notas muito ligadas entre si formam uma região, com o nome da nota central. Cada tema tem um **mapa** (pontos dourados), uma nota-índice que explica o assunto e liga às notas dele. Os mapas se ligam ao núcleo, o [[Segundo Cérebro]].\n\nPara ver um tema de perto, clique no nome dele em **Temas**, na barra lateral.\n\n## Por onde começar\nAbra o [[Segundo Cérebro]] e siga para o mapa que mais te interessa.\n\nTodas estas notas têm a tag exemplo. Quando quiser começar do zero, use **⋯ → Remover notas de exemplo**.\n",
       "type": "nota",
       "tags": [
         "exemplo",
@@ -15,7 +15,7 @@
     },
     {
       "title": "Segundo Cérebro",
-      "body": "Um sistema externo e confiável para guardar, conectar e reutilizar o que você aprende, para que a cabeça fique livre para pensar em vez de lembrar.\n\nO termo ficou popular com [[Tiago Forte]] e o livro [[Building a Second Brain]]. A ideia central: a memória biológica é ótima para ter ideias e ruim para guardá-las.\n\n## Pilares\n- Um fluxo para processar informação: o [[Método CODE]].\n- Uma forma de organizar pensando em ação: o [[Método PARA]].\n- Notas que conversam entre si: [[Links bidirecionais]] e [[Zettelkasten]].\n\n## Por que funciona\nEscrever obriga a ter clareza ([[Escrever é pensar]]), e ligar notas cria [[Conhecimento em rede]], onde ideias antigas reaparecem por [[Serendipidade]].\n",
+      "body": "Um sistema externo e confiável para guardar, conectar e reutilizar o que você aprende, para que a cabeça fique livre para pensar em vez de lembrar.\n\nO termo ficou popular com [[Tiago Forte]] e o livro [[Building a Second Brain]]. A ideia central: a memória biológica é ótima para ter ideias e ruim para guardá-las.\n\n## As quatro regiões deste cérebro\n1. [[Mapa do fluxo de trabalho]]: como uma informação entra e vira algo que você cria.\n2. [[Mapa da organização]]: onde cada coisa mora para ser achada na hora certa.\n3. [[Mapa do pensamento em rede]]: como notas soltas viram ideias conectadas.\n4. [[Mapa da memória e aprendizagem]]: por que guardar, revisar e escrever funciona.\n\n## Como elas se ligam\nO fluxo traz a informação, a organização decide onde ela fica, o pensamento em rede transforma notas em ideias, e a memória explica por que revisar e reescrever fixa o que você aprende.\n",
       "type": "conceito",
       "tags": [
         "exemplo",
@@ -24,6 +24,78 @@
       "fav": false,
       "created": 1789476780000,
       "updated": 1789822380000
+    },
+    {
+      "title": "Mapa do fluxo de trabalho",
+      "body": "Como uma informação entra no cérebro e vira algo que você cria. Segue o [[Método CODE]], de [[Tiago Forte]].\n\n## As quatro etapas\n1. [[Capturar]]: guardar só o que ressoa.\n2. [[Organizar]]: decidir onde a nota mora, pensando no projeto em que vai ser usada.\n3. [[Destilar]]: achar a essência, com a [[Sumarização progressiva]].\n4. [[Expressar]]: transformar notas em entregas, montando [[Pacotes intermediários]].\n\n## Pontes com outros temas\n- Organizar usa as gavetas do [[Mapa da organização]].\n- Destilar leva à nota escrita com suas palavras, do [[Mapa do pensamento em rede]].\n- Expressar se apoia em [[Escrever é pensar]], do [[Mapa da memória e aprendizagem]].\n",
+      "type": "mapa",
+      "tags": [
+        "exemplo",
+        "code"
+      ],
+      "fav": false,
+      "created": 1790340360000,
+      "updated": 1790772360000
+    },
+    {
+      "title": "Mapa da organização",
+      "body": "Onde cada coisa mora para ser achada na hora certa. A estrutura vem do [[Método PARA]].\n\n## As quatro gavetas, da mais ativa para a menos\n1. [[Projetos (PARA)]]: têm prazo e objetivo.\n2. [[Áreas de responsabilidade]]: cuidados contínuos, sem fim.\n3. [[Recursos]]: temas de interesse para o futuro.\n4. [[Arquivo]]: o que saiu de uso.\n\n## O hábito que mantém a ordem\nA [[Revisão semanal]] move as notas entre as gavetas e fecha o ciclo.\n\n## Projetos em andamento\n- [[Projeto: Montar meu segundo cérebro]]\n- [[Projeto: Ensaio sobre aprendizagem]]\n\n## Pontes com outros temas\n- A etapa Organizar do [[Mapa do fluxo de trabalho]] usa estas gavetas.\n- A revisão semanal aplica a [[Repetição espaçada]], do [[Mapa da memória e aprendizagem]].\n",
+      "type": "mapa",
+      "tags": [
+        "exemplo",
+        "para"
+      ],
+      "fav": false,
+      "created": 1790253540000,
+      "updated": 1790771940000
+    },
+    {
+      "title": "Mapa do pensamento em rede",
+      "body": "Como notas soltas viram ideias conectadas, e não uma pilha de arquivos. A base é o [[Zettelkasten]] de [[Niklas Luhmann]].\n\n## O caminho de uma ideia\n[[Notas efêmeras]] → [[Notas de literatura]] → [[Nota permanente]].\n\n## Como escrever cada nota\n- [[Nota atômica]]: uma ideia por nota.\n- [[Notas perenes]]: notas que evoluem com o tempo.\n\n## Como ligar\n- [[Links bidirecionais]] criam [[Conhecimento em rede]].\n- Um [[Mapa de conteúdo]] é a porta de entrada de um tema, como esta nota.\n- A rede favorece a [[Serendipidade]].\n- A ideia de trilhas entre documentos vem do [[Memex]].\n\n## Pontes com outros temas\n- A nota permanente é o resultado de Destilar, no [[Mapa do fluxo de trabalho]].\n- Escrever com suas palavras aplica o [[Efeito de geração]], do [[Mapa da memória e aprendizagem]].\n",
+      "type": "mapa",
+      "tags": [
+        "exemplo",
+        "zettelkasten"
+      ],
+      "fav": false,
+      "created": 1790166720000,
+      "updated": 1790771520000
+    },
+    {
+      "title": "Mapa da memória e aprendizagem",
+      "body": "Por que guardar, revisar e escrever funciona, segundo o que se sabe sobre memória.\n\n## O problema\nA [[Curva do esquecimento]], descrita por [[Hermann Ebbinghaus]]: sem revisão, boa parte do que aprendemos se perde em poucos dias.\n\n## O que ajuda\n- [[Repetição espaçada]]: revisar em intervalos crescentes.\n- [[Efeito de geração]]: lembramos melhor o que produzimos do que o que só lemos.\n- [[Escrever é pensar]]: explicar por escrito revela o que ainda não entendemos.\n- [[Modelos mentais]]: ideias presas a uma estrutura são mais fáceis de lembrar e usar.\n\n## Pontes com outros temas\n- A [[Revisão semanal]], do [[Mapa da organização]], é a repetição espaçada aplicada às notas.\n- O [[Projeto: Ensaio sobre aprendizagem]] junta estas ideias num texto.\n",
+      "type": "mapa",
+      "tags": [
+        "exemplo",
+        "memoria"
+      ],
+      "fav": false,
+      "created": 1790511900000,
+      "updated": 1790771100000
+    },
+    {
+      "title": "Efeito de geração",
+      "body": "Lembramos melhor de uma informação quando a produzimos (completando, respondendo, explicando) do que quando apenas a lemos. O efeito foi descrito em experimentos de psicologia cognitiva no fim dos anos 1970.\n\nPor isso uma [[Nota permanente]] escrita com suas palavras fixa mais do que um trecho copiado. Combina com [[Escrever é pensar]] e com a [[Repetição espaçada]].\n",
+      "type": "conceito",
+      "tags": [
+        "exemplo",
+        "memoria"
+      ],
+      "fav": false,
+      "created": 1790425080000,
+      "updated": 1790770680000
+    },
+    {
+      "title": "Modelos mentais",
+      "body": "Representações simplificadas de como algo funciona: oferta e demanda, juros compostos, ciclos de feedback. Servem de lentes para entender situações novas.\n\nQuanto mais modelos você conecta, mais fácil fica aprender o próximo, porque ele se encaixa numa estrutura que já existe. É o [[Conhecimento em rede]] aplicado ao raciocínio, e ajuda a vencer a [[Curva do esquecimento]].\n",
+      "type": "conceito",
+      "tags": [
+        "exemplo",
+        "memoria"
+      ],
+      "fav": false,
+      "created": 1790338260000,
+      "updated": 1790770260000
     },
     {
       "title": "Método CODE",
@@ -35,8 +107,8 @@
         "metodo"
       ],
       "fav": false,
-      "created": 1789476360000,
-      "updated": 1789908360000
+      "created": 1789387440000,
+      "updated": 1789905840000
     },
     {
       "title": "Capturar",
@@ -47,8 +119,8 @@
         "code"
       ],
       "fav": false,
-      "created": 1789389540000,
-      "updated": 1789907940000
+      "created": 1789300620000,
+      "updated": 1789905420000
     },
     {
       "title": "Organizar",
@@ -59,8 +131,8 @@
         "code"
       ],
       "fav": false,
-      "created": 1789389120000,
-      "updated": 1789993920000
+      "created": 1789732200000,
+      "updated": 1789991400000
     },
     {
       "title": "Destilar",
@@ -71,8 +143,8 @@
         "code"
       ],
       "fav": false,
-      "created": 1789820700000,
-      "updated": 1790079900000
+      "created": 1789731780000,
+      "updated": 1790077380000
     },
     {
       "title": "Expressar",
@@ -83,8 +155,8 @@
         "code"
       ],
       "fav": false,
-      "created": 1789733880000,
-      "updated": 1790079480000
+      "created": 1789644960000,
+      "updated": 1790076960000
     },
     {
       "title": "Método PARA",
@@ -96,8 +168,8 @@
         "metodo"
       ],
       "fav": false,
-      "created": 1789560660000,
-      "updated": 1789992660000
+      "created": 1789471740000,
+      "updated": 1789990140000
     },
     {
       "title": "Projetos (PARA)",
@@ -108,8 +180,8 @@
         "para"
       ],
       "fav": false,
-      "created": 1789646640000,
-      "updated": 1790165040000
+      "created": 1789557720000,
+      "updated": 1790162520000
     },
     {
       "title": "Áreas de responsabilidade",
@@ -120,8 +192,8 @@
         "para"
       ],
       "fav": false,
-      "created": 1789559820000,
-      "updated": 1790164620000
+      "created": 1789902900000,
+      "updated": 1790162100000
     },
     {
       "title": "Recursos",
@@ -132,8 +204,8 @@
         "para"
       ],
       "fav": false,
-      "created": 1789905000000,
-      "updated": 1790164200000
+      "created": 1789816080000,
+      "updated": 1790161680000
     },
     {
       "title": "Arquivo",
@@ -144,8 +216,8 @@
         "para"
       ],
       "fav": false,
-      "created": 1789818180000,
-      "updated": 1790163780000
+      "created": 1789729260000,
+      "updated": 1790161260000
     },
     {
       "title": "Zettelkasten",
@@ -158,8 +230,8 @@
         "zettelkasten"
       ],
       "fav": true,
-      "created": 1789817760000,
-      "updated": 1790249760000
+      "created": 1789728840000,
+      "updated": 1790247240000
     },
     {
       "title": "Nota atômica",
@@ -170,8 +242,8 @@
         "zettelkasten"
       ],
       "fav": false,
-      "created": 1789817340000,
-      "updated": 1790335740000
+      "created": 1789728420000,
+      "updated": 1790333220000
     },
     {
       "title": "Nota permanente",
@@ -182,8 +254,8 @@
         "zettelkasten"
       ],
       "fav": false,
-      "created": 1789730520000,
-      "updated": 1790335320000
+      "created": 1790073600000,
+      "updated": 1790332800000
     },
     {
       "title": "Notas de literatura",
@@ -195,8 +267,8 @@
         "leitura"
       ],
       "fav": false,
-      "created": 1790075700000,
-      "updated": 1790334900000
+      "created": 1789986780000,
+      "updated": 1790332380000
     },
     {
       "title": "Notas efêmeras",
@@ -207,8 +279,8 @@
         "zettelkasten"
       ],
       "fav": false,
-      "created": 1790075280000,
-      "updated": 1790420880000
+      "created": 1789986360000,
+      "updated": 1790418360000
     },
     {
       "title": "Links bidirecionais",
@@ -219,20 +291,20 @@
         "pkm"
       ],
       "fav": false,
-      "created": 1789988460000,
-      "updated": 1790420460000
+      "created": 1789899540000,
+      "updated": 1790417940000
     },
     {
       "title": "Mapa de conteúdo",
-      "body": "Uma nota que funciona como índice de um tema: lista e comenta as notas principais sobre ele, numa ordem que faça sentido.\n\nÚtil para temas que cresceram demais. A nota [[Comece aqui]] funciona como um mapa de conteúdo. Ver também [[Zettelkasten]].\n",
+      "body": "Uma nota que funciona como índice de um tema: lista e comenta as notas principais sobre ele, numa ordem que faça sentido.\n\nÚtil para temas que cresceram demais. Os quatro mapas deste cérebro são exemplos, como o [[Mapa do pensamento em rede]]. Ver também [[Zettelkasten]].\n",
       "type": "conceito",
       "tags": [
         "exemplo",
         "zettelkasten"
       ],
       "fav": false,
-      "created": 1789988040000,
-      "updated": 1790506440000
+      "created": 1789899120000,
+      "updated": 1790503920000
     },
     {
       "title": "Sumarização progressiva",
@@ -243,8 +315,8 @@
         "code"
       ],
       "fav": false,
-      "created": 1789901220000,
-      "updated": 1790506020000
+      "created": 1790244300000,
+      "updated": 1790503500000
     },
     {
       "title": "Pacotes intermediários",
@@ -255,8 +327,8 @@
         "code"
       ],
       "fav": false,
-      "created": 1790246400000,
-      "updated": 1790505600000
+      "created": 1790157480000,
+      "updated": 1790503080000
     },
     {
       "title": "Revisão semanal",
@@ -267,8 +339,8 @@
         "habito"
       ],
       "fav": false,
-      "created": 1790245980000,
-      "updated": 1790591580000
+      "created": 1790157060000,
+      "updated": 1790589060000
     },
     {
       "title": "Curva do esquecimento",
@@ -279,8 +351,8 @@
         "memoria"
       ],
       "fav": false,
-      "created": 1790159160000,
-      "updated": 1790591160000
+      "created": 1790070240000,
+      "updated": 1790588640000
     },
     {
       "title": "Repetição espaçada",
@@ -292,8 +364,8 @@
         "habito"
       ],
       "fav": false,
-      "created": 1790072340000,
-      "updated": 1790590740000
+      "created": 1789983420000,
+      "updated": 1790588220000
     },
     {
       "title": "Escrever é pensar",
@@ -304,8 +376,8 @@
         "escrita"
       ],
       "fav": false,
-      "created": 1790071920000,
-      "updated": 1790676720000
+      "created": 1790415000000,
+      "updated": 1790674200000
     },
     {
       "title": "Conhecimento em rede",
@@ -316,8 +388,8 @@
         "pkm"
       ],
       "fav": false,
-      "created": 1790417100000,
-      "updated": 1790676300000
+      "created": 1790328180000,
+      "updated": 1790673780000
     },
     {
       "title": "Serendipidade",
@@ -328,8 +400,8 @@
         "pkm"
       ],
       "fav": false,
-      "created": 1790330280000,
-      "updated": 1790675880000
+      "created": 1790241360000,
+      "updated": 1790673360000
     },
     {
       "title": "Notas perenes",
@@ -340,8 +412,8 @@
         "zettelkasten"
       ],
       "fav": false,
-      "created": 1789984260000,
-      "updated": 1790416260000
+      "created": 1789895340000,
+      "updated": 1790413740000
     },
     {
       "title": "Memex",
@@ -352,8 +424,8 @@
         "historia"
       ],
       "fav": false,
-      "created": 1789724640000,
-      "updated": 1790243040000
+      "created": 1789635720000,
+      "updated": 1790240520000
     },
     {
       "title": "Tiago Forte",
@@ -363,8 +435,8 @@
         "exemplo"
       ],
       "fav": false,
-      "created": 1789205820000,
-      "updated": 1789810620000
+      "created": 1789548900000,
+      "updated": 1789808100000
     },
     {
       "title": "Niklas Luhmann",
@@ -374,8 +446,8 @@
         "exemplo"
       ],
       "fav": false,
-      "created": 1789983000000,
-      "updated": 1790242200000
+      "created": 1789894080000,
+      "updated": 1790239680000
     },
     {
       "title": "Sönke Ahrens",
@@ -385,8 +457,8 @@
         "exemplo"
       ],
       "fav": false,
-      "created": 1789896180000,
-      "updated": 1790241780000
+      "created": 1789807260000,
+      "updated": 1790239260000
     },
     {
       "title": "Andy Matuschak",
@@ -396,8 +468,8 @@
         "exemplo"
       ],
       "fav": false,
-      "created": 1789982160000,
-      "updated": 1790414160000
+      "created": 1789893240000,
+      "updated": 1790411640000
     },
     {
       "title": "Vannevar Bush",
@@ -407,8 +479,8 @@
         "exemplo"
       ],
       "fav": false,
-      "created": 1789722540000,
-      "updated": 1790240940000
+      "created": 1789633620000,
+      "updated": 1790238420000
     },
     {
       "title": "Hermann Ebbinghaus",
@@ -418,8 +490,8 @@
         "exemplo"
       ],
       "fav": false,
-      "created": 1789981320000,
-      "updated": 1790586120000
+      "created": 1790324400000,
+      "updated": 1790583600000
     },
     {
       "title": "Building a Second Brain",
@@ -430,8 +502,8 @@
         "leitura"
       ],
       "fav": false,
-      "created": 1789548900000,
-      "updated": 1789808100000
+      "created": 1789459980000,
+      "updated": 1789805580000
     },
     {
       "title": "How to Take Smart Notes",
@@ -442,8 +514,8 @@
         "leitura"
       ],
       "fav": false,
-      "created": 1789894080000,
-      "updated": 1790239680000
+      "created": 1789805160000,
+      "updated": 1790237160000
     },
     {
       "title": "As We May Think",
@@ -455,19 +527,19 @@
         "historia"
       ],
       "fav": false,
-      "created": 1789807260000,
-      "updated": 1790239260000
+      "created": 1789718340000,
+      "updated": 1790236740000
     },
     {
       "title": "Projeto: Montar meu segundo cérebro",
-      "body": "Objetivo: ter um sistema que eu use de verdade em 30 dias.\n\n## Tarefas\n- [x] Escolher a ferramenta\n- [x] Ler o [[Comece aqui]]\n- [ ] Definir minhas [[Áreas de responsabilidade]] principais\n- [ ] Importar as notas antigas do Obsidian (menu ⋯)\n- [ ] Fazer a primeira [[Revisão semanal]]\n- [ ] Escrever 10 notas permanentes ([[Nota permanente]])\n\n## Referências\n[[Método PARA]] · [[Método CODE]] · [[Zettelkasten]]\n",
+      "body": "Objetivo: ter um sistema que eu use de verdade em 30 dias.\n\n## Tarefas\n- [x] Escolher a ferramenta\n- [x] Ler o guia Comece aqui\n- [ ] Definir minhas [[Áreas de responsabilidade]] principais\n- [ ] Importar as notas antigas do Obsidian (menu ⋯)\n- [ ] Fazer a primeira [[Revisão semanal]]\n- [ ] Escrever 10 notas permanentes ([[Nota permanente]])\n\n## Referências\n[[Método PARA]] · [[Método CODE]] · [[Zettelkasten]]\n",
       "type": "projeto",
       "tags": [
         "exemplo"
       ],
       "fav": true,
-      "created": 1790238840000,
-      "updated": 1790757240000
+      "created": 1790149920000,
+      "updated": 1790754720000
     },
     {
       "title": "Projeto: Ensaio sobre aprendizagem",
@@ -478,8 +550,8 @@
         "escrita"
       ],
       "fav": false,
-      "created": 1790065620000,
-      "updated": 1790670420000
+      "created": 1790408700000,
+      "updated": 1790667900000
     },
     {
       "title": "2026-09-30",
@@ -490,8 +562,8 @@
         "diario"
       ],
       "fav": false,
-      "created": 1790497200000,
-      "updated": 1790756400000
+      "created": 1790408280000,
+      "updated": 1790753880000
     }
   ]
 }
