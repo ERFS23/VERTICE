@@ -106,6 +106,7 @@ mark{background:rgba(244,184,96,.24);color:var(--ivory);border-radius:2px;paddin
 .chip{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;border:1px solid var(--rule);font:12px/1.5 var(--f-mono);color:var(--mist);background:var(--deck);max-width:100%}
 .chip:hover{border-color:var(--amber);color:var(--ivory)}
 .chip b{font-weight:400;color:var(--dust)}
+.chip svg{width:13px;height:13px;flex:none}
 .chip.missing{border-style:dashed;color:var(--dust)}
 .chip.link-chip{font-family:var(--f-ui);font-size:12.5px;color:var(--ivory)}
 .muted,.muted-note{color:var(--dust);font-size:12.5px;margin:0}
@@ -124,8 +125,22 @@ mark{background:rgba(244,184,96,.24);color:var(--ivory);border-radius:2px;paddin
 .seg{display:flex;border:1px solid var(--rule);border-radius:999px;overflow:hidden;flex:none}
 .seg button{font:12px var(--f-mono);padding:2px 9px;color:var(--mist)}
 .seg button[aria-pressed="true"],.seg button[aria-checked="true"]{background:var(--amber);color:var(--amber-ink)}
-.layout-seg{margin-inline:8px;display:grid;grid-template-columns:repeat(3,1fr)}
-.layout-seg button{padding:6px 4px;font-size:11.5px}
+.layout-seg{margin-inline:6px;display:flex;flex-wrap:wrap;gap:6px}
+.layout-seg button{padding:5px 11px;font-size:12px;border:1px solid var(--rule);border-radius:999px;color:var(--mist);background:var(--deck)}
+.layout-seg button:hover{color:var(--ivory);border-color:#384062}
+.layout-seg button[aria-checked="true"]{background:var(--amber);border-color:var(--amber);color:var(--amber-ink)}
+.grp-bulk button{font:inherit;letter-spacing:.08em;color:var(--mist);padding:0 2px}
+.grp-bulk button:hover{color:var(--amber)}
+.grp-row{display:flex;align-items:center;gap:2px;border-radius:7px}
+.grp-row:hover{background:var(--deck-2)}
+.grp-row .region{flex:1;min-width:0}
+.grp-row .region:hover{background:none}
+.grp-eye,.grp-only{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:6px;color:var(--dust);flex:none}
+.grp-eye:hover,.grp-only:hover{color:var(--ivory);background:var(--deck-3)}
+.grp-only{font:500 10px/1 var(--f-mono);letter-spacing:.06em;width:auto;padding-inline:6px;opacity:0}
+.grp-row:hover .grp-only,.grp-only:focus-visible{opacity:1}
+.grp-row.off .region{opacity:.35}
+.grp-eye svg{width:15px;height:15px}
 .seg-hint{margin-top:8px;font-size:12px;line-height:1.45}
 .theme-row .dot{background:none;border:1.5px solid var(--c)}
 @media (min-width:761px){
@@ -288,12 +303,10 @@ select.inp{appearance:auto}
 
   <aside class="rail" id="rail" aria-label="Filtros e navegação">
     <section><h3>Organizar o grafo</h3>
-      <div class="seg layout-seg" role="radiogroup" aria-label="Organizar o grafo" id="layoutSeg">
-        <button role="radio" data-layout="tema">Por tema</button><button role="radio" data-layout="tipo">Por tipo</button><button role="radio" data-layout="livre">Livre</button>
-      </div>
+      <div class="layout-seg" role="radiogroup" aria-label="Organizar o grafo" id="layoutSeg"></div>
       <p class="muted-note seg-hint" id="layoutHint"></p>
     </section>
-    <section><h3>Temas <span>regiões</span></h3><div id="themes" class="stack"></div></section>
+    <section><h3><span id="groupsTitle">Temas</span><span class="grp-bulk"><button data-grp-all="1" title="Mostrar todos os grupos">todos</button></span></h3><div id="themes" class="stack"></div></section>
     <section><h3>Tipos</h3><div id="regions" class="stack"></div></section>
     <section>
       <h3>Exibição</h3>
@@ -425,13 +438,14 @@ function cleanTags(input) {
   for (let t of arr) { t = String(t).trim().replace(/^#+/, '').toLowerCase(); if (t && t.length <= 40 && !out.includes(t)) out.push(t); }
   return out.slice(0, 24);
 }
+const cleanPasta = p => String(p || '').split('/').map(x => x.trim()).filter(Boolean).join(' / ').slice(0, 200);
 function coerce(id, d) {
   if (!d || typeof d !== 'object') return null;
   const title = String(d.title ?? '').trim().replace(/\s+/g, ' ');
   if (!title) return null;
   return {
     id, title: title.slice(0, 200), body: String(d.body ?? ''),
-    type: TYPE[d.type] ? d.type : 'nota', tags: cleanTags(d.tags), fav: !!d.fav,
+    type: TYPE[d.type] ? d.type : 'nota', tags: cleanTags(d.tags), fav: !!d.fav, pasta: cleanPasta(d.pasta), src: typeof d.src === 'string' ? d.src.slice(0, 400) : '',
     created: +d.created || +d.updated || 0, updated: +d.updated || +d.created || 0,
   };
 }
@@ -489,19 +503,21 @@ const ICONS = {
   link: '<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>',
   folder: '<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
   check: '<path d="m5 12 5 5 9-10"/>',
+  eye: '<path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12z"/><circle cx="12" cy="12" r="2.8"/>',
+  eyeOff: '<path d="M3 3l18 18M10.6 6.1A10 10 0 0 1 12 5.5c6.4 0 10 6.5 10 6.5a17 17 0 0 1-3.3 4M6.6 6.6C3.8 8.4 2 12 2 12s3.6 6.5 10 6.5c1.7 0 3.2-.4 4.5-1.1"/>',
   archive: '<rect x="3" y="4" width="18" height="5" rx="1"/><path d="M5 9v10h14V9M10 13h4"/>',
 };
 const icon = (n, fill = 'none') => `<svg viewBox="0 0 24 24" fill="${fill}" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[n] || ''}</svg>`;
 
 /* ---------- state ---------- */
 const S = Object.assign({ layout: 'tema', tagNodes: false, ghosts: false, orphans: true, labels: false, signals: true, repel: 75, dist: 40 }, lsGet('settings2', {}));
-if (!['tema', 'tipo', 'livre'].includes(S.layout)) S.layout = 'tema';
+if (!['tema', 'pasta', 'tag', 'tipo', 'livre'].includes(S.layout)) S.layout = 'tema';
 const state = {
   notes: new Map(), loaded: false, mode: 'loading', canWrite: true,
   hidden: new Set(lsGet('hidden', [])),
   hoverId: null, selectedId: null, local: null,
   search: { q: '', ids: null, results: [], active: 0, createIdx: -1 },
-  sample: null, downloads: null,
+  sample: null, downloads: null, mcp: null,
 };
 let idx = { byKey: new Map(), out: new Map(), back: new Map(), tags: new Map() };
 
@@ -579,7 +595,7 @@ const store = {
     return p;
   },
   put(n) {
-    const note = { id: n.id, title: n.title, body: n.body, type: n.type, tags: cleanTags(n.tags), fav: !!n.fav, created: n.created || Date.now(), updated: n.updated || Date.now() };
+    const note = { id: n.id, title: n.title, body: n.body, type: n.type, tags: cleanTags(n.tags), fav: !!n.fav, pasta: cleanPasta(n.pasta), src: n.src || '', created: n.created || Date.now(), updated: n.updated || Date.now() };
     state.notes.set(note.id, note);
     onNotesChanged();
     if (state.mode !== 'db') { this.persistLocal(); return Promise.resolve(true); }
@@ -679,15 +695,15 @@ function initGraph() {
     if (pendingFit) setTimeout(() => fit(600), 150);
   }).observe(el);
 }
-const sameCluster = l => l.source.cl != null && l.source.cl === l.target.cl;
+const sameCluster = l => l.source.grp != null && l.source.grp === l.target.grp;
 function applyLinkForce() {
   if (!G) return;
-  const split = l => S.layout === 'tema' && !sameCluster(l);
+  const split = l => S.layout !== 'livre' && !sameCluster(l);
   G.d3Force('link')
     .distance(l => split(l) ? S.dist * 2.2 : S.dist)
     .strength(l => (split(l) ? 0.2 : 1) / Math.max(1, Math.min(l.source.deg || 1, l.target.deg || 1)));
 }
-const regionKey = n => S.layout === 'tema' ? n.cl : S.layout === 'tipo' && n.kind === 'note' ? n.type : null;
+const regionKey = n => S.layout === 'livre' || n.kind !== 'note' ? null : n.grp;
 function gravity(alpha) {
   for (const n of gravity.nodes) {
     if (!finite(n)) { n.x = (Math.random() - .5) * 50; n.y = (Math.random() - .5) * 50; n.vx = n.vy = 0; }
@@ -778,40 +794,88 @@ function computeClusters(finalNodes, finalLinks) {
     return { key, size: g.length, head: head.id, label: key === 'solto' ? 'Notas soltas' : clusterName(head.label) };
   }).sort((a, b) => (b.key === 'nucleo') - (a.key === 'nucleo') || (a.key === 'solto') - (b.key === 'solto') || b.size - a.size);
 }
-function computeCenters(nodes, links) {
-  centers = new Map();
-  if (S.layout === 'tipo') {
-    const present = TYPE_LIST.filter(t => nodes.some(n => n.kind === 'note' && n.type === t.key));
-    const R = 110 + 17 * Math.sqrt(nodes.length);
-    present.forEach((t, i) => {
-      const a = -Math.PI / 2 + i * 2 * Math.PI / present.length;
-      centers.set(t.key, present.length === 1 ? { x: 0, y: 0 } : { x: Math.cos(a) * R, y: Math.sin(a) * R });
-    });
+const LOOSE = new Set(['solto', 'sem', 'outros']);
+let groups = [];
+const LAYOUTS = [
+  { key: 'tema', label: 'Temas', hint: 'Notas muito ligadas entre si formam uma região, com o nome da nota central. Um Mapa vira o centro do seu tema.' },
+  { key: 'pasta', label: 'Pastas', hint: 'Cada pasta vira uma região. No Notion, a pasta é a página onde a nota mora. Defina a pasta no editor de cada nota.' },
+  { key: 'tag', label: 'Palavras-chave', hint: 'Notas se agrupam pela palavra-chave (tag) mais forte que têm em comum.' },
+  { key: 'tipo', label: 'Tipos', hint: 'Cada tipo de nota ocupa uma região própria.' },
+  { key: 'livre', label: 'Livre', hint: 'Sem regiões: só as ligações definem onde cada nota fica. O filtro abaixo usa os temas.' },
+];
+const groupMode = () => S.layout === 'livre' ? 'tema' : S.layout;
+function hiddenGroups() { const h = S.hiddenGroups && S.hiddenGroups[groupMode()]; return new Set(Array.isArray(h) ? h : []); }
+function setHiddenGroups(set) { S.hiddenGroups = Object.assign({}, S.hiddenGroups, { [groupMode()]: [...set] }); lsSet('settings2', S); }
+const folderKey = p => { const segs = String(p || '').split('/').map(x => x.trim()).filter(Boolean); if (!segs.length) return ''; return segs.slice(0, 2).join(' / '); };
+function computeGroups(finalNodes) {
+  const notes = finalNodes.filter(n => n.kind === 'note');
+  const mode = groupMode();
+  for (const n of finalNodes) n.grp = null;
+  if (mode === 'tema') {
+    for (const n of notes) n.grp = n.cl;
+    groups = clusters.map(c => ({ key: c.key, label: c.label, size: c.size, head: c.head }));
     return;
   }
-  if (S.layout !== 'tema' || !clusters.length) return;
-  const nucleus = clusters.find(c => c.key === 'nucleo');
-  const real = clusters.filter(c => c.key !== 'solto' && c.key !== 'nucleo');
-  const loose = clusters.find(c => c.key === 'solto');
+  const label = new Map();
+  if (mode === 'tipo') {
+    for (const n of notes) { n.grp = n.type; label.set(n.type, TYPE[n.type].plural); }
+  } else if (mode === 'pasta') {
+    for (const n of notes) { const k = folderKey(state.notes.get(n.id)?.pasta); n.grp = k ? 'p:' + norm(k) : 'sem'; label.set(n.grp, k || 'Sem pasta'); }
+  } else {
+    const freq = new Map(), total = notes.length || 1;
+    for (const n of notes) for (const t of state.notes.get(n.id)?.tags || []) freq.set(t, (freq.get(t) || 0) + 1);
+    const usable = t => { const f = freq.get(t) || 0; return f >= 2 && (f / total <= 0.6 || total < 6); };
+    for (const n of notes) {
+      const tags = (state.notes.get(n.id)?.tags || []).filter(usable).sort((a, b) => freq.get(b) - freq.get(a) || a.localeCompare(b));
+      n.grp = tags[0] ? 't:' + tags[0] : 'sem';
+      label.set(n.grp, tags[0] ? '#' + tags[0] : 'Sem palavra-chave');
+    }
+  }
+  const count = new Map();
+  for (const n of notes) count.set(n.grp, (count.get(n.grp) || 0) + 1);
+  let list = [...count].map(([key, size]) => ({ key, size, label: label.get(key) }));
+  if (mode !== 'tipo') {
+    const main = list.filter(g => !LOOSE.has(g.key)).sort((a, b) => b.size - a.size);
+    if (main.length > 14) {
+      const drop = new Set(main.slice(14).map(g => g.key));
+      for (const n of notes) if (drop.has(n.grp)) n.grp = 'outros';
+      const outros = main.slice(14).reduce((a, g) => a + g.size, 0);
+      list = list.filter(g => !drop.has(g.key)).concat([{ key: 'outros', size: outros, label: 'Outros' }]);
+    }
+  }
+  groups = list.sort((a, b) => LOOSE.has(a.key) - LOOSE.has(b.key) || b.size - a.size || String(a.label).localeCompare(String(b.label)));
+}
+function computeCenters(nodes, links) {
+  centers = new Map();
+  if (S.layout === 'livre') return;
+  const present = new Set(nodes.filter(n => n.kind === 'note').map(n => n.grp));
+  const vis = groups.filter(g => present.has(g.key));
+  if (!vis.length) return;
+  const nucleus = vis.find(c => c.key === 'nucleo');
+  const real = vis.filter(c => !LOOSE.has(c.key) && c.key !== 'nucleo');
+  const loose = vis.filter(c => LOOSE.has(c.key));
   const R = 90 + 30 * Math.sqrt(nodes.length);
   if (nucleus) centers.set('nucleo', { x: 0, y: 0 });
   if (real.length <= 1) {
     if (real[0]) centers.set(real[0].key, { x: 0, y: 0 });
-    if (loose) centers.set('solto', { x: 0, y: R * 1.1 });
+    loose.forEach((c, i) => centers.set(c.key, { x: (i - (loose.length - 1) / 2) * R, y: R * 1.1 }));
     return;
   }
   const byId = new Map(nodes.map(n => [n.id, n]));
   const w = new Map();
   for (const [a, b] of links) {
-    const ca = byId.get(a)?.cl, cb = byId.get(b)?.cl;
+    const ca = byId.get(a)?.grp, cb = byId.get(b)?.grp;
     if (!ca || !cb || ca === cb) continue;
     const k = ca < cb ? ca + '|' + cb : cb + '|' + ca;
     w.set(k, (w.get(k) || 0) + 1);
   }
   const wt = (a, b) => w.get(a < b ? a + '|' + b : b + '|' + a) || 0;
-  const coreNode = nodes.filter(n => n.kind === 'note' && n.cl !== 'solto').sort((a, b) => b.deg - a.deg)[0];
-  const core = !nucleus && real.length >= 4 && coreNode ? coreNode.cl : null;
-  let ring = real.map(c => c.key).filter(k => k !== core);
+  let core = null;
+  if (S.layout === 'tema' && !nucleus && real.length >= 4) {
+    const coreNode = nodes.filter(n => n.kind === 'note' && real.some(c => c.key === n.grp)).sort((a, b) => b.deg - a.deg)[0];
+    core = coreNode ? coreNode.grp : null;
+  }
+  const ring = real.map(c => c.key).filter(k => k !== core);
   const ordered = [ring.shift()];
   while (ring.length) {
     const last = ordered[ordered.length - 1];
@@ -819,13 +883,21 @@ function computeCenters(nodes, links) {
     ordered.push(ring.shift());
   }
   if (core) centers.set(core, { x: 0, y: 0 });
-  const slots = ordered.length + (loose ? 1 : 0);
-  ordered.forEach((k, i) => { const a = -Math.PI / 2 + i * 2 * Math.PI / slots; centers.set(k, { x: Math.cos(a) * R, y: Math.sin(a) * R }); });
-  if (loose) { const a = -Math.PI / 2 + ordered.length * 2 * Math.PI / slots; centers.set('solto', { x: Math.cos(a) * R * 1.35, y: Math.sin(a) * R * 1.35 }); }
+  const slots = ordered.length + loose.length;
+  const Rr = R * Math.max(1, Math.sqrt(slots / 6));
+  ordered.forEach((k, i) => { const a = -Math.PI / 2 + i * 2 * Math.PI / slots; centers.set(k, { x: Math.cos(a) * Rr, y: Math.sin(a) * Rr }); });
+  loose.forEach((c, j) => { const a = -Math.PI / 2 + (ordered.length + j) * 2 * Math.PI / slots; centers.set(c.key, { x: Math.cos(a) * Rr * 1.3, y: Math.sin(a) * Rr * 1.3 }); });
+}
+function setLayout(mode) {
+  if (!LAYOUTS.some(l => l.key === mode)) return;
+  S.layout = mode; lsSet('settings2', S); renderLayoutSeg();
+  graphSig = '';
+  refresh();
+  if (G) { applyLinkForce(); G.d3ReheatSimulation(); setTimeout(() => fit(800), 1700); }
 }
 function fitCluster(key) {
   if (!G) return;
-  G.zoomToFit(700, mqMobile.matches ? 40 : 110, n => n.cl === key);
+  G.zoomToFit(700, mqMobile.matches ? 40 : 110, n => n.grp === key);
 }
 
 function updateGraph() {
@@ -861,12 +933,12 @@ function updateGraph() {
       keep.add(state.local.id);
     }
   }
-  const finalLinks = links.filter(([a, b]) => keep.has(a) && keep.has(b));
+  let finalLinks = links.filter(([a, b]) => keep.has(a) && keep.has(b));
   graphAdj = new Map();
   for (const id of keep) graphAdj.set(id, new Set());
   for (const [a, b] of finalLinks) { graphAdj.get(a).add(b); graphAdj.get(b).add(a); }
   const degs = [];
-  const finalNodes = [...keep].map(id => {
+  let finalNodes = [...keep].map(id => {
     const p = nodes.get(id), deg = graphAdj.get(id).size;
     degs.push(deg);
     let o = nodeCache.get(id);
@@ -883,6 +955,19 @@ function updateGraph() {
   hubDeg = Math.max(4, degs[Math.floor(degs.length * 0.08)] || 0);
   for (const o of finalNodes) { o.hub = o.kind !== 'ghost' && (o.deg >= hubDeg || o.type === 'mapa'); if (o.type === 'mapa') o.r += 2; }
   computeClusters(finalNodes, finalLinks);
+  computeGroups(finalNodes);
+  const hid = hiddenGroups();
+  if (hid.size) {
+    const drop = new Set(finalNodes.filter(n => n.kind === 'note' && hid.has(n.grp)).map(n => n.id));
+    finalLinks = finalLinks.filter(([a, b]) => !drop.has(a) && !drop.has(b));
+    const linked = new Set(finalLinks.flat());
+    finalNodes = finalNodes.filter(n => !drop.has(n.id) && (n.kind === 'note' || linked.has(n.id)));
+    keep = new Set(finalNodes.map(n => n.id));
+    graphAdj = new Map();
+    for (const n of finalNodes) graphAdj.set(n.id, new Set());
+    for (const [a, b] of finalLinks) { graphAdj.get(a).add(b); graphAdj.get(b).add(a); }
+    for (const n of finalNodes) n.deg = graphAdj.get(n.id).size;
+  }
   computeCenters(finalNodes, finalLinks);
   const sig = finalNodes.map(n => n.id).sort().join(',') + '|' + finalLinks.map(l => l.join('>')).sort().join(',');
   if (sig !== graphSig) {
@@ -961,26 +1046,26 @@ function drawNode(n, ctx, scale) {
 function drawBackdrop(ctx, scale) {
   if (!Number.isFinite(scale) || scale <= 0) return;
   if (S.layout === 'livre' || !G) return;
-  const groups = new Map();
+  const regs = new Map();
   for (const n of G.graphData().nodes) {
     if (n.kind !== 'note' || !finite(n)) continue;
     const key = regionKey(n);
     if (key == null) continue;
-    let g = groups.get(key);
-    if (!g) groups.set(key, g = { sx: 0, sy: 0, c: 0, pts: [] });
+    let g = regs.get(key);
+    if (!g) regs.set(key, g = { sx: 0, sy: 0, c: 0, pts: [] });
     g.sx += n.x; g.sy += n.y; g.c++; g.pts.push(n);
   }
-  const labelOf = new Map(clusters.map(c => [c.key, c.label]));
-  const hoverCl = state.hoverId ? nodeCache.get(state.hoverId)?.cl : null;
+  const labelOf = new Map(groups.map(c => [c.key, c.label]));
+  const hoverCl = state.hoverId ? nodeCache.get(state.hoverId)?.grp : null;
   ctx.save();
-  for (const [key, g] of groups) {
-    if (S.layout === 'tema' && g.c < 2) continue;
+  for (const [key, g] of regs) {
+    if (S.layout === 'tema' && g.c < 2 && key !== 'nucleo') continue;
     const cx = g.sx / g.c, cy = g.sy / g.c;
     let rad = 0;
     for (const p of g.pts) rad = Math.max(rad, Math.hypot(p.x - cx, p.y - cy));
     rad += 16;
-    const col = S.layout === 'tipo' ? TYPE[key].color : key === 'solto' ? C.dust : key === hoverCl ? C.amber : C.ivory;
-    const text = S.layout === 'tipo' ? TYPE[key].plural : labelOf.get(key) || '';
+    const col = S.layout === 'tipo' ? TYPE[key].color : LOOSE.has(key) ? C.dust : key === hoverCl ? C.amber : C.ivory;
+    const text = labelOf.get(key) || '';
     ctx.beginPath(); ctx.arc(cx, cy, rad, 0, 2 * Math.PI);
     ctx.fillStyle = hexA(col, 0.025); ctx.fill();
     ctx.setLineDash([3 / scale, 5 / scale]); ctx.lineWidth = 1 / scale; ctx.strokeStyle = hexA(col, 0.18); ctx.stroke(); ctx.setLineDash([]);
@@ -988,7 +1073,7 @@ function drawBackdrop(ctx, scale) {
     ctx.font = `500 ${11 / scale}px "IBM Plex Mono", monospace`;
     if ('letterSpacing' in ctx) ctx.letterSpacing = (2 / scale) + 'px';
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillStyle = hexA(col, S.layout === 'tema' ? 0.72 : 0.6);
+    ctx.fillStyle = hexA(col, S.layout === 'tipo' ? 0.6 : 0.72);
     const label = text.toUpperCase() + '  ' + g.c;
     let x = lx;
     const tl = G.screen2GraphCoords(0, 0), br = G.screen2GraphCoords(G.width(), G.height());
@@ -1086,22 +1171,24 @@ function toggleLocal(id) {
 
 /* ---------- search ---------- */
 function parseQuery(q) {
-  const tags = [], words = []; let type = null;
+  const tags = [], words = [], pastas = []; let type = null;
   for (const tok of q.trim().split(/\s+/)) {
     if (!tok) continue;
     if (tok.startsWith('#') && tok.length > 1) tags.push(norm(tok.slice(1)));
+    else if (/^pasta:/i.test(tok)) pastas.push(norm(tok.slice(6)));
     else if (/^tipo:/i.test(tok)) { const t = norm(tok.slice(5)); const f = TYPE_LIST.find(x => x.key === t || norm(x.label) === t || norm(x.plural) === t); if (f) type = f.key; }
     else words.push(norm(tok));
   }
-  return { tags, words, type };
+  return { tags, words, type, pastas };
 }
 function countOcc(h, w) { let c = 0, i = 0; while ((i = h.indexOf(w, i)) !== -1 && c < 20) { c++; i += w.length; } return c; }
 function searchNotes(q) {
-  const { tags, words, type } = parseQuery(q);
-  if (!tags.length && !words.length && !type) return [];
+  const { tags, words, type, pastas } = parseQuery(q);
+  if (!tags.length && !words.length && !type && !pastas.length) return [];
   const res = [];
   for (const n of state.notes.values()) {
     if (type && n.type !== type) continue;
+    if (pastas.length && !pastas.every(p => norm(n.pasta).includes(p))) continue;
     if (tags.length && !tags.every(t => n.tags.some(nt => { const x = norm(nt); return x === t || x.startsWith(t + '/'); }))) continue;
     let score = words.length ? 0 : 1, ok = true;
     if (words.length) {
@@ -1139,13 +1226,13 @@ function renderResults() {
   let html = '';
   if (!qv) {
     const recent = [...state.notes.values()].sort((a, b) => b.updated - a.updated).slice(0, 6);
-    html = `<div class="results-head">Como buscar</div><div class="tips"><span>Digite palavras para achar no título e no texto. Acentos não importam.</span><span><code>#tag</code> filtra por tag · <code>tipo:projeto</code> filtra por tipo</span></div>`;
+    html = `<div class="results-head">Como buscar</div><div class="tips"><span>Digite palavras para achar no título e no texto. Acentos não importam.</span><span><code>#tag</code> filtra por tag · <code>tipo:projeto</code> por tipo · <code>pasta:direito</code> por pasta</span></div>`;
     if (recent.length) html += `<div class="results-head">Abertas recentemente</div>` + recent.map(n => `<button class="result" data-open="${esc(n.id)}"><span class="dot" style="--c:${TYPE[n.type].color}"></span><span class="t">${esc(n.title)}</span></button>`).join('');
     state.search.createIdx = -1;
   } else {
     const res = state.search.results, total = state.search.ids ? state.search.ids.size : 0;
     const { words } = parseQuery(qv);
-    const showCreate = state.canWrite && words.length > 0 && !/(^|\s)(#|tipo:)/i.test(qv) && !idx.byKey.has(norm(qv));
+    const showCreate = state.canWrite && words.length > 0 && !/(^|\s)(#|tipo:|pasta:)/i.test(qv) && !idx.byKey.has(norm(qv));
     html = `<div class="results-head">${total ? `${total} ${total === 1 ? 'nota encontrada' : 'notas encontradas'} · em destaque no grafo` : 'Nenhuma nota encontrada'}</div>`;
     html += res.map((r, i) => `<button class="result" role="option" data-i="${i}" aria-selected="${i === state.search.active}"><span class="dot" style="--c:${TYPE[r.n.type].color}"></span><span class="t">${highlight(r.n.title, words)}</span><span class="s">${r.n.tags.length ? `<span class="tg">${r.n.tags.slice(0, 3).map(t => '#' + esc(t)).join(' ')}</span> ` : ''}${snippet(r.n.body, words, 150)}</span></button>`).join('');
     state.search.createIdx = showCreate ? res.length : -1;
@@ -1226,17 +1313,20 @@ function renderRail() {
     for (const k of outs.keys()) { const t = idx.byKey.get(k); if (t) pairs.add(n.id < t.id ? n.id + '|' + t.id : t.id + '|' + n.id); else pend.add(k); }
     if (!outs.size && !(idx.back.get(norm(n.title)) || new Set()).size) orphans++;
   }
-  $('#stats').innerHTML = `<span>Notas</span><strong>${state.notes.size}</strong><span>Conexões</span><strong>${pairs.size}</strong><span>Temas</span><strong>${clusters.filter(c => c.key !== 'solto').length}</strong><span>Ideias pendentes</span><strong>${pend.size}</strong><span>Notas soltas</span><strong>${orphans}</strong>`;
-  $('#themes').innerHTML = clusters.length ? clusters.map(c => `<button class="region theme-row" data-theme="${esc(c.key)}" title="Enquadrar esta região no grafo"><span class="dot" style="--c:${c.key === 'solto' ? C.dust : C.amber}"></span><span class="t" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0">${esc(c.label)}</span><span class="n">${c.size}</span></button>`).join('') : '<p class="muted-note">Os temas aparecem quando as notas começam a se ligar.</p>';
+  $('#stats').innerHTML = `<span>Notas</span><strong>${state.notes.size}</strong><span>Conexões</span><strong>${pairs.size}</strong><span>Temas</span><strong>${clusters.filter(c => !LOOSE.has(c.key)).length}</strong><span>Pastas</span><strong>${new Set([...state.notes.values()].map(n => folderKey(n.pasta)).filter(Boolean)).size}</strong><span>Ideias pendentes</span><strong>${pend.size}</strong><span>Notas soltas</span><strong>${orphans}</strong>`;
+  const hid = hiddenGroups();
+  const mode = groupMode();
+  $('#groupsTitle').textContent = { tema: 'Temas', pasta: 'Pastas', tag: 'Palavras-chave', tipo: 'Tipos' }[mode];
+  $('#themes').innerHTML = groups.length ? groups.map(g => {
+    const off = hid.has(g.key);
+    const col = mode === 'tipo' && TYPE[g.key] ? TYPE[g.key].color : LOOSE.has(g.key) ? C.dust : C.amber;
+    return `<div class="grp-row${off ? ' off' : ''}"><button class="grp-eye" data-grp-toggle="${esc(g.key)}" aria-pressed="${!off}" title="${off ? 'Mostrar' : 'Esconder'} este grupo">${icon(off ? 'eyeOff' : 'eye')}</button><button class="region theme-row" data-theme="${esc(g.key)}" title="Enquadrar este grupo"><span class="dot" style="--c:${col}"></span><span class="t" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0">${esc(g.label)}</span><span class="n">${g.size}</span></button><button class="grp-only" data-grp-only="${esc(g.key)}" title="Ver só este grupo">SÓ</button></div>`;
+  }).join('') : '<p class="muted-note">Os grupos aparecem quando houver notas.</p>';
 }
-const LAYOUT_HINT = {
-  tema: 'Notas muito ligadas entre si formam uma região, com o nome da nota central. Um Mapa vira o centro do seu tema.',
-  tipo: 'Cada tipo de nota ocupa uma região própria.',
-  livre: 'Sem regiões: só as ligações definem onde cada nota fica.',
-};
 function renderLayoutSeg() {
-  $$('#layoutSeg [data-layout]').forEach(b => b.setAttribute('aria-checked', String(b.dataset.layout === S.layout)));
-  $('#layoutHint').textContent = LAYOUT_HINT[S.layout];
+  const seg = $('#layoutSeg');
+  seg.innerHTML = LAYOUTS.map(l => `<button role="radio" data-layout="${l.key}" aria-checked="${l.key === S.layout}">${l.label}</button>`).join('');
+  $('#layoutHint').textContent = (LAYOUTS.find(l => l.key === S.layout) || LAYOUTS[0]).hint;
 }
 function applySettingsToUI() {
   renderLayoutSeg();
@@ -1269,7 +1359,7 @@ function renderOverlay(force = false) {
     ov.innerHTML = `<div class="box"><span class="eyebrow">Sem conexão com suas notas</span><h2>Abra pelo claude.ai para ver seu cérebro</h2><p>Esta visualização não tem acesso ao banco onde suas notas ficam salvas. Abra o link do Cérebro Vértice dentro do claude.ai (ou do app do Claude) com sua conta conectada. O que você criar aqui fica só neste navegador.</p>${state.canWrite ? `<div class="acts"><button class="btn primary" data-act="reload">Recarregar</button><button class="btn" data-act="new">${icon('plus')}Criar nota local</button></div>` : ''}</div>`;
     return;
   }
-  ov.innerHTML = `<div class="box"><span class="eyebrow">Cérebro vazio</span><h2>Sua rede começa com uma nota</h2><p>Escreva uma ideia, um livro que você leu ou um projeto. Ligue notas escrevendo [[Título de outra nota]] e a rede vai aparecendo aqui.</p>${state.canWrite ? `<div class="acts"><button class="btn primary" data-act="new">${icon('plus')}Escrever a primeira nota</button><button class="btn" data-act="import">${icon('upload')}Importar do Obsidian</button></div>` : ''}</div>`;
+  ov.innerHTML = `<div class="box"><span class="eyebrow">Cérebro vazio</span><h2>Sua rede começa com uma nota</h2><p>Escreva uma ideia, um livro que você leu ou um projeto. Ligue notas escrevendo [[Título de outra nota]] e a rede vai aparecendo aqui.</p>${state.canWrite ? `<div class="acts"><button class="btn primary" data-act="new">${icon('plus')}Escrever a primeira nota</button>${state.mcp ? `<button class="btn" data-act="notion">${icon('download')}Importar do Notion</button>` : ''}<button class="btn" data-act="import">${icon('upload')}Importar do Obsidian</button></div>` : ''}</div>`;
 }
 function showBanner(text) { const b = $('#banner'); b.textContent = text; b.hidden = false; }
 let toastT;
@@ -1422,9 +1512,11 @@ function renderNoteView(n) {
   const outLinks = [...(idx.out.get(n.id) || [])].map(([k, disp]) => ({ disp, note: idx.byKey.get(k) }));
   const backs = [...(idx.back.get(norm(n.title)) || [])].filter(id => id !== n.id).map(id => state.notes.get(id)).filter(Boolean).sort((a, b) => b.updated - a.updated);
   const unlinked = findUnlinked(n);
-  const theme = clusters.find(c => c.key === nodeCache.get(n.id)?.cl && c.key !== 'solto');
-  body.innerHTML = `
-    ${theme ? `<button class="chip theme-chip" data-theme-fit="${esc(theme.key)}" title="Enquadrar este tema no grafo" style="margin-bottom:14px">Tema · ${esc(theme.label)}</button>` : ''}`;
+  const grp = groups.find(c => c.key === nodeCache.get(n.id)?.grp && !LOOSE.has(c.key));
+  const grpName = { tema: 'Tema', pasta: 'Pasta', tag: 'Palavra-chave', tipo: 'Tipo' }[groupMode()];
+  body.innerHTML = `<div class="chips" style="margin-bottom:14px">
+    ${grp && S.layout !== 'livre' ? `<button class="chip theme-chip" data-theme-fit="${esc(grp.key)}" title="Enquadrar este grupo no grafo">${grpName} · ${esc(grp.label)}</button>` : ''}
+    ${n.pasta ? `<button class="chip" data-pasta-fit="${esc(n.pasta)}" title="Ver esta pasta no grafo">${icon('folder')} ${esc(n.pasta)}</button>` : ''}</div>`;
   body.insertAdjacentHTML('beforeend', `
     <article>
       <h1 class="note-title">${esc(n.title)}</h1>
@@ -1450,13 +1542,13 @@ function renderGhostView(title) {
 }
 
 /* ---------- editing ---------- */
-function createDraft({ title = '', type = 'nota', body = '', tags = [] } = {}) {
+function createDraft({ title = '', type = 'nota', body = '', tags = [], pasta = '' } = {}) {
   if (!state.canWrite) return;
   const ex = title && idx.byKey.get(norm(title));
   if (ex) { openNote(ex.id, { center: true }); return; }
   const id = uid(), now = Date.now();
   openEntry({ kind: 'note', id }, () => {
-    draftNote = { id, title, body, type, tags, fav: false, created: now, updated: now };
+    draftNote = { id, title, body, type, tags, pasta, fav: false, created: now, updated: now };
     editor = { id, draft: true, origTitle: null, err: '' };
   });
   const el = title ? $('#edBody') : $('#edTitle');
@@ -1484,6 +1576,7 @@ function renderEditor() {
       <div class="field"><label for="edType">Tipo</label><select id="edType" class="inp">${TYPE_LIST.map(x => `<option value="${x.key}"${x.key === n.type ? ' selected' : ''}>${x.label}</option>`).join('')}</select></div>
       <div class="field wide"><label for="edTags">Tags</label><input id="edTags" class="inp" placeholder="leitura, produtividade" autocomplete="off"></div>
     </div>
+    <div class="field"><label for="edPasta">Pasta <span class="hint">use / para subpastas</span></label><input id="edPasta" class="inp" list="pastaList" placeholder="Ex.: Estudos / Direito" autocomplete="off"><datalist id="pastaList">${[...new Set([...state.notes.values()].map(x => x.pasta).filter(Boolean))].sort().map(x => `<option value="${esc(x)}"></option>`).join('')}</datalist></div>
     <div class="field grow"><label for="edBody">Texto <span class="hint">[[ liga notas · ## título · - [ ] tarefa</span></label>
       <div class="ta-wrap"><textarea id="edBody" class="inp" spellcheck="true" placeholder="Escreva aqui. Digite [[ para conectar com outra nota."></textarea><div class="ac" id="ac" role="listbox" hidden></div></div>
     </div>
@@ -1491,6 +1584,7 @@ function renderEditor() {
   </div>`;
   $('#edTitle').value = n.title;
   $('#edTags').value = n.tags.join(', ');
+  $('#edPasta').value = n.pasta || '';
   $('#edBody').value = n.body;
 }
 const setStatus = s => { const el = $('#edStatus'); if (el) el.textContent = s; };
@@ -1501,7 +1595,7 @@ function collectEditor() {
   const tEl = $('#edTitle');
   if (!base || !tEl) return null;
   const title = tEl.value.trim().replace(/\s+/g, ' ');
-  const body = $('#edBody').value, type = $('#edType').value, tags = cleanTags($('#edTags').value);
+  const body = $('#edBody').value, type = $('#edType').value, tags = cleanTags($('#edTags').value), pasta = cleanPasta($('#edPasta').value);
   let err = '', finalTitle = title;
   if (!title) { err = editor.draft ? '' : 'Dê um título à nota. O título anterior foi mantido.'; finalTitle = editor.draft ? '' : base.title; }
   else {
@@ -1512,11 +1606,11 @@ function collectEditor() {
   editor.err = err; setEdErr(err);
   if (body.length > 200000) return null;
   if (editor.draft) {
-    draftNote = { ...base, title, body, type, tags };
+    draftNote = { ...base, title, body, type, tags, pasta };
     if (!finalTitle) { setStatus(err ? 'Rascunho não salvo' : 'Rascunho: salva quando tiver título'); return null; }
   }
-  const next = { ...base, title: finalTitle, body, type, tags };
-  if (!editor.draft && next.title === base.title && next.body === base.body && next.type === base.type && next.tags.join('\u0001') === base.tags.join('\u0001')) { setStatus(err ? 'Título não salvo' : 'Tudo salvo'); return null; }
+  const next = { ...base, title: finalTitle, body, type, tags, pasta };
+  if (!editor.draft && next.title === base.title && next.body === base.body && next.type === base.type && next.pasta === (base.pasta || '') && next.tags.join('\u0001') === base.tags.join('\u0001')) { setStatus(err ? 'Título não salvo' : 'Tudo salvo'); return null; }
   next.updated = Date.now();
   if (editor.draft) { next.created = Date.now(); editor.draft = false; draftNote = null; }
   return next;
@@ -1905,10 +1999,10 @@ Responda apenas com um array JSON, sem texto extra, neste formato:
 }
 
 /* ---------- import / export ---------- */
-function parseMarkdownFile(name, text, mtime) {
+function parseMarkdownFile(name, text, mtime, relPath = '') {
   let title = name.replace(/\.(md|markdown|txt)$/i, '').trim();
   let body = text.replace(/\r\n?/g, '\n');
-  const tags = []; let type = 'nota', typeGiven = false, created = mtime || Date.now();
+  const tags = []; let type = 'nota', typeGiven = false, created = mtime || Date.now(), pasta = '';
   const fm = /^---\n([\s\S]*?)\n---[ \t]*\n?/.exec(body);
   if (fm) {
     body = body.slice(fm[0].length);
@@ -1923,12 +2017,14 @@ function parseMarkdownFile(name, text, mtime) {
       if (blk) tags.push(...blk[1].split('\n').map(s => s.replace(/^\s*-\s*/, '')));
       else { const one = /^tags:[ \t]*(\S.*)$/mi.exec(y); if (one) tags.push(...one[1].split(/[,\s]+/)); }
     }
+    const pa = /^pasta:\s*(.+)$/mi.exec(y); if (pa) pasta = pa[1].trim().replace(/^["']|["']$/g, '');
     const cr = /^(?:criado|created|date):\s*(.+)$/mi.exec(y);
     if (cr) { const t = Date.parse(cr[1].trim().replace(/["']/g, '')); if (t) created = t; }
   }
   for (const m of body.matchAll(/(^|\s)#([\p{L}\p{N}_\-\/]+)/gu)) if (!/^\d+$/.test(m[2])) tags.push(m[2]);
   if (/^\d{4}-\d{2}-\d{2}$/.test(title) && !typeGiven) { type = 'diario'; typeGiven = true; }
-  return { title: title.replace(/\s+/g, ' ').slice(0, 200) || 'Sem título', body: body.trim(), type, typeGiven, tags: cleanTags(tags.map(t => String(t).trim().replace(/^["'#]+|["']+$/g, ''))), created };
+  if (!pasta && relPath.includes('/')) pasta = relPath.split('/').slice(1, -1).join(' / ');
+  return { pasta: cleanPasta(pasta), title: title.replace(/\s+/g, ' ').slice(0, 200) || 'Sem título', body: body.trim(), type, typeGiven, tags: cleanTags(tags.map(t => String(t).trim().replace(/^["'#]+|["']+$/g, ''))), created };
 }
 async function importFiles(fileList) {
   if (!state.canWrite) return;
@@ -1943,11 +2039,11 @@ async function importFiles(fileList) {
       try {
         const data = JSON.parse(text);
         const arr = Array.isArray(data) ? data : Array.isArray(data.notes) ? data.notes : [];
-        for (const d of arr) { const n = coerce('x', d); if (n) incoming.push({ title: n.title, body: n.body, type: n.type, typeGiven: true, tags: n.tags, created: n.created || Date.now(), fav: n.fav }); }
+        for (const d of arr) { const n = coerce('x', d); if (n) incoming.push({ pasta: n.pasta, title: n.title, body: n.body, type: n.type, typeGiven: true, tags: n.tags, created: n.created || Date.now(), fav: n.fav }); }
       } catch { toast(`“${f.name}” não é um backup JSON válido.`, 'error'); }
       continue;
     }
-    incoming.push(parseMarkdownFile(f.name, text, f.lastModified));
+    incoming.push(parseMarkdownFile(f.name, text, f.lastModified, f.webkitRelativePath || ''));
   }
   const byKey = new Map(idx.byKey);
   const ops = [];
@@ -1955,8 +2051,8 @@ async function importFiles(fileList) {
   for (const inc of incoming) {
     const k = norm(inc.title), ex = byKey.get(k), now = Date.now();
     let note;
-    if (ex) { note = { ...ex, body: inc.body || ex.body, tags: cleanTags([...ex.tags, ...inc.tags]), type: inc.typeGiven ? inc.type : ex.type, fav: ex.fav || !!inc.fav, updated: now }; updated++; }
-    else { note = { id: uid(), title: inc.title, body: inc.body, type: inc.type, tags: inc.tags, fav: !!inc.fav, created: inc.created || now, updated: now }; created++; }
+    if (ex) { note = { ...ex, pasta: inc.pasta || ex.pasta, body: inc.body || ex.body, tags: cleanTags([...ex.tags, ...inc.tags]), type: inc.typeGiven ? inc.type : ex.type, fav: ex.fav || !!inc.fav, updated: now }; updated++; }
+    else { note = { id: uid(), pasta: inc.pasta || '', title: inc.title, body: inc.body, type: inc.type, tags: inc.tags, fav: !!inc.fav, created: inc.created || now, updated: now }; created++; }
     byKey.set(k, note); ops.push(note);
   }
   let done = 0;
@@ -1978,12 +2074,12 @@ async function exportZip() {
   toast('Preparando o arquivo…', '', 20000);
   const zip = new JSZip(), used = new Set();
   for (const n of [...state.notes.values()].sort((a, b) => a.title.localeCompare(b.title, 'pt-BR'))) {
-    const folder = TYPE[n.type].plural;
+    const folder = n.pasta ? n.pasta.split(' / ').map(x => x.replace(/[\\:*?"<>|#^\[\]]/g, '-')).join('/') : TYPE[n.type].plural;
     const base = n.title.replace(/[\\/:*?"<>|#^\[\]]/g, '-').replace(/\s+/g, ' ').trim().slice(0, 120) || 'Sem título';
     let path = `${folder}/${base}.md`, i = 2;
     while (used.has(path.toLowerCase())) path = `${folder}/${base} ${i++}.md`;
     used.add(path.toLowerCase());
-    const fm = ['---', `tipo: ${n.type}`, `tags: [${n.tags.join(', ')}]`, base !== n.title ? `aliases: [${JSON.stringify(n.title)}]` : null, n.fav ? 'favorita: true' : null, n.created ? `criado: ${new Date(n.created).toISOString()}` : null, n.updated ? `atualizado: ${new Date(n.updated).toISOString()}` : null, '---'].filter(Boolean).join('\n');
+    const fm = ['---', `tipo: ${n.type}`, n.pasta ? `pasta: ${JSON.stringify(n.pasta)}` : null, `tags: [${n.tags.join(', ')}]`, base !== n.title ? `aliases: [${JSON.stringify(n.title)}]` : null, n.fav ? 'favorita: true' : null, n.created ? `criado: ${new Date(n.created).toISOString()}` : null, n.updated ? `atualizado: ${new Date(n.updated).toISOString()}` : null, '---'].filter(Boolean).join('\n');
     zip.file(path, fm + '\n\n' + n.body + '\n');
   }
   try {
@@ -2013,6 +2109,165 @@ async function removeExamples() {
   toast(`${ex.length} notas de exemplo removidas.`);
 }
 
+
+/* ---------- Notion import ---------- */
+const NOTION = 'Notion';
+const NOTION_FATAL = { needs_reauth: 'O Notion pediu nova autorização. Reconecte o Notion em claude.ai → Configurações → Conectores e tente de novo.', server_not_connected: 'O Notion não está conectado à sua conta. Conecte em claude.ai → Configurações → Conectores e tente de novo.', selection_required: 'Você tem mais de uma conexão do Notion. Escolha qual usar quando o Claude perguntar e tente de novo.', not_in_manifest: 'O acesso ao Notion não foi liberado para esta página. Tente de novo e aceite quando o Claude pedir.', consent_required: 'O acesso ao Notion não foi liberado para esta página. Tente de novo e aceite quando o Claude pedir.', blocked_by_policy: 'A sua organização bloqueia o uso do Notion por aqui.', approval_required: 'A sua organização exige aprovação para usar o Notion por aqui.', not_granted: 'Esta visualização não pode usar conectores. Abra a página pelo claude.ai.', capability_disabled: 'Esta visualização não pode usar conectores. Abra a página pelo claude.ai.', capability_removed: 'Esta visualização não pode usar conectores. Abra a página pelo claude.ai.' };
+const notionId = url => { const m = /([0-9a-f]{32})(?=$|[?#/])/i.exec(String(url || '').replace(/-/g, '')); return m ? m[1].toLowerCase() : null; };
+const cleanNotionTitle = t => String(t || '').replace(/\*\*|__|`/g, '').replace(/[#|\[\]]/g, '-').replace(/\s+/g, ' ').trim().slice(0, 180);
+function notionContent(text) { const m = /<content>([\s\S]*?)<\/content>/.exec(String(text || '')); return m ? m[1] : ''; }
+function notionProps(text) {
+  const m = /<properties>\s*([\s\S]*?)\s*<\/properties>/.exec(String(text || ''));
+  if (!m) return [];
+  let o; try { o = JSON.parse(m[1]); } catch { return []; }
+  const out = [];
+  for (const [k, v] of Object.entries(o || {})) {
+    if (k === 'title' || v == null || v === '' || (Array.isArray(v) && !v.length)) continue;
+    let val = v;
+    if (typeof v === 'string' && /^\[.*\]$/.test(v)) { try { val = JSON.parse(v); } catch {} }
+    val = Array.isArray(val) ? val.join(', ') : typeof val === 'object' ? JSON.stringify(val) : String(val);
+    if (val.length > 400) val = val.slice(0, 400) + '…';
+    out.push(`- **${k}:** ${val.replace(/<[^>]+>/g, '')}`);
+  }
+  return out;
+}
+function notionToMd(text, linkFor) {
+  let c = notionContent(text);
+  c = c.replace(/<(page|database|mention-page|mention-database)\b[^>]*url="([^"]*)"[^>]*>([\s\S]*?)<\/\1>/g, (x, tag, url, t) => linkFor(notionId(url), cleanNotionTitle(t)));
+  c = c.replace(/<mention-date\b[^>]*start="([^"]+)"[^>]*\/?>(?:<\/mention-date>)?/g, '$1');
+  c = c.replace(/<mention-user\b[^>]*>([\s\S]*?)<\/mention-user>/g, '@$1');
+  c = c.replace(/<br\s*\/?>/g, '\n').replace(/<empty-block\s*\/?>/g, '\n');
+  c = c.replace(/<image\b[^>]*source="([^"]+)"[^>]*>([\s\S]*?)<\/image>/g, (x, u, cap) => `![${cap.replace(/[\[\]]/g, '')}](${u})`);
+  c = c.replace(/<(embed|video|audio|file|pdf)\b[^>]*?\bsrc="([^"]*)"[^>]*>(?:[\s\S]*?<\/\1>)?/g, (x, t, u) => u ? `[Anexo](${u})` : '');
+  c = c.replace(/<callout\b[^>]*icon="([^"]*)"[^>]*>/g, '\n$1 ');
+  c = c.replace(/<\/td>\s*<td[^>]*>/g, ' | ').replace(/<\/th>\s*<th[^>]*>/g, ' | ');
+  c = c.replace(/\s*\{(?:color|toggle)="[^"]*"\}/g, '');
+  c = c.replace(/<\/?[a-z][a-z0-9_-]*(?:\s[^<>]*)?\/?>/gi, '\n');
+  c = c.replace(/^[ \t]+/gm, '').replace(/\n{3,}/g, '\n\n').trim();
+  return c;
+}
+async function importNotion() {
+  if (!state.mcp || !state.canWrite) return;
+  const ok = await confirmBox({ title: 'Importar do Notion?', body: 'Vou ler todas as páginas, subpáginas e bancos de dados que a sua conexão do Notion enxerga e transformar cada uma em nota, na pasta Notion e com a tag #notion. Links entre páginas viram ligações no grafo. Rodar de novo atualiza as notas, sem duplicar. O Claude pode pedir sua permissão para usar o Notion nesta página.', confirm: 'Importar tudo' });
+  if (!ok) return;
+  const back = document.createElement('div');
+  back.className = 'modal-back';
+  back.innerHTML = `<div class="modal" role="dialog" aria-modal="true" aria-labelledby="nxT"><h2 id="nxT">Importando do Notion</h2><p id="nxS">Listando suas páginas…</p><div class="thinking" id="nxB"><span class="pulse"></span><span id="nxC">Começando</span></div><div class="acts" style="margin-top:18px"><button class="btn" id="nxStop">Parar</button></div></div>`;
+  document.body.appendChild(back);
+  const st = t => { $('#nxS', back).textContent = t; }, ct = t => { $('#nxC', back).textContent = t; };
+  let stop = false, done = false;
+  $('#nxStop', back).onclick = () => { if (done) back.remove(); else { stop = true; st('Parando depois das páginas em andamento…'); } };
+  const finish = msg => { done = true; st(msg); $('#nxB', back).hidden = true; $('#nxStop', back).textContent = 'Fechar'; };
+  const call = async (tool, input) => {
+    try { return (await state.mcp.callTool(NOTION, tool, input)).payload; }
+    catch (e) {
+      if (e && e.retryable) { await sleep(Math.min(e.retryAfterMs || 1500, 8000) + Math.random() * 500); return (await state.mcp.callTool(NOTION, tool, input)).payload; }
+      throw e;
+    }
+  };
+  const fatal = e => e && NOTION_FATAL[e.code];
+  try {
+    const roots = [];
+    for (const tool of ['notion-list-private-pages', 'notion-list-shared-pages']) {
+      let cursor;
+      for (let i = 0; i < 25; i++) {
+        let pl;
+        try { pl = await call(tool, cursor ? { limit: 200, cursor } : { limit: 200 }); }
+        catch (e) { if (fatal(e)) throw e; break; }
+        for (const r of (pl && pl.results) || []) roots.push(r);
+        cursor = pl && (pl.next_cursor || pl.nextCursor || pl.cursor);
+        if (!cursor || pl.has_more === false) break;
+      }
+    }
+    if (!roots.length) { finish('Não encontrei nenhuma página no seu Notion. Confira se a conexão do Notion tem acesso às suas páginas.'); return; }
+    const queue = roots.map(r => ({ url: r.url, title: r.title, path: [], kind: r.type }));
+    const pages = new Map(), seen = new Set(), order = [];
+    let skipped = 0;
+    const MAX = 800;
+    const worker = async () => {
+      while (queue.length && !stop && pages.size < MAX) {
+        const item = queue.shift();
+        const id = notionId(item.url);
+        if (!id || seen.has(id)) continue;
+        seen.add(id);
+        let pl;
+        try { pl = await call('notion-fetch', { id: item.url }); }
+        catch (e) { if (fatal(e)) throw e; skipped++; continue; }
+        if (!pl || typeof pl !== 'object' || !pl.text) { skipped++; continue; }
+        const kind = (pl.metadata && pl.metadata.type) || item.kind || 'page';
+        const title = cleanNotionTitle(pl.title || item.title) || 'Sem título';
+        const rec = { id, url: String(pl.url || item.url).split('?')[0], title, path: item.path, kind, text: pl.text, edited: Date.parse(pl.page_last_edited_at) || 0, children: [] };
+        pages.set(id, rec); order.push(rec);
+        const childPath = [...item.path, title];
+        if (kind === 'database') {
+          for (const ds of [...new Set(pl.text.match(/collection:\/\/[0-9a-f-]+/g) || [])]) {
+            if (stop) break;
+            let q;
+            try { q = await call('notion-query-data-sources', { data: { mode: 'rows', data_source_url: ds, limit: 100 } }); }
+            catch (e) { if (fatal(e)) throw e; continue; }
+            const urls = new Set(JSON.stringify(q || {}).match(/https:\/\/(?:app\.notion\.com|www\.notion\.so)\/[^"\s\\]*[0-9a-f]{32}[^"\s\\]*/gi) || []);
+            for (const u of urls) { const cid = notionId(u); if (cid && cid !== id) { rec.children.push(cid); queue.push({ url: u, path: childPath, kind: 'page' }); } }
+          }
+        } else {
+          for (const m of notionContent(pl.text).matchAll(/<(page|database)\s+url="([^"]+)"[^>]*>([\s\S]*?)<\/\1>/g)) {
+            const cid = notionId(m[2]);
+            if (!cid) continue;
+            rec.children.push(cid);
+            queue.push({ url: m[2], title: cleanNotionTitle(m[3]), path: childPath, kind: m[1] });
+          }
+        }
+        st(`Lendo o Notion: ${pages.size} ${pages.size === 1 ? 'página lida' : 'páginas lidas'}${queue.length ? `, ${queue.length} na fila` : ''}.`);
+        ct(title);
+      }
+    };
+    await Promise.all([worker(), worker(), worker()]);
+    if (!pages.size) { finish('Não consegui ler nenhuma página do Notion.'); return; }
+    // titles
+    const taken = new Map();
+    for (const n of state.notes.values()) if (!n.id.startsWith('notion-')) taken.set(norm(n.title), n.id);
+    const idTitle = new Map();
+    for (const rec of order) {
+      let t = rec.title, i = 2;
+      if (taken.has(norm(t))) t = `${rec.title} (${rec.path[rec.path.length - 1] || 'Notion'})`;
+      const base = t;
+      while (taken.has(norm(t))) t = `${base} ${i++}`;
+      taken.set(norm(t), 'notion-' + rec.id);
+      idTitle.set(rec.id, t);
+    }
+    const linkFor = (cid, fallback) => cid && idTitle.has(cid) ? `[[${idTitle.get(cid)}]]` : fallback;
+    const ops = [];
+    for (const rec of order) {
+      const docId = 'notion-' + rec.id, ex = state.notes.get(docId);
+      let body = notionToMd(rec.text, linkFor);
+      const props = notionProps(rec.text);
+      if (props.length) body = props.join('\n') + (body ? '\n\n' + body : '');
+      if (rec.kind === 'database') {
+        const rows = rec.children.filter(c => idTitle.has(c)).map(c => `- [[${idTitle.get(c)}]]`);
+        body = 'Banco de dados do Notion.' + (rows.length ? '\n\n## Itens\n' + rows.join('\n') : '\n\nSem itens.');
+      } else {
+        const missing = rec.children.filter(c => idTitle.has(c) && !body.includes(`[[${idTitle.get(c)}]]`));
+        if (missing.length) body += '\n\n## Subpáginas\n' + missing.map(c => `- [[${idTitle.get(c)}]]`).join('\n');
+      }
+      body = (body.length > 190000 ? body.slice(0, 190000) + '\n\n…(texto cortado)' : body) + `\n\n---\n[Abrir no Notion](${rec.url})\n`;
+      const type = rec.kind === 'database' || rec.children.length >= 3 ? 'mapa' : 'nota';
+      const pasta = ['Notion', ...(rec.path.length ? rec.path : [rec.title])].map(x => x.replace(/\//g, '-')).join(' / ');
+      const note = { id: docId, title: idTitle.get(rec.id), body, type: ex && ex.type !== 'nota' && ex.type !== 'mapa' ? ex.type : type, pasta, src: rec.url,
+        tags: cleanTags([...(ex ? ex.tags : []), 'notion']), fav: ex ? ex.fav : false, created: ex ? ex.created : (rec.edited || Date.now()), updated: rec.edited || Date.now() };
+      if (ex && ex.title === note.title && ex.body === note.body && ex.pasta === note.pasta && ex.type === note.type) continue;
+      ops.push(note);
+    }
+    let written = 0;
+    const it = ops[Symbol.iterator]();
+    const writer = async () => { for (let r = it.next(); !r.done; r = it.next()) { await store.put(r.value); written++; ct(`Salvando ${written} de ${ops.length}`); } };
+    st(`Salvando ${ops.length} ${ops.length === 1 ? 'nota' : 'notas'}…`);
+    await Promise.all([writer(), writer(), writer()]);
+    finish(`${stop ? 'Importação interrompida. ' : 'Pronto. '}${pages.size} ${pages.size === 1 ? 'página lida' : 'páginas lidas'}, ${ops.length} ${ops.length === 1 ? 'nota criada ou atualizada' : 'notas criadas ou atualizadas'}${skipped ? `, ${skipped} não puderam ser abertas` : ''}${pages.size >= MAX ? `. Parei no limite de ${MAX} páginas; rode de novo para continuar` : ''}. Veja tudo em Pastas → Notion.`);
+    if (S.layout !== 'pasta') setLayout('pasta'); else setTimeout(() => fit(800), 1500);
+  } catch (e) {
+    finish(NOTION_FATAL[e && e.code] || (e && e.code === 'tool_error' ? 'O Notion recusou o pedido: ' + (e.message || '') : 'Não consegui falar com o Notion agora. Tente de novo em instantes.'));
+  }
+}
+
 /* ---------- menu ---------- */
 function renderMenu() {
   const m = $('#menu');
@@ -2022,6 +2277,7 @@ function renderMenu() {
     <button role="menuitem" class="w" data-menu="daily">${icon('calendar')}<span>Diário de hoje</span></button>
     <hr>
     <div class="label w">Obsidian e arquivos</div>
+    ${state.mcp ? `<button role="menuitem" class="w" data-menu="notion">${icon('download')}<span>Importar do Notion<small>Todas as páginas, viram notas na pasta Notion</small></span></button>` : ''}
     <button role="menuitem" class="w" data-menu="import">${icon('upload')}<span>Importar arquivos<small>.md do Obsidian ou backup .json</small></span></button>
     <button role="menuitem" class="w" data-menu="import-dir">${icon('folder')}<span>Importar pasta inteira<small>Escolha a pasta do seu cofre</small></span></button>
     ${exp ? `<button role="menuitem" data-menu="export-zip">${icon('download')}<span>Exportar para o Obsidian<small>.zip com um .md por nota</small></span></button>
@@ -2076,6 +2332,7 @@ function wire() {
     switch (b.dataset.menu) {
       case 'random': openRandom(); break;
       case 'daily': openDaily(); break;
+      case 'notion': importNotion(); break;
       case 'import': $('#fileMd').click(); break;
       case 'import-dir': $('#fileDir').click(); break;
       case 'export-zip': exportZip(); break;
@@ -2088,7 +2345,7 @@ function wire() {
 
   $('#overlay').addEventListener('click', e => {
     const b = e.target.closest('[data-act]'); if (!b) return;
-    if (b.dataset.act === 'new') createDraft(); else if (b.dataset.act === 'import') $('#fileMd').click(); else if (b.dataset.act === 'reload') location.reload();
+    if (b.dataset.act === 'new') createDraft(); else if (b.dataset.act === 'import') $('#fileMd').click(); else if (b.dataset.act === 'reload') location.reload(); else if (b.dataset.act === 'notion') importNotion();
   });
 
   const saveS = () => lsSet('settings2', S);
@@ -2098,11 +2355,12 @@ function wire() {
     const th = e.target.closest('[data-theme]');
     if (th) { fitCluster(th.dataset.theme); if (mqMobile.matches) closeRail(); return; }
     const ly = e.target.closest('[data-layout]');
-    if (ly) {
-      S.layout = ly.dataset.layout; saveS(); renderLayoutSeg();
-      if (G) { computeCenters(G.graphData().nodes, G.graphData().links.map(l => [lid(l.source), lid(l.target)])); applyLinkForce(); G.d3ReheatSimulation(); setTimeout(() => fit(800), 1700); }
-      return;
-    }
+    if (ly) { setLayout(ly.dataset.layout); return; }
+    const gt = e.target.closest('[data-grp-toggle]');
+    if (gt) { const h = hiddenGroups(), k = gt.dataset.grpToggle; h.has(k) ? h.delete(k) : h.add(k); setHiddenGroups(h); refresh(); return; }
+    const go = e.target.closest('[data-grp-only]');
+    if (go) { const k = go.dataset.grpOnly; setHiddenGroups(new Set(groups.map(g => g.key).filter(x => x !== k))); refresh(); setTimeout(() => fit(700), 500); return; }
+    if (e.target.closest('[data-grp-all]')) { setHiddenGroups(new Set()); refresh(); setTimeout(() => fit(700), 500); return; }
     const o = e.target.closest('[data-open]'); if (o) { openNote(o.dataset.open, { center: true }); return; }
     const t = e.target.closest('[data-tag]'); if (t) setSearch('#' + t.dataset.tag, true);
   });
@@ -2138,11 +2396,12 @@ function wire() {
   dr.addEventListener('click', e => {
     const a = e.target.closest('a.wl');
     if (a) { e.preventDefault(); openByTitle(a.dataset.target); return; }
-    const t = e.target.closest('[data-act],[data-open],[data-tag],[data-title],[data-create],[data-linkify],[data-addlink],[data-ask],[data-ac],[data-theme-fit]');
+    const t = e.target.closest('[data-act],[data-open],[data-tag],[data-title],[data-create],[data-linkify],[data-addlink],[data-ask],[data-ac],[data-theme-fit],[data-pasta-fit]');
     if (!t) return;
     const cur = drawer.cur;
     if (t.dataset.ac != null) { pickAC(+t.dataset.ac); return; }
     if (t.dataset.themeFit) { fitCluster(t.dataset.themeFit); if (mqMobile.matches) closeDrawer(); return; }
+    if (t.dataset.pastaFit) { const k = 'p:' + norm(folderKey(t.dataset.pastaFit)); if (S.layout !== 'pasta') setLayout('pasta'); setTimeout(() => fitCluster(k), S.layout === 'pasta' ? 0 : 1900); if (mqMobile.matches) closeDrawer(); return; }
     if (t.dataset.open) { openNote(t.dataset.open, { center: true }); return; }
     if (t.dataset.tag) { setSearch('#' + t.dataset.tag, true); return; }
     if (t.dataset.title) { openByTitle(t.dataset.title); return; }
@@ -2169,7 +2428,7 @@ function wire() {
     const id = e.target.id;
     if (id === 'askInput') { ask.q = e.target.value; return; }
     if (!editor) return;
-    if (id === 'edTitle' || id === 'edTags' || id === 'edBody') { setStatus('Editando…'); scheduleSave(); }
+    if (id === 'edTitle' || id === 'edTags' || id === 'edBody' || id === 'edPasta') { setStatus('Editando…'); scheduleSave(); }
     if (id === 'edBody') updateAC();
   });
   dr.addEventListener('change', e => {
@@ -2179,7 +2438,7 @@ function wire() {
   dr.addEventListener('click', e => { if (e.target.id === 'edBody') updateAC(); });
   dr.addEventListener('keydown', e => {
     if (e.target.id === 'askInput' && e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); runAsk(e.target.value); return; }
-    if (!editor || !['edBody', 'edTitle', 'edTags', 'edType'].includes(e.target.id)) return;
+    if (!editor || !['edBody', 'edTitle', 'edTags', 'edType', 'edPasta'].includes(e.target.id)) return;
     const acOpen = !!ac.items.length && !$('#ac').hidden;
     if (e.target.id === 'edBody' && acOpen) {
       if (e.key === 'ArrowDown') { e.preventDefault(); moveAC(1); return; }
@@ -2239,6 +2498,7 @@ function boot() {
   const use = name => (window.claude && typeof window.claude.use === 'function') ? window.claude.use(name).catch(() => null) : Promise.resolve(null);
   use('sample').then(s => { if (s) { state.sample = s; $('#btnAsk').hidden = false; if (!editor) refreshDrawer(); } });
   use('downloads').then(d => { if (d) { state.downloads = d; renderMenu(); } });
+  use('mcp').then(m => { if (m) { state.mcp = m; renderMenu(); renderOverlay(true); } });
 }
 boot();
 })();

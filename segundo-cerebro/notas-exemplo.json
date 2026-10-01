@@ -11,7 +11,8 @@
       ],
       "fav": true,
       "created": 1790600400000,
-      "updated": 1790859600000
+      "updated": 1790859600000,
+      "pasta": "Exemplos / Núcleo"
     },
     {
       "title": "Segundo Cérebro",
@@ -23,7 +24,8 @@
       ],
       "fav": false,
       "created": 1789476780000,
-      "updated": 1789822380000
+      "updated": 1789822380000,
+      "pasta": "Exemplos / Núcleo"
     },
     {
       "title": "Mapa do fluxo de trabalho",
@@ -35,7 +37,8 @@
       ],
       "fav": false,
       "created": 1790340360000,
-      "updated": 1790772360000
+      "updated": 1790772360000,
+      "pasta": "Exemplos / Fluxo de trabalho"
     },
     {
       "title": "Mapa da organização",
@@ -47,7 +50,8 @@
       ],
       "fav": false,
       "created": 1790253540000,
-      "updated": 1790771940000
+      "updated": 1790771940000,
+      "pasta": "Exemplos / Organização"
     },
     {
       "title": "Mapa do pensamento em rede",
@@ -59,7 +63,8 @@
       ],
       "fav": false,
       "created": 1790166720000,
-      "updated": 1790771520000
+      "updated": 1790771520000,
+      "pasta": "Exemplos / Pensamento em rede"
     },
     {
       "title": "Mapa da memória e aprendizagem",
@@ -71,7 +76,8 @@
       ],
       "fav": false,
       "created": 1790511900000,
-      "updated": 1790771100000
+      "updated": 1790771100000,
+      "pasta": "Exemplos / Memória e aprendizagem"
     },
     {
       "title": "Efeito de geração",
@@ -83,7 +89,8 @@
       ],
       "fav": false,
       "created": 1790425080000,
-      "updated": 1790770680000
+      "updated": 1790770680000,
+      "pasta": "Exemplos / Memória e aprendizagem"
     },
     {
       "title": "Modelos mentais",
@@ -95,7 +102,8 @@
       ],
       "fav": false,
       "created": 1790338260000,
-      "updated": 1790770260000
+      "updated": 1790770260000,
+      "pasta": "Exemplos / Memória e aprendizagem"
     },
     {
       "title": "Método CODE",
@@ -108,7 +116,8 @@
       ],
       "fav": false,
       "created": 1789387440000,
-      "updated": 1789905840000
+      "updated": 1789905840000,
+      "pasta": "Exemplos / Fluxo de trabalho"
     },
     {
       "title": "Capturar",
@@ -120,7 +129,8 @@
       ],
       "fav": false,
       "created": 1789300620000,
-      "updated": 1789905420000
+      "updated": 1789905420000,
+      "pasta": "Exemplos / Fluxo de trabalho"
     },
     {
       "title": "Organizar",
@@ -132,7 +142,8 @@
       ],
       "fav": false,
       "created": 1789732200000,
-      "updated": 1789991400000
+      "updated": 1789991400000,
+      "pasta": "Exemplos / Fluxo de trabalho"
     },
     {
       "title": "Destilar",
@@ -144,7 +155,8 @@
       ],
       "fav": false,
       "created": 1789731780000,
-      "updated": 1790077380000
+      "updated": 1790077380000,
+      "pasta": "Exemplos / Fluxo de trabalho"
     },
     {
       "title": "Expressar",
@@ -156,7 +168,8 @@
       ],
       "fav": false,
       "created": 1789644960000,
-      "updated": 1790076960000
+      "updated": 1790076960000,
+      "pasta": "Exemplos / Fluxo de trabalho"
     },
     {
       "title": "Método PARA",
@@ -169,7 +182,8 @@
       ],
       "fav": false,
       "created": 1789471740000,
-      "updated": 1789990140000
+      "updated": 1789990140000,
+      "pasta": "Exemplos / Organização"
     },
     {
       "title": "Projetos (PARA)",
@@ -181,7 +195,8 @@
       ],
       "fav": false,
       "created": 1789557720000,
-      "updated": 1790162520000
+      "updated": 1790162520000,
+      "pasta": "Exemplos / Organização"
     },
     {
       "title": "Áreas de responsabilidade",
@@ -193,7 +208,8 @@
       ],
       "fav": false,
       "created": 1789902900000,
-      "updated": 1790162100000
+      "updated": 1790162100000,
+      "pasta": "Exemplos / Organização"
     },
     {
       "title": "Recursos",
@@ -205,7 +221,8 @@
       ],
       "fav": false,
       "created": 1789816080000,
-      "updated": 1790161680000
+      "updated": 1790161680000,
+      "pasta": "Exemplos / Organização"
     },
     {
       "title": "Arquivo",
@@ -217,7 +234,8 @@
       ],
       "fav": false,
       "created": 1789729260000,
-      "updated": 1790161260000
+      "updated": 1790161260000,
+      "pasta": "Exemplos / Organização"
     },
     {
       "title": "Zettelkasten",
@@ -231,7 +249,8 @@
       ],
       "fav": true,
       "created": 1789728840000,
-      "updated": 1790247240000
+      "updated": 1790247240000,
+      "pasta": "Exemplos / Pensamento em rede"
     },
     {
       "title": "Nota atômica",
@@ -243,7 +262,8 @@
       ],
       "fav": false,
       "created": 1789728420000,
-      "updated": 1790333220000
+      "updated": 1790333220000,
+      "pasta": "Exemplos / Pensamento em rede"
     },
     {
       "title": "Nota permanente",
@@ -255,7 +275,8 @@
       ],
       "fav": false,
       "created": 1790073600000,
-      "updated": 1790332800000
+      "updated": 1790332800000,
+      "pasta": "Exemplos / Pensamento em rede"
     },
     {
       "title": "Notas de literatura",
@@ -268,7 +289,8 @@
       ],
       "fav": false,
       "created": 1789986780000,
-      "updated": 1790332380000
+      "updated": 1790332380000,
+      "pasta": "Exemplos / Pensamento em rede"
     },
     {
       "title": "Notas efêmeras",
@@ -280,7 +302,8 @@
       ],
       "fav": false,
       "created": 1789986360000,
-      "updated": 1790418360000
+      "updated": 1790418360000,
+      "pasta": "Exemplos / Pensamento em rede"
     },
     {
       "title": "Links bidirecionais",
@@ -292,7 +315,8 @@
       ],
       "fav": false,
       "created": 1789899540000,
-      "updated": 1790417940000
+      "updated": 1790417940000,
+      "pasta": "Exemplos / Pensamento em rede"
     },
     {
       "title": "Mapa de conteúdo",
@@ -304,7 +328,8 @@
       ],
       "fav": false,
       "created": 1789899120000,
-      "updated": 1790503920000
+      "updated": 1790503920000,
+      "pasta": "Exemplos / Pensamento em rede"
     },
     {
       "title": "Sumarização progressiva",
@@ -316,7 +341,8 @@
       ],
       "fav": false,
       "created": 1790244300000,
-      "updated": 1790503500000
+      "updated": 1790503500000,
+      "pasta": "Exemplos / Fluxo de trabalho"
     },
     {
       "title": "Pacotes intermediários",
@@ -328,7 +354,8 @@
       ],
       "fav": false,
       "created": 1790157480000,
-      "updated": 1790503080000
+      "updated": 1790503080000,
+      "pasta": "Exemplos / Fluxo de trabalho"
     },
     {
       "title": "Revisão semanal",
@@ -340,7 +367,8 @@
       ],
       "fav": false,
       "created": 1790157060000,
-      "updated": 1790589060000
+      "updated": 1790589060000,
+      "pasta": "Exemplos / Organização"
     },
     {
       "title": "Curva do esquecimento",
@@ -352,7 +380,8 @@
       ],
       "fav": false,
       "created": 1790070240000,
-      "updated": 1790588640000
+      "updated": 1790588640000,
+      "pasta": "Exemplos / Memória e aprendizagem"
     },
     {
       "title": "Repetição espaçada",
@@ -365,7 +394,8 @@
       ],
       "fav": false,
       "created": 1789983420000,
-      "updated": 1790588220000
+      "updated": 1790588220000,
+      "pasta": "Exemplos / Memória e aprendizagem"
     },
     {
       "title": "Escrever é pensar",
@@ -377,7 +407,8 @@
       ],
       "fav": false,
       "created": 1790415000000,
-      "updated": 1790674200000
+      "updated": 1790674200000,
+      "pasta": "Exemplos / Memória e aprendizagem"
     },
     {
       "title": "Conhecimento em rede",
@@ -389,7 +420,8 @@
       ],
       "fav": false,
       "created": 1790328180000,
-      "updated": 1790673780000
+      "updated": 1790673780000,
+      "pasta": "Exemplos / Pensamento em rede"
     },
     {
       "title": "Serendipidade",
@@ -401,7 +433,8 @@
       ],
       "fav": false,
       "created": 1790241360000,
-      "updated": 1790673360000
+      "updated": 1790673360000,
+      "pasta": "Exemplos / Pensamento em rede"
     },
     {
       "title": "Notas perenes",
@@ -413,7 +446,8 @@
       ],
       "fav": false,
       "created": 1789895340000,
-      "updated": 1790413740000
+      "updated": 1790413740000,
+      "pasta": "Exemplos / Pensamento em rede"
     },
     {
       "title": "Memex",
@@ -425,7 +459,8 @@
       ],
       "fav": false,
       "created": 1789635720000,
-      "updated": 1790240520000
+      "updated": 1790240520000,
+      "pasta": "Exemplos / Pensamento em rede"
     },
     {
       "title": "Tiago Forte",
@@ -436,7 +471,8 @@
       ],
       "fav": false,
       "created": 1789548900000,
-      "updated": 1789808100000
+      "updated": 1789808100000,
+      "pasta": "Exemplos / Pessoas e fontes"
     },
     {
       "title": "Niklas Luhmann",
@@ -447,7 +483,8 @@
       ],
       "fav": false,
       "created": 1789894080000,
-      "updated": 1790239680000
+      "updated": 1790239680000,
+      "pasta": "Exemplos / Pessoas e fontes"
     },
     {
       "title": "Sönke Ahrens",
@@ -458,7 +495,8 @@
       ],
       "fav": false,
       "created": 1789807260000,
-      "updated": 1790239260000
+      "updated": 1790239260000,
+      "pasta": "Exemplos / Pessoas e fontes"
     },
     {
       "title": "Andy Matuschak",
@@ -469,7 +507,8 @@
       ],
       "fav": false,
       "created": 1789893240000,
-      "updated": 1790411640000
+      "updated": 1790411640000,
+      "pasta": "Exemplos / Pessoas e fontes"
     },
     {
       "title": "Vannevar Bush",
@@ -480,7 +519,8 @@
       ],
       "fav": false,
       "created": 1789633620000,
-      "updated": 1790238420000
+      "updated": 1790238420000,
+      "pasta": "Exemplos / Pessoas e fontes"
     },
     {
       "title": "Hermann Ebbinghaus",
@@ -491,7 +531,8 @@
       ],
       "fav": false,
       "created": 1790324400000,
-      "updated": 1790583600000
+      "updated": 1790583600000,
+      "pasta": "Exemplos / Pessoas e fontes"
     },
     {
       "title": "Building a Second Brain",
@@ -503,7 +544,8 @@
       ],
       "fav": false,
       "created": 1789459980000,
-      "updated": 1789805580000
+      "updated": 1789805580000,
+      "pasta": "Exemplos / Pessoas e fontes"
     },
     {
       "title": "How to Take Smart Notes",
@@ -515,7 +557,8 @@
       ],
       "fav": false,
       "created": 1789805160000,
-      "updated": 1790237160000
+      "updated": 1790237160000,
+      "pasta": "Exemplos / Pessoas e fontes"
     },
     {
       "title": "As We May Think",
@@ -528,7 +571,8 @@
       ],
       "fav": false,
       "created": 1789718340000,
-      "updated": 1790236740000
+      "updated": 1790236740000,
+      "pasta": "Exemplos / Pessoas e fontes"
     },
     {
       "title": "Projeto: Montar meu segundo cérebro",
@@ -539,7 +583,8 @@
       ],
       "fav": true,
       "created": 1790149920000,
-      "updated": 1790754720000
+      "updated": 1790754720000,
+      "pasta": "Exemplos / Organização"
     },
     {
       "title": "Projeto: Ensaio sobre aprendizagem",
@@ -551,7 +596,8 @@
       ],
       "fav": false,
       "created": 1790408700000,
-      "updated": 1790667900000
+      "updated": 1790667900000,
+      "pasta": "Exemplos / Organização"
     },
     {
       "title": "2026-09-30",
@@ -563,7 +609,8 @@
       ],
       "fav": false,
       "created": 1790408280000,
-      "updated": 1790753880000
+      "updated": 1790753880000,
+      "pasta": "Exemplos / Núcleo"
     }
   ]
 }
