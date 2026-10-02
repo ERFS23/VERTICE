@@ -311,6 +311,7 @@ select.inp{appearance:auto}
     <section>
       <h3>Exibição</h3>
       <label class="switch" for="optTags"><span>Tags como nós</span><input type="checkbox" id="optTags"></label>
+      <label class="switch" for="optConcepts"><span>Ligações por conceito</span><input type="checkbox" id="optConcepts"></label>
       <label class="switch" for="optGhosts"><span>Ideias pendentes</span><input type="checkbox" id="optGhosts"></label>
       <label class="switch" for="optOrphans"><span>Notas soltas</span><input type="checkbox" id="optOrphans"></label>
       <label class="switch" for="optLabels"><span>Nomes sempre visíveis</span><input type="checkbox" id="optLabels"></label>
@@ -322,7 +323,7 @@ select.inp{appearance:auto}
     <section><h3>Tags</h3><div id="tags" class="chips"></div></section>
     <section><h3>Recentes</h3><div id="recent" class="stack"></div></section>
     <div class="stats" id="stats"></div>
-    <p class="muted-note" style="font:10.5px var(--f-mono);opacity:.6">Versão 6</p>
+    <p class="muted-note" style="font:10.5px var(--f-mono);opacity:.6">Versão 7</p>
   </aside>
 
   <main class="stage" id="stage">
@@ -511,7 +512,7 @@ const ICONS = {
 const icon = (n, fill = 'none') => `<svg viewBox="0 0 24 24" fill="${fill}" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[n] || ''}</svg>`;
 
 /* ---------- state ---------- */
-const S = Object.assign({ layout: 'tema', tagNodes: false, ghosts: false, orphans: true, labels: false, signals: true, repel: 75, dist: 40 }, lsGet('settings2', {}));
+const S = Object.assign({ layout: 'tema', tagNodes: false, ghosts: false, concepts: true, orphans: true, labels: false, signals: true, repel: 75, dist: 40 }, lsGet('settings2', {}));
 if (!['tema', 'pasta', 'tag', 'tipo', 'livre'].includes(S.layout)) S.layout = 'tema';
 const state = {
   notes: new Map(), loaded: false, mode: 'loading', canWrite: true,
@@ -672,7 +673,8 @@ function initGraph() {
     .nodeCanvasObject(drawNode)
     .nodePointerAreaPaint((n, color, ctx) => { if (!finite(n)) return; ctx.fillStyle = color; ctx.beginPath(); ctx.arc(n.x, n.y, Math.max(n.r || 3, 4) + 2, 0, 2 * Math.PI); ctx.fill(); })
     .linkColor(linkColor)
-    .linkWidth(l => isFocusLink(l) ? 1.3 : 0.55)
+    .linkWidth(l => isFocusLink(l) ? 1.3 : l.sim ? 0.45 : 0.55)
+    .linkLineDash(l => l.sim ? [2, 3] : null)
     .linkDirectionalParticles(S.signals ? 2 : 0)
     .linkDirectionalParticleWidth(l => isFocusLink(l) ? 2.4 : 0)
     .linkDirectionalParticleSpeed(0.006)
@@ -688,6 +690,7 @@ function initGraph() {
     .onRenderFramePre(drawBackdrop);
   G.d3Force('charge').strength(-S.repel).distanceMax(700);
   applyLinkForce();
+  G.d3Force('center', null); // it would slide every note away from the fixed folder circles; 'gravity' keeps things centred
   G.d3Force('gravity', gravity);
   new ResizeObserver(() => {
     const w = el.clientWidth, h = el.clientHeight;
@@ -700,9 +703,11 @@ const sameCluster = l => l.source.grp != null && l.source.grp === l.target.grp;
 function applyLinkForce() {
   if (!G) return;
   const split = l => S.layout !== 'livre' && !sameCluster(l);
+  // in folder view each circle is its own small world: repulsion only reaches neighbours in the same folder
+  G.d3Force('charge').distanceMax(S.layout === 'pasta' ? 90 : 700);
   G.d3Force('link')
-    .distance(l => split(l) ? S.dist * 2.2 : S.dist)
-    .strength(l => (split(l) ? 0.2 : 1) / Math.max(1, Math.min(l.source.deg || 1, l.target.deg || 1)));
+    .distance(l => split(l) ? S.dist * 2.2 : l.sim ? S.dist * 1.3 : S.dist)
+    .strength(l => (split(l) ? (S.layout === 'pasta' ? 0.002 : 0.2) : l.sim ? 0.35 : 1) / Math.max(1, Math.min(l.source.deg || 1, l.target.deg || 1)));
 }
 const regionKey = n => S.layout === 'livre' || n.kind !== 'note' ? null : n.grp;
 function gravity(alpha) {
@@ -710,13 +715,53 @@ function gravity(alpha) {
     if (!finite(n)) { n.x = (Math.random() - .5) * 50; n.y = (Math.random() - .5) * 50; n.vx = n.vy = 0; }
     let cx = 0, cy = 0, k = 0.012;
     const key = regionKey(n), c = key != null && centers.get(key);
-    if (c) { cx = c.x; cy = c.y; k = 0.075; }
+    if (c) { cx = c.x; cy = c.y; k = c.r ? 0.16 : 0.075; }
     n.vx += (cx - n.x) * k * alpha;
     n.vy += (cy - n.y) * k * alpha;
+    if (!c || !c.r) continue;
+    // folder view: a soft wall keeps every note inside its folder circle
+    const dx = n.x - c.x, dy = n.y - c.y, d = Math.hypot(dx, dy), inner = c.r - (n.r || 3) - 6;
+    if (d > inner && d > 0) { const f = (d - inner) / d * 0.6 * alpha; n.vx -= dx * f; n.vy -= dy * f; }
   }
 }
 gravity.nodes = [];
 gravity.initialize = nodes => { gravity.nodes = nodes; };
+
+/* Concept links: notes that talk about the same things (shared rare words, title words and tags weigh more) get a dashed link. */
+const CSTOP = new Set('para pelo pela pelos pelas como mais mas porque quando onde quem qual quais isso isto esse essa esses essas este esta estes estas aquele aquela aqui sobre entre depois antes ainda tambem muito muita muitos muitas tudo todo toda todos todas cada mesmo mesma voce voces vamos fazer feito faz tem temos sao ser estar esta estao seja sera foram sendo nada nunca sempre outro outra outros outras algo alguem coisa coisas pode podem precisa porque entao assim aquilo dela dele deles delas nossa nosso seus suas meus minhas minha meu sua seu fica ficar vai vou vem uma umas uns com sem dos das nos nas num numa pra pro ate bem ver vez vezes cada desde enquanto porem tanto quanto qualquer apenas sobre abrir notion https http www com br reel instagram video videos nota notas pagina paginas'.split(' '));
+let conceptCache = { sig: '', pairs: [] };
+function conceptPairs() {
+  const list = [...state.notes.values()];
+  const sig = list.map(n => n.id + ':' + n.updated).join('|');
+  if (conceptCache.sig === sig) return conceptCache.pairs;
+  const tok = s => norm(s).split(/[^a-z0-9]+/).filter(w => w.length >= 4 && !CSTOP.has(w) && !/^\d+$/.test(w));
+  const docs = list.map(n => {
+    const tf = new Map(), addW = (w, k) => tf.set(w, (tf.get(w) || 0) + k);
+    for (const w of tok(n.title)) addW(w, 3);
+    for (const t of n.tags) for (const w of tok(t.replace(/-/g, ' '))) addW(w, 3);
+    for (const w of tok(plain(n.body).slice(0, 6000))) addW(w, 1);
+    return { id: n.id, tf };
+  });
+  const N = docs.length, df = new Map();
+  for (const d of docs) for (const w of d.tf.keys()) df.set(w, (df.get(w) || 0) + 1);
+  const inv = new Map();
+  for (const d of docs) {
+    let v = [];
+    for (const [w, c] of d.tf) { const f = df.get(w); if (f < 2 || f > Math.max(3, N * 0.2)) continue; v.push([w, (1 + Math.log(c)) * Math.log(N / f)]); }
+    v.sort((a, b) => b[1] - a[1]); v = v.slice(0, 40);
+    const len = Math.hypot(...v.map(x => x[1])) || 1;
+    d.v = v.map(([w, x]) => [w, x / len]);
+    for (const [w, x] of d.v) { if (!inv.has(w)) inv.set(w, []); inv.get(w).push([d.id, x]); }
+  }
+  const pairs = [];
+  for (const d of docs) {
+    const sc = new Map();
+    for (const [w, x] of d.v) for (const [o, y] of inv.get(w)) if (o !== d.id) sc.set(o, (sc.get(o) || 0) + x * y);
+    [...sc].filter(([, v]) => v >= 0.14).sort((a, b) => b[1] - a[1]).slice(0, 3).forEach(([o]) => pairs.push([d.id, o]));
+  }
+  conceptCache = { sig, pairs };
+  return pairs;
+}
 
 /* Louvain community detection: groups notes that link densely to each other into themes */
 function louvain(ids, edges) {
@@ -807,7 +852,28 @@ const LAYOUTS = [
 const groupMode = () => S.layout === 'livre' ? 'tema' : S.layout;
 function hiddenGroups() { const h = S.hiddenGroups && S.hiddenGroups[groupMode()]; return new Set(Array.isArray(h) ? h : []); }
 function setHiddenGroups(set) { S.hiddenGroups = Object.assign({}, S.hiddenGroups, { [groupMode()]: [...set] }); lsSet('settings2', S); }
-const folderKey = p => { const segs = String(p || '').split('/').map(x => x.trim()).filter(Boolean); if (!segs.length) return ''; return segs.slice(0, 2).join(' / '); };
+const folderSegs = p => { const s = String(p || '').split('/').map(x => x.trim()).filter(Boolean); return s.length > 1 && norm(s[0]) === 'notion' ? s.slice(1) : s; };
+const FOLDER_MAX = 60;
+/* Folder of each note: the top folder, split one level deeper while a folder holds more than FOLDER_MAX notes. */
+function folderKeys(notes) {
+  const segs = new Map(notes.map(n => [n.id, folderSegs(state.notes.get(n.id)?.pasta)]));
+  const depth = new Map(notes.map(n => [n.id, 1]));
+  for (let round = 0; round < 4; round++) {
+    const count = new Map();
+    for (const n of notes) { const s = segs.get(n.id); if (s.length) { const k = s.slice(0, depth.get(n.id)).join(' / '); count.set(k, (count.get(k) || 0) + 1); } }
+    let changed = false;
+    for (const n of notes) {
+      const s = segs.get(n.id), d = depth.get(n.id);
+      if (s.length > d && count.get(s.slice(0, d).join(' / ')) > FOLDER_MAX) { depth.set(n.id, d + 1); changed = true; }
+    }
+    if (!changed) break;
+  }
+  const out = new Map(), lastSeen = new Map();
+  for (const n of notes) { const s = segs.get(n.id), d = Math.min(depth.get(n.id), s.length); out.set(n.id, s.length ? { key: s.slice(0, d).join(' / '), segs: s.slice(0, d) } : null); }
+  for (const f of out.values()) if (f) { const l = norm(f.segs[f.segs.length - 1]); if (!lastSeen.has(l)) lastSeen.set(l, new Set()); lastSeen.get(l).add(f.key); }
+  for (const f of out.values()) if (f) { const s = f.segs, dup = lastSeen.get(norm(s[s.length - 1])).size > 1; f.label = s.slice(dup ? -2 : -1).join(' › '); }
+  return out;
+}
 function computeGroups(finalNodes) {
   const notes = finalNodes.filter(n => n.kind === 'note');
   const mode = groupMode();
@@ -821,7 +887,8 @@ function computeGroups(finalNodes) {
   if (mode === 'tipo') {
     for (const n of notes) { n.grp = n.type; label.set(n.type, TYPE[n.type].plural); }
   } else if (mode === 'pasta') {
-    for (const n of notes) { const k = folderKey(state.notes.get(n.id)?.pasta); n.grp = k ? 'p:' + norm(k) : 'sem'; label.set(n.grp, k || 'Sem pasta'); }
+    const fk = folderKeys(notes);
+    for (const n of notes) { const f = fk.get(n.id); n.grp = f ? 'p:' + norm(f.key) : 'sem'; label.set(n.grp, f ? f.label : 'Sem pasta'); }
   } else {
     const freq = new Map(), total = notes.length || 1;
     for (const n of notes) for (const t of state.notes.get(n.id)?.tags || []) freq.set(t, (freq.get(t) || 0) + 1);
@@ -835,12 +902,13 @@ function computeGroups(finalNodes) {
   const count = new Map();
   for (const n of notes) count.set(n.grp, (count.get(n.grp) || 0) + 1);
   let list = [...count].map(([key, size]) => ({ key, size, label: label.get(key) }));
+  const cap = mode === 'pasta' ? 48 : 14;
   if (mode !== 'tipo') {
     const main = list.filter(g => !LOOSE.has(g.key)).sort((a, b) => b.size - a.size);
-    if (main.length > 14) {
-      const drop = new Set(main.slice(14).map(g => g.key));
+    if (main.length > cap) {
+      const drop = new Set(main.slice(cap).map(g => g.key));
       for (const n of notes) if (drop.has(n.grp)) n.grp = 'outros';
-      const outros = main.slice(14).reduce((a, g) => a + g.size, 0);
+      const outros = main.slice(cap).reduce((a, g) => a + g.size, 0);
       list = list.filter(g => !drop.has(g.key)).concat([{ key: 'outros', size: outros, label: 'Outros' }]);
     }
   }
@@ -852,6 +920,7 @@ function computeCenters(nodes, links) {
   const present = new Set(nodes.filter(n => n.kind === 'note').map(n => n.grp));
   const vis = groups.filter(g => present.has(g.key));
   if (!vis.length) return;
+  if (S.layout === 'pasta') { packFolders(vis, nodes, links); return; }
   const nucleus = vis.find(c => c.key === 'nucleo');
   const real = vis.filter(c => !LOOSE.has(c.key) && c.key !== 'nucleo');
   const loose = vis.filter(c => LOOSE.has(c.key));
@@ -889,6 +958,44 @@ function computeCenters(nodes, links) {
   ordered.forEach((k, i) => { const a = -Math.PI / 2 + i * 2 * Math.PI / slots; centers.set(k, { x: Math.cos(a) * Rr, y: Math.sin(a) * Rr }); });
   loose.forEach((c, j) => { const a = -Math.PI / 2 + (ordered.length + j) * 2 * Math.PI / slots; centers.set(c.key, { x: Math.cos(a) * Rr * 1.3, y: Math.sin(a) * Rr * 1.3 }); });
 }
+/* Folder view: every folder is a fixed circle sized by how many notes it holds; folders that share links sit side by side. */
+const folderRadius = c => 26 + Math.sqrt(Math.max(1, c) * S.repel / 0.16) * 0.6; // matches the spread folder gravity and repulsion settle on
+function packFolders(vis, nodes, links) {
+  const cnt = new Map();
+  for (const n of nodes) if (n.kind === 'note') cnt.set(n.grp, (cnt.get(n.grp) || 0) + 1);
+  const byId = new Map(nodes.map(n => [n.id, n])), w = new Map();
+  for (const [a, b] of links) {
+    const ca = byId.get(a)?.grp, cb = byId.get(b)?.grp;
+    if (!ca || !cb || ca === cb) continue;
+    for (const [x, y] of [[ca, cb], [cb, ca]]) { if (!w.has(x)) w.set(x, new Map()); w.get(x).set(y, (w.get(x).get(y) || 0) + 1); }
+  }
+  const items = vis.map(g => ({ key: g.key, r: folderRadius(cnt.get(g.key) || 1) }))
+    .sort((a, b) => LOOSE.has(a.key) - LOOSE.has(b.key) || b.r - a.r);
+  const placed = [], GAP = 34;
+  const fits = (x, y, r) => placed.every(p => Math.hypot(p.x - x, p.y - y) >= p.r + r + GAP);
+  for (const it of items) {
+    if (!placed.length) { placed.push({ ...it, x: 0, y: 0 }); continue; }
+    // aim next to the placed folder it shares most links with (else the centre)
+    const nb = w.get(it.key);
+    let anchor = { x: 0, y: 0 }, best = 0;
+    if (nb) for (const p of placed) { const k = nb.get(p.key) || 0; if (k > best) { best = k; anchor = p; } }
+    let spot = null;
+    for (let step = 0; step < 2400 && !spot; step++) {
+      const a = step * 0.5, d = 6 * Math.sqrt(step) * 6;
+      const x = anchor.x + Math.cos(a) * d, y = anchor.y + Math.sin(a) * d * 0.82;
+      if (fits(x, y, it.r)) spot = { x, y };
+    }
+    placed.push({ ...it, ...(spot || { x: placed.length * 400, y: 0 }) });
+  }
+  for (const p of placed) centers.set(p.key, { x: p.x, y: p.y, r: p.r });
+  // notes that are outside their folder (layout switch, new note) start inside it instead of travelling across the map
+  for (const n of nodes) {
+    const c = n.kind === 'note' && centers.get(n.grp);
+    if (!c || (finite(n) && Math.hypot(n.x - c.x, n.y - c.y) < c.r * 0.9)) continue;
+    const a = Math.random() * 2 * Math.PI, d = Math.sqrt(Math.random()) * c.r * 0.6;
+    n.x = c.x + Math.cos(a) * d; n.y = c.y + Math.sin(a) * d; n.vx = n.vy = 0;
+  }
+}
 function setLayout(mode) {
   if (!LAYOUTS.some(l => l.key === mode)) return;
   S.layout = mode; lsSet('settings2', S); renderLayoutSeg();
@@ -898,6 +1005,8 @@ function setLayout(mode) {
 }
 function fitCluster(key) {
   if (!G) return;
+  const c = S.layout === 'pasta' && centers.get(key);
+  if (c && c.r) { G.centerAt(c.x, c.y, 700); G.zoom(Math.min(8, Math.min(G.width(), G.height()) / (c.r * 2.3)), 700); return; }
   G.zoomToFit(700, mqMobile.matches ? 40 : 110, n => n.grp === key);
 }
 
@@ -914,6 +1023,12 @@ function updateGraph() {
       else if (S.ghosts) { const gid = 'g:' + k; if (!nodes.has(gid)) nodes.set(gid, { kind: 'ghost', label: disp, type: null }); add(n.id, gid); }
     }
     if (S.tagNodes) for (const tg of n.tags) { const tid = 't:' + tg; if (!nodes.has(tid)) nodes.set(tid, { kind: 'tag', label: '#' + tg, type: null, tag: tg }); add(n.id, tid); }
+  }
+  if (S.concepts) for (const [a, b] of conceptPairs()) {
+    if (!nodes.has(a) || !nodes.has(b)) continue;
+    const k = a < b ? a + '\u0001' + b : b + '\u0001' + a;
+    if (seen.has(k)) continue;
+    seen.add(k); links.push([a, b, 's']);
   }
   const adj = new Map();
   for (const id of nodes.keys()) adj.set(id, new Set());
@@ -961,7 +1076,7 @@ function updateGraph() {
   if (hid.size) {
     const drop = new Set(finalNodes.filter(n => n.kind === 'note' && hid.has(n.grp)).map(n => n.id));
     finalLinks = finalLinks.filter(([a, b]) => !drop.has(a) && !drop.has(b));
-    const linked = new Set(finalLinks.flat());
+    const linked = new Set(finalLinks.flatMap(l => [l[0], l[1]]));
     finalNodes = finalNodes.filter(n => !drop.has(n.id) && (n.kind === 'note' || linked.has(n.id)));
     keep = new Set(finalNodes.map(n => n.id));
     graphAdj = new Map();
@@ -973,7 +1088,7 @@ function updateGraph() {
   const sig = finalNodes.map(n => n.id).sort().join(',') + '|' + finalLinks.map(l => l.join('>')).sort().join(',');
   if (sig !== graphSig) {
     graphSig = sig;
-    G.graphData({ nodes: finalNodes, links: finalLinks.map(([a, b]) => ({ source: a, target: b })) });
+    G.graphData({ nodes: finalNodes, links: finalLinks.map(([a, b, s]) => ({ source: a, target: b, sim: s === 's' })) });
   }
   if (nodeCache.size > finalNodes.length * 2 + 200) for (const id of [...nodeCache.keys()]) if (!keep.has(id)) nodeCache.delete(id);
   if (state.hoverId && !graphAdj.has(state.hoverId)) { state.hoverId = null; renderHoverCard(null); }
@@ -996,12 +1111,12 @@ function linkColor(l) {
   if (hiMode === 'hover') return isFocusLink(l) ? 'rgba(244,184,96,.8)' : 'rgba(236,231,220,.035)';
   if (hiMode === 'search') return hi.has(lid(l.source)) && hi.has(lid(l.target)) ? 'rgba(236,231,220,.32)' : 'rgba(236,231,220,.03)';
   if (isFocusLink(l)) return 'rgba(244,184,96,.55)';
-  return 'rgba(236,231,220,.11)';
+  return l.sim ? 'rgba(159,190,214,.10)' : 'rgba(236,231,220,.11)';
 }
 
 function drawNode(n, ctx, scale) {
   if (!finite(n) || !Number.isFinite(scale) || scale <= 0) return;
-  const r = Number.isFinite(n.r) && n.r > 0 ? n.r : 3;
+  const r = Math.max(Number.isFinite(n.r) && n.r > 0 ? n.r : 3, (n.kind === 'note' ? 2.2 : 1.4) / scale);
   const dimmed = !!hi && !hi.has(n.id);
   const sel = n.id === state.selectedId, hov = n.id === state.hoverId;
   const col = n.kind === 'note' ? TYPE[n.type].color : n.kind === 'tag' ? C.mist : C.dust;
@@ -1061,16 +1176,22 @@ function drawBackdrop(ctx, scale) {
   ctx.save();
   for (const [key, g] of regs) {
     if (S.layout === 'tema' && g.c < 2 && key !== 'nucleo') continue;
-    const cx = g.sx / g.c, cy = g.sy / g.c;
-    let rad = 0;
-    for (const p of g.pts) rad = Math.max(rad, Math.hypot(p.x - cx, p.y - cy));
-    rad += 16;
+    const fixed = S.layout === 'pasta' && centers.get(key);
+    let cx = g.sx / g.c, cy = g.sy / g.c, rad = 0;
+    if (fixed && fixed.r) { cx = fixed.x; cy = fixed.y; rad = fixed.r; }
+    else { for (const p of g.pts) rad = Math.max(rad, Math.hypot(p.x - cx, p.y - cy)); rad += 16; }
     const col = S.layout === 'tipo' ? TYPE[key].color : LOOSE.has(key) ? C.dust : key === hoverCl ? C.amber : C.ivory;
     const text = labelOf.get(key) || '';
     ctx.beginPath(); ctx.arc(cx, cy, rad, 0, 2 * Math.PI);
-    ctx.fillStyle = hexA(col, 0.025); ctx.fill();
-    ctx.setLineDash([3 / scale, 5 / scale]); ctx.lineWidth = 1 / scale; ctx.strokeStyle = hexA(col, 0.18); ctx.stroke(); ctx.setLineDash([]);
-    const lx = cx, ly = cy - rad - 12 / scale;
+    if (fixed) {
+      ctx.fillStyle = hexA(col, key === hoverCl ? 0.07 : 0.04); ctx.fill();
+      ctx.lineWidth = 1.2 / scale; ctx.strokeStyle = hexA(col, key === hoverCl ? 0.5 : 0.26); ctx.stroke();
+    } else {
+      ctx.fillStyle = hexA(col, 0.025); ctx.fill();
+      ctx.setLineDash([3 / scale, 5 / scale]); ctx.lineWidth = 1 / scale; ctx.strokeStyle = hexA(col, 0.18); ctx.stroke(); ctx.setLineDash([]);
+    }
+    if (fixed && rad * scale < 34 && key !== hoverCl) continue;
+    const lx = cx, ly = fixed ? cy - rad + 14 / scale : cy - rad - 12 / scale;
     ctx.font = `500 ${11 / scale}px "IBM Plex Mono", monospace`;
     if ('letterSpacing' in ctx) ctx.letterSpacing = (2 / scale) + 'px';
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
@@ -1314,7 +1435,7 @@ function renderRail() {
     for (const k of outs.keys()) { const t = idx.byKey.get(k); if (t) pairs.add(n.id < t.id ? n.id + '|' + t.id : t.id + '|' + n.id); else pend.add(k); }
     if (!outs.size && !(idx.back.get(norm(n.title)) || new Set()).size) orphans++;
   }
-  $('#stats').innerHTML = `<span>Notas</span><strong>${state.notes.size}</strong><span>Conexões</span><strong>${pairs.size}</strong><span>Temas</span><strong>${clusters.filter(c => !LOOSE.has(c.key)).length}</strong><span>Pastas</span><strong>${new Set([...state.notes.values()].map(n => folderKey(n.pasta)).filter(Boolean)).size}</strong><span>Ideias pendentes</span><strong>${pend.size}</strong><span>Notas soltas</span><strong>${orphans}</strong>`;
+  $('#stats').innerHTML = `<span>Notas</span><strong>${state.notes.size}</strong><span>Conexões</span><strong>${pairs.size}</strong><span>Temas</span><strong>${clusters.filter(c => !LOOSE.has(c.key)).length}</strong><span>Pastas</span><strong>${new Set([...state.notes.values()].map(n => folderSegs(n.pasta)[0]).filter(Boolean)).size}</strong><span>Ideias pendentes</span><strong>${pend.size}</strong><span>Notas soltas</span><strong>${orphans}</strong>`;
   const hid = hiddenGroups();
   const mode = groupMode();
   $('#groupsTitle').textContent = { tema: 'Temas', pasta: 'Pastas', tag: 'Palavras-chave', tipo: 'Tipos' }[mode];
@@ -1331,7 +1452,7 @@ function renderLayoutSeg() {
 }
 function applySettingsToUI() {
   renderLayoutSeg();
-  $('#optTags').checked = S.tagNodes; $('#optGhosts').checked = S.ghosts;
+  $('#optTags').checked = S.tagNodes; $('#optGhosts').checked = S.ghosts; $('#optConcepts').checked = S.concepts;
   $('#optOrphans').checked = S.orphans; $('#optLabels').checked = S.labels; $('#optSignals').checked = S.signals;
   $('#optRepel').value = S.repel; $('#optDist').value = S.dist;
 }
@@ -2115,7 +2236,7 @@ async function removeExamples() {
 const NOTION = 'Notion';
 const NOTION_FATAL = { needs_reauth: 'O Notion pediu nova autorização. Reconecte o Notion em claude.ai → Configurações → Conectores e tente de novo.', server_not_connected: 'O Notion não está conectado à sua conta. Conecte em claude.ai → Configurações → Conectores e tente de novo.', selection_required: 'Você tem mais de uma conexão do Notion. Escolha qual usar quando o Claude perguntar e tente de novo.', not_in_manifest: 'O acesso ao Notion não foi liberado para esta página. Tente de novo e aceite quando o Claude pedir.', consent_required: 'O acesso ao Notion não foi liberado para esta página. Tente de novo e aceite quando o Claude pedir.', blocked_by_policy: 'A sua organização bloqueia o uso do Notion por aqui.', approval_required: 'A sua organização exige aprovação para usar o Notion por aqui.', not_granted: 'Esta visualização não pode usar conectores. Abra a página pelo claude.ai.', capability_disabled: 'Esta visualização não pode usar conectores. Abra a página pelo claude.ai.', capability_removed: 'Esta visualização não pode usar conectores. Abra a página pelo claude.ai.' };
 const notionId = url => { const m = /([0-9a-f]{32})(?=$|[?#/])/i.exec(String(url || '').replace(/-/g, '')); return m ? m[1].toLowerCase() : null; };
-const cleanNotionTitle = t => String(t || '').replace(/\*\*|__|`/g, '').replace(/[#|\[\]]/g, '-').replace(/\s+/g, ' ').trim().slice(0, 180);
+const cleanNotionTitle = t => String(t || '').replace(/<mention-date\b[^>]*start="([^"]+)"[^>]*\/?>/g, '$1').replace(/<[^>]+>/g, '').replace(/\*\*|__|`/g, '').replace(/[#|\[\]]/g, '-').replace(/\s+/g, ' ').trim().slice(0, 180);
 function notionContent(text) { const m = /<content>([\s\S]*?)<\/content>/.exec(String(text || '')); return m ? m[1] : ''; }
 function notionProps(text) {
   const m = /<properties>\s*([\s\S]*?)\s*<\/properties>/.exec(String(text || ''));
@@ -2128,18 +2249,34 @@ function notionProps(text) {
     if (typeof v === 'string' && /^\[.*\]$/.test(v)) { try { val = JSON.parse(v); } catch {} }
     val = Array.isArray(val) ? val.join(', ') : typeof val === 'object' ? JSON.stringify(val) : String(val);
     if (val.length > 400) val = val.slice(0, 400) + '…';
-    out.push(`- **${k}:** ${val.replace(/<[^>]+>/g, '')}`);
+    out.push(`- **${k}:** ${redactSecrets(val.replace(/<[^>]+>/g, ''))}`);
   }
   return out;
 }
+/* Secrets and phone numbers never enter the brain: the page can be shared by link. */
+const SECRET_SUMMARY = /supabase|rssend|resend|claude code|senha|password|api key|token|credencia/i;
+function redactSecrets(c) {
+  return String(c || '')
+    .replace(/<details>\s*<summary>([^<\n]*)<\/summary>([\s\S]*?)<\/details>/g, (x, sm, inner) => SECRET_SUMMARY.test(sm) || /sk-ant-|eyJhbGci|password|senha/i.test(inner)
+      ? `<details><summary>${sm}</summary>\n🔒 Conteúdo sensível (senhas/chaves) omitido do cérebro. Veja no Notion.\n</details>` : x)
+    .replace(/sk-ant-[\w-]+(?:\s+[\w-]{20,})?/g, '[chave omitida]')
+    .replace(/eyJ[\w-]{10,}\.[\w-]{10,}\.[\w-]{10,}/g, '[token omitido]')
+    .replace(/\bre_[A-Za-z0-9_]{16,}/g, '[chave omitida]')
+    .replace(/((?:senha|password)[^\n:]{0,20}[:\-–]\s*)\S+/gi, '$1[omitido]')
+    .replace(/(?:\+?55\s?)?\(?\b\d{2}\)?\s?9?\d{4}[-\s]?\d{4}\b/g, '[telefone omitido]');
+}
+const notionFileName = u => { try { return decodeURIComponent(String(u).split('?')[0].split('/').pop()).replace(/_/g, ' '); } catch { return 'arquivo'; } };
 function notionToMd(text, linkFor) {
-  let c = notionContent(text);
-  c = c.replace(/<(page|database|mention-page|mention-database)\b[^>]*url="([^"]*)"[^>]*>([\s\S]*?)<\/\1>/g, (x, tag, url, t) => linkFor(notionId(url), cleanNotionTitle(t)));
+  let c = redactSecrets(notionContent(text));
+  c = c.replace(/<transcript>[\s\S]*?<\/transcript>/g, '').replace(/\s*\[\^https?:[^\]]+\]/g, '');
+  c = c.replace(/<(page|database|mention-page|mention-database)\b[^>]*?\surl="\{*([^"}]*)\}*"[^>]*>([\s\S]*?)<\/\1>/g, (x, tag, url, t) => linkFor(notionId(url), cleanNotionTitle(t)));
+  c = c.replace(/<summary>([^\n<]+)<\/summary>/g, '\n### $1\n');
+  c = c.replace(/!\[([^\]]*)\]\((https:\/\/prod-files-secure[^)]+)\)/g, (x, alt) => `🖼️ _${alt || 'imagem'} (abrir no Notion)_`);
   c = c.replace(/<mention-date\b[^>]*start="([^"]+)"[^>]*\/?>(?:<\/mention-date>)?/g, '$1');
   c = c.replace(/<mention-user\b[^>]*>([\s\S]*?)<\/mention-user>/g, '@$1');
   c = c.replace(/<br\s*\/?>/g, '\n').replace(/<empty-block\s*\/?>/g, '\n');
   c = c.replace(/<image\b[^>]*source="([^"]+)"[^>]*>([\s\S]*?)<\/image>/g, (x, u, cap) => `![${cap.replace(/[\[\]]/g, '')}](${u})`);
-  c = c.replace(/<(embed|video|audio|file|pdf)\b[^>]*?\bsrc="([^"]*)"[^>]*>(?:[\s\S]*?<\/\1>)?/g, (x, t, u) => u ? `[Anexo](${u})` : '');
+  c = c.replace(/<(embed|video|audio|file|pdf)\b[^>]*?\bsrc="([^"]*)"[^>]*>(?:[\s\S]*?<\/\1>)?/g, (x, t, u) => !u ? '' : /prod-files-secure/.test(u) ? `📎 ${notionFileName(u)}` : `[Anexo](${u})`);
   c = c.replace(/<callout\b[^>]*icon="([^"]*)"[^>]*>/g, '\n$1 ');
   c = c.replace(/<\/td>\s*<td[^>]*>/g, ' | ').replace(/<\/th>\s*<th[^>]*>/g, ' | ');
   c = c.replace(/\s*\{(?:color|toggle)="[^"]*"\}/g, '');
@@ -2210,7 +2347,7 @@ async function importNotion() {
             for (const u of urls) { const cid = notionId(u); if (cid && cid !== id) { rec.children.push(cid); queue.push({ url: u, path: childPath, kind: 'page' }); } }
           }
         } else {
-          for (const m of notionContent(pl.text).matchAll(/<(page|database)\s+url="([^"]+)"[^>]*>([\s\S]*?)<\/\1>/g)) {
+          for (const m of notionContent(pl.text).matchAll(/<(page|database)\b[^>]*?\surl="\{*([^"}]+)\}*"[^>]*>([\s\S]*?)<\/\1>/g)) {
             const cid = notionId(m[2]);
             if (!cid) continue;
             rec.children.push(cid);
@@ -2251,7 +2388,7 @@ async function importNotion() {
       }
       body = (body.length > 190000 ? body.slice(0, 190000) + '\n\n…(texto cortado)' : body) + `\n\n---\n[Abrir no Notion](${rec.url})\n`;
       const type = rec.kind === 'database' || rec.children.length >= 3 ? 'mapa' : 'nota';
-      const pasta = ['Notion', ...(rec.path.length ? rec.path : [rec.title])].map(x => x.replace(/\//g, '-')).join(' / ');
+      const pasta = ['Notion', ...(rec.path.length ? rec.path : rec.children.length ? [rec.title] : ['Páginas avulsas'])].map(x => x.replace(/\//g, '-')).join(' / ');
       const note = { id: docId, title: idTitle.get(rec.id), body, type: ex && ex.type !== 'nota' && ex.type !== 'mapa' ? ex.type : type, pasta, src: rec.url,
         tags: cleanTags([...(ex ? ex.tags : []), 'notion']), fav: ex ? ex.fav : false, created: ex ? ex.created : (rec.edited || Date.now()), updated: rec.edited || Date.now() };
       if (ex && ex.title === note.title && ex.body === note.body && ex.pasta === note.pasta && ex.type === note.type) continue;
@@ -2372,6 +2509,7 @@ function wire() {
     const id = e.target.id, v = e.target.checked;
     if (id === 'optTags') { S.tagNodes = v; saveS(); updateGraph(); }
     else if (id === 'optGhosts') { S.ghosts = v; saveS(); updateGraph(); }
+    else if (id === 'optConcepts') { S.concepts = v; saveS(); updateGraph(); if (G) { applyLinkForce(); G.d3ReheatSimulation(); } }
     else if (id === 'optOrphans') { S.orphans = v; saveS(); updateGraph(); }
     else if (id === 'optLabels') { S.labels = v; saveS(); }
     else if (id === 'optSignals') { S.signals = v; saveS(); if (G) G.linkDirectionalParticles(v ? 2 : 0); }
@@ -2379,7 +2517,7 @@ function wire() {
   });
   $('#rail').addEventListener('input', e => {
     if (!G) return;
-    if (e.target.id === 'optRepel') { S.repel = +e.target.value; G.d3Force('charge').strength(-S.repel); G.d3ReheatSimulation(); }
+    if (e.target.id === 'optRepel') { S.repel = +e.target.value; G.d3Force('charge').strength(-S.repel); applyLinkForce(); G.d3ReheatSimulation(); }
     if (e.target.id === 'optDist') { S.dist = +e.target.value; applyLinkForce(); G.d3ReheatSimulation(); }
   });
 
@@ -2405,7 +2543,7 @@ function wire() {
     const cur = drawer.cur;
     if (t.dataset.ac != null) { pickAC(+t.dataset.ac); return; }
     if (t.dataset.themeFit) { fitCluster(t.dataset.themeFit); if (mqMobile.matches) closeDrawer(); return; }
-    if (t.dataset.pastaFit) { const k = 'p:' + norm(folderKey(t.dataset.pastaFit)); if (S.layout !== 'pasta') setLayout('pasta'); setTimeout(() => fitCluster(k), S.layout === 'pasta' ? 0 : 1900); if (mqMobile.matches) closeDrawer(); return; }
+    if (t.dataset.pastaFit) { const p = t.dataset.pastaFit, was = S.layout === 'pasta'; if (!was) setLayout('pasta'); setTimeout(() => { const n = G && G.graphData().nodes.find(x => x.kind === 'note' && state.notes.get(x.id)?.pasta === p); if (n) fitCluster(n.grp); }, was ? 0 : 1900); if (mqMobile.matches) closeDrawer(); return; }
     if (t.dataset.open) { openNote(t.dataset.open, { center: true }); return; }
     if (t.dataset.tag) { setSearch('#' + t.dataset.tag, true); return; }
     if (t.dataset.title) { openByTitle(t.dataset.title); return; }
