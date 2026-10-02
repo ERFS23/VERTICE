@@ -323,7 +323,7 @@ select.inp{appearance:auto}
     <section><h3>Tags</h3><div id="tags" class="chips"></div></section>
     <section><h3>Recentes</h3><div id="recent" class="stack"></div></section>
     <div class="stats" id="stats"></div>
-    <p class="muted-note" style="font:10.5px var(--f-mono);opacity:.6">Versão 7</p>
+    <p class="muted-note" style="font:10.5px var(--f-mono);opacity:.6">Versão 8</p>
   </aside>
 
   <main class="stage" id="stage">
@@ -704,10 +704,10 @@ function applyLinkForce() {
   if (!G) return;
   const split = l => S.layout !== 'livre' && !sameCluster(l);
   // in folder view each circle is its own small world: repulsion only reaches neighbours in the same folder
-  G.d3Force('charge').distanceMax(S.layout === 'pasta' ? 90 : 700);
+  G.d3Force('charge').distanceMax(S.layout !== 'livre' ? 90 : 700);
   G.d3Force('link')
     .distance(l => split(l) ? S.dist * 2.2 : l.sim ? S.dist * 1.3 : S.dist)
-    .strength(l => (split(l) ? (S.layout === 'pasta' ? 0.002 : 0.2) : l.sim ? 0.35 : 1) / Math.max(1, Math.min(l.source.deg || 1, l.target.deg || 1)));
+    .strength(l => (split(l) ? (0.002) : l.sim ? 0.35 : 1) / Math.max(1, Math.min(l.source.deg || 1, l.target.deg || 1)));
 }
 const regionKey = n => S.layout === 'livre' || n.kind !== 'note' ? null : n.grp;
 function gravity(alpha) {
@@ -920,7 +920,7 @@ function computeCenters(nodes, links) {
   const present = new Set(nodes.filter(n => n.kind === 'note').map(n => n.grp));
   const vis = groups.filter(g => present.has(g.key));
   if (!vis.length) return;
-  if (S.layout === 'pasta') { packFolders(vis, nodes, links); return; }
+  if (S.layout !== 'livre') { packFolders(vis, nodes, links); return; }
   const nucleus = vis.find(c => c.key === 'nucleo');
   const real = vis.filter(c => !LOOSE.has(c.key) && c.key !== 'nucleo');
   const loose = vis.filter(c => LOOSE.has(c.key));
@@ -971,7 +971,9 @@ function packFolders(vis, nodes, links) {
   }
   const items = vis.map(g => ({ key: g.key, r: folderRadius(cnt.get(g.key) || 1) }))
     .sort((a, b) => LOOSE.has(a.key) - LOOSE.has(b.key) || b.r - a.r);
-  const placed = [], GAP = 34;
+  const placed = [], GAP = 52;
+  // pack in the screen's shape: wide on desktop, tall on a phone
+  const aspect = G && G.width() > 0 ? Math.min(1.9, Math.max(0.6, G.height() / G.width())) : 0.82;
   const fits = (x, y, r) => placed.every(p => Math.hypot(p.x - x, p.y - y) >= p.r + r + GAP);
   for (const it of items) {
     if (!placed.length) { placed.push({ ...it, x: 0, y: 0 }); continue; }
@@ -982,7 +984,7 @@ function packFolders(vis, nodes, links) {
     let spot = null;
     for (let step = 0; step < 2400 && !spot; step++) {
       const a = step * 0.5, d = 6 * Math.sqrt(step) * 6;
-      const x = anchor.x + Math.cos(a) * d, y = anchor.y + Math.sin(a) * d * 0.82;
+      const x = anchor.x + Math.cos(a) * d, y = anchor.y + Math.sin(a) * d * aspect;
       if (fits(x, y, it.r)) spot = { x, y };
     }
     placed.push({ ...it, ...(spot || { x: placed.length * 400, y: 0 }) });
@@ -1005,7 +1007,7 @@ function setLayout(mode) {
 }
 function fitCluster(key) {
   if (!G) return;
-  const c = S.layout === 'pasta' && centers.get(key);
+  const c = S.layout !== 'livre' && centers.get(key);
   if (c && c.r) { G.centerAt(c.x, c.y, 700); G.zoom(Math.min(8, Math.min(G.width(), G.height()) / (c.r * 2.3)), 700); return; }
   G.zoomToFit(700, mqMobile.matches ? 40 : 110, n => n.grp === key);
 }
@@ -1111,6 +1113,7 @@ function linkColor(l) {
   if (hiMode === 'hover') return isFocusLink(l) ? 'rgba(244,184,96,.8)' : 'rgba(236,231,220,.035)';
   if (hiMode === 'search') return hi.has(lid(l.source)) && hi.has(lid(l.target)) ? 'rgba(236,231,220,.32)' : 'rgba(236,231,220,.03)';
   if (isFocusLink(l)) return 'rgba(244,184,96,.55)';
+  if (S.layout !== 'livre' && l.source.grp != null && l.source.grp !== l.target.grp) return 'rgba(236,231,220,.035)';
   return l.sim ? 'rgba(159,190,214,.10)' : 'rgba(236,231,220,.11)';
 }
 
@@ -1119,11 +1122,11 @@ function drawNode(n, ctx, scale) {
   const r = Math.max(Number.isFinite(n.r) && n.r > 0 ? n.r : 3, (n.kind === 'note' ? 2.2 : 1.4) / scale);
   const dimmed = !!hi && !hi.has(n.id);
   const sel = n.id === state.selectedId, hov = n.id === state.hoverId;
-  const col = n.kind === 'note' ? TYPE[n.type].color : n.kind === 'tag' ? C.mist : C.dust;
+  const col = n.kind === 'note' ? noteColor(n) : n.kind === 'tag' ? C.mist : C.dust;
   ctx.globalAlpha = dimmed ? 0.1 : 1;
   if (!dimmed && (n.hub || sel || hov)) {
     const gr = r * (sel || hov ? 4.2 : 3.4);
-    const glow = n.hub && n.kind === 'note' && !sel && !hov ? C.amber : col;
+    const glow = col;
     const g = ctx.createRadialGradient(n.x, n.y, r * 0.4, n.x, n.y, gr);
     g.addColorStop(0, hexA(glow, 0.34));
     g.addColorStop(1, hexA(glow, 0));
@@ -1142,7 +1145,7 @@ function drawNode(n, ctx, scale) {
   }
   if (sel) { ctx.beginPath(); ctx.arc(n.x, n.y, r + 3 / scale + 1, 0, 2 * Math.PI); ctx.lineWidth = 1.5 / scale; ctx.strokeStyle = C.amber; ctx.stroke(); }
   const show = sel || hov || (!dimmed && (
-    (hiMode === 'hover') || (hiMode === 'search' && hi.size <= 60) || S.labels || scale >= 1.5 || (n.hub && scale >= 0.55 && !(n.type === 'mapa' && S.layout === 'tema'))
+    (hiMode === 'hover') || (hiMode === 'search' && hi.size <= 60) || S.labels || scale >= 1.5 || (n.hub && scale >= (S.layout === 'livre' ? 0.55 : 1.15))
   ));
   if (show && !dimmed) {
     const strong = sel || hov;
@@ -1159,50 +1162,69 @@ function drawNode(n, ctx, scale) {
   ctx.globalAlpha = 1;
 }
 
+/* Region palette: soft, distinct hues so neighbouring circles read as separate groups. */
+const REGION_COLORS = ['#F4B860', '#8FB8DE', '#E58FB0', '#9DD1A8', '#C3A6F0', '#F09A7A', '#7FD3D0', '#E8D27A', '#B0C4A0', '#D9A6C9', '#93A8F0', '#F2B8A0'];
+let regionIdx = { of: null, map: new Map() };
+function regionColor(key) {
+  if (S.layout === 'tipo') return TYPE[key]?.color || C.ivory;
+  if (LOOSE.has(key)) return C.dust;
+  if (regionIdx.of !== groups) regionIdx = { of: groups, map: new Map(groups.map((g, i) => [g.key, i])) };
+  const i = regionIdx.map.get(key) ?? 0;
+  return REGION_COLORS[i % REGION_COLORS.length];
+}
+// in grouped views a note takes its region's colour, so each circle reads as one group
+const noteColor = n => (S.layout === 'tema' || S.layout === 'pasta' || S.layout === 'tag') && n.grp != null ? regionColor(n.grp) : TYPE[n.type].color;
 function drawBackdrop(ctx, scale) {
   if (!Number.isFinite(scale) || scale <= 0) return;
   if (S.layout === 'livre' || !G) return;
-  const regs = new Map();
-  for (const n of G.graphData().nodes) {
-    if (n.kind !== 'note' || !finite(n)) continue;
-    const key = regionKey(n);
-    if (key == null) continue;
-    let g = regs.get(key);
-    if (!g) regs.set(key, g = { sx: 0, sy: 0, c: 0, pts: [] });
-    g.sx += n.x; g.sy += n.y; g.c++; g.pts.push(n);
-  }
+  const count = new Map();
+  for (const n of G.graphData().nodes) { if (n.kind !== 'note' || !finite(n)) continue; const k = regionKey(n); if (k != null) count.set(k, (count.get(k) || 0) + 1); }
   const labelOf = new Map(groups.map(c => [c.key, c.label]));
   const hoverCl = state.hoverId ? nodeCache.get(state.hoverId)?.grp : null;
+  const regs = [...count].map(([key, c]) => ({ key, c, ...(centers.get(key) || {}) })).filter(r => r.r && Number.isFinite(r.x));
   ctx.save();
-  for (const [key, g] of regs) {
-    if (S.layout === 'tema' && g.c < 2 && key !== 'nucleo') continue;
-    const fixed = S.layout === 'pasta' && centers.get(key);
-    let cx = g.sx / g.c, cy = g.sy / g.c, rad = 0;
-    if (fixed && fixed.r) { cx = fixed.x; cy = fixed.y; rad = fixed.r; }
-    else { for (const p of g.pts) rad = Math.max(rad, Math.hypot(p.x - cx, p.y - cy)); rad += 16; }
-    const col = S.layout === 'tipo' ? TYPE[key].color : LOOSE.has(key) ? C.dust : key === hoverCl ? C.amber : C.ivory;
-    const text = labelOf.get(key) || '';
-    ctx.beginPath(); ctx.arc(cx, cy, rad, 0, 2 * Math.PI);
-    if (fixed) {
-      ctx.fillStyle = hexA(col, key === hoverCl ? 0.07 : 0.04); ctx.fill();
-      ctx.lineWidth = 1.2 / scale; ctx.strokeStyle = hexA(col, key === hoverCl ? 0.5 : 0.26); ctx.stroke();
-    } else {
-      ctx.fillStyle = hexA(col, 0.025); ctx.fill();
-      ctx.setLineDash([3 / scale, 5 / scale]); ctx.lineWidth = 1 / scale; ctx.strokeStyle = hexA(col, 0.18); ctx.stroke(); ctx.setLineDash([]);
+  // discs
+  for (const r of regs) {
+    const col = regionColor(r.key), hot = r.key === hoverCl;
+    const g = ctx.createRadialGradient(r.x, r.y, r.r * 0.15, r.x, r.y, r.r);
+    g.addColorStop(0, hexA(col, hot ? 0.11 : 0.065));
+    g.addColorStop(1, hexA(col, hot ? 0.05 : 0.02));
+    ctx.beginPath(); ctx.arc(r.x, r.y, r.r, 0, 2 * Math.PI);
+    ctx.fillStyle = g; ctx.fill();
+    ctx.lineWidth = (hot ? 1.6 : 1) / scale; ctx.strokeStyle = hexA(col, hot ? 0.6 : 0.28); ctx.stroke();
+  }
+  // labels above each circle, biggest first, never overlapping each other
+  const placed = [], pad = 4;
+  const fs = mqMobile.matches ? 11 : 12.5, fsSmall = mqMobile.matches ? 9 : 10;
+  const order = regs.slice().sort((a, b) => (b.key === hoverCl) - (a.key === hoverCl) || b.r - a.r);
+  for (const r of order) {
+    const screenR = r.r * scale;
+    if (screenR < (mqMobile.matches ? 14 : 22) && r.key !== hoverCl) continue;
+    const col = regionColor(r.key);
+    ctx.font = `600 ${fs / scale}px "IBM Plex Sans", system-ui, sans-serif`;
+    let name = labelOf.get(r.key) || '';
+    const maxW = Math.max(90, screenR * 2.4) / scale;
+    while (name.length > 4 && ctx.measureText(name).width > maxW) name = name.slice(0, -2).trimEnd() + '…';
+    const tw = ctx.measureText(name).width, w = tw * scale + 34, h = fs + 8;
+    // try above the circle, then below it
+    let ly = null;
+    for (const side of [-1, 1]) {
+      const sp = G.graph2ScreenCoords(r.x, r.y + side * r.r);
+      const y1 = side < 0 ? sp.y - 2 : sp.y + h + 6;
+      const box = { x0: sp.x - w / 2 - pad, x1: sp.x + w / 2 + pad, y0: y1 - h - 4 - pad, y1: y1 + pad };
+      if (placed.some(o => box.x0 < o.x1 && box.x1 > o.x0 && box.y0 < o.y1 && box.y1 > o.y0)) continue;
+      placed.push(box);
+      ly = side < 0 ? r.y - r.r - 9 / scale : r.y + r.r + (fs + 6) / scale;
+      break;
     }
-    if (fixed && rad * scale < 34 && key !== hoverCl) continue;
-    const lx = cx, ly = fixed ? cy - rad + 14 / scale : cy - rad - 12 / scale;
-    ctx.font = `500 ${11 / scale}px "IBM Plex Mono", monospace`;
-    if ('letterSpacing' in ctx) ctx.letterSpacing = (2 / scale) + 'px';
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillStyle = hexA(col, S.layout === 'tipo' ? 0.6 : 0.72);
-    const label = text.toUpperCase() + '  ' + g.c;
-    let x = lx;
-    const tl = G.screen2GraphCoords(0, 0), br = G.screen2GraphCoords(G.width(), G.height());
-    const half = ctx.measureText(label).width / 2 + 8 / scale;
-    if (br.x - tl.x > half * 2) x = Math.min(Math.max(x, tl.x + half), br.x - half);
-    ctx.fillText(label, x, ly);
-    if ('letterSpacing' in ctx) ctx.letterSpacing = '0px';
+    if (ly == null) continue;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+    ctx.lineJoin = 'round'; ctx.lineWidth = 4 / scale; ctx.strokeStyle = 'rgba(6,7,11,.85)';
+    ctx.strokeText(name, r.x - 12 / scale, ly);
+    ctx.fillStyle = hexA(col, 0.95); ctx.fillText(name, r.x - 12 / scale, ly);
+    ctx.font = `500 ${fsSmall / scale}px "IBM Plex Mono", monospace`;
+    ctx.textAlign = 'left'; ctx.fillStyle = hexA(col, 0.55);
+    ctx.fillText(String(r.c), r.x - 12 / scale + tw / 2 + 6 / scale, ly);
   }
   ctx.restore();
 }
@@ -1441,7 +1463,7 @@ function renderRail() {
   $('#groupsTitle').textContent = { tema: 'Temas', pasta: 'Pastas', tag: 'Palavras-chave', tipo: 'Tipos' }[mode];
   $('#themes').innerHTML = groups.length ? groups.map(g => {
     const off = hid.has(g.key);
-    const col = mode === 'tipo' && TYPE[g.key] ? TYPE[g.key].color : LOOSE.has(g.key) ? C.dust : C.amber;
+    const col = regionColor(g.key);
     return `<div class="grp-row${off ? ' off' : ''}"><button class="grp-eye" data-grp-toggle="${esc(g.key)}" aria-pressed="${!off}" title="${off ? 'Mostrar' : 'Esconder'} este grupo">${icon(off ? 'eyeOff' : 'eye')}</button><button class="region theme-row" data-theme="${esc(g.key)}" title="Enquadrar este grupo"><span class="dot" style="--c:${col}"></span><span class="t" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0">${esc(g.label)}</span><span class="n">${g.size}</span></button><button class="grp-only" data-grp-only="${esc(g.key)}" title="Ver só este grupo">SÓ</button></div>`;
   }).join('') : '<p class="muted-note">Os grupos aparecem quando houver notas.</p>';
 }
