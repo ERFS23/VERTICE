@@ -57,7 +57,7 @@
   .num small{display:block;font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);font-weight:400;margin-top:14px;text-shadow:none}
   .arrow{font-size:clamp(26px,5vw,44px);color:var(--red);font-weight:300}
   .bar{margin-top:40px;height:10px;background:#161616;border-radius:99px;overflow:hidden}
-  .bar b{display:block;height:100%;width:0;background:linear-gradient(90deg,#7a0016,var(--red),var(--red-2));border-radius:99px;box-shadow:0 0 18px rgba(255,31,61,.7);transition:width 1.6s cubic-bezier(.2,.8,.2,1)}
+  .bar b{display:block;height:100%;background:linear-gradient(90deg,#7a0016,var(--red),var(--red-2));border-radius:99px;box-shadow:0 0 18px rgba(255,31,61,.7);transition:width 1.6s cubic-bezier(.2,.8,.2,1)}
   .barlabels{display:flex;justify-content:space-between;margin-top:12px;font-family:var(--mono);font-size:12px;color:var(--muted)}
   .barlabels span:last-child{color:var(--text)}
   .gap{margin-top:28px;font-weight:500}
@@ -143,11 +143,11 @@
     <div class="goal">
       <div class="slabel">Meta de seguidores</div>
       <div class="nums">
-        <div class="num" data-count="14200">0<small>Hoje</small></div>
+        <div class="num">14.200<small>Hoje</small></div>
         <div class="arrow">→</div>
-        <div class="num red" data-count="25000">0<small>Meta · novembro (no máx. até dez)</small></div>
+        <div class="num red">25.000<small>Meta · novembro (no máx. até dez)</small></div>
       </div>
-      <div class="bar"><b id="fill" data-w="57"></b></div>
+      <div class="bar"><b id="fill" style="width:57%"></b></div>
       <div class="barlabels"><span>14,2 mil</span><span>25 mil</span></div>
       <p class="gap">Faltam <span class="red">10,8 mil</span> seguidores. É isso que vamos buscar.</p>
     </div>
@@ -237,23 +237,5 @@
   <footer>VERTICE · 2026</footer>
 </div>
 
-<script>
-  // contadores e barra animam quando a seção aparece
-  var goal = document.querySelector('.goal');
-  function run(){
-    document.querySelectorAll('[data-count]').forEach(function(el){
-      var end = +el.dataset.count, small = el.querySelector('small'), t0 = performance.now();
-      (function tick(t){
-        var p = Math.min((t - t0) / 1600, 1), v = Math.round(end * (1 - Math.pow(1 - p, 3)));
-        el.firstChild.nodeValue = v.toLocaleString('pt-BR');
-        if (p < 1) requestAnimationFrame(tick);
-      })(t0);
-    });
-    var f = document.getElementById('fill'); f.style.width = f.dataset.w + '%';
-  }
-  if ('IntersectionObserver' in window) {
-    new IntersectionObserver(function(e, o){ if (e[0].isIntersecting){ run(); o.disconnect(); } }, {threshold:.4}).observe(goal);
-  } else { run(); }
-</script>
 </body>
 </html>
