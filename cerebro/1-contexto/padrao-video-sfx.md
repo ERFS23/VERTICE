@@ -1,5 +1,6 @@
 ---
 titulo: Vídeo — biblioteca de SFX
+apelidos: Vídeo — biblioteca de SFX (Cowork)
 camada: contexto
 area: conteudo
 atualizado: 2026-09-24

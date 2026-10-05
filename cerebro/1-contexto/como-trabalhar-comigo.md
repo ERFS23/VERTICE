@@ -1,5 +1,6 @@
 ---
 titulo: Como trabalhar comigo
+apelidos: Perfil e preferências
 camada: contexto
 area: sistema
 atualizado: 2026-10-01

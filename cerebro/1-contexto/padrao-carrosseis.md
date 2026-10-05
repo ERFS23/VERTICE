@@ -1,5 +1,6 @@
 ---
 titulo: Carrosséis — regras e estilo
+apelidos: Carrosséis — regras e estilo
 camada: contexto
 area: conteudo
 atualizado: 2026-09-30

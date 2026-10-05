@@ -1,5 +1,6 @@
 ---
 titulo: Aprendizados
+apelidos: Insights e lições aprendidas
 camada: memoria
 area: sistema
 atualizado: 2026-09-30

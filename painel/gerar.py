@@ -12,6 +12,7 @@ import argparse
 import json
 import re
 import sys
+import unicodedata
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -23,7 +24,7 @@ SAIDA = Path(__file__).resolve().parent / "cerebro.html"
 WIKI = re.compile(r"\[\[([^\]|#]+)(?:#[^\]|]*)?(?:\|([^\]]+))?\]\]")
 NOTION = re.compile(r"\[([^\]]+)\]\((https://(?:app\.notion\.com|www\.notion\.so|notion\.so)/[^)\s]+)\)")
 CODIGO = re.compile(r"```.*?```|`[^`\n]*`", re.S)
-CAMADA_POR_PASTA = {"1-contexto": "contexto", "2-memoria": "memoria", "3-acao": "acao"}
+CAMADA_POR_PASTA = {"1-contexto": "contexto", "2-memoria": "memoria", "3-acao": "acao", "4-biblioteca": "biblioteca"}
 BRASILIA = timezone(timedelta(hours=-3))
 
 
@@ -43,15 +44,22 @@ def ler_cabecalho(texto):
 
 
 def id_notion(url):
-    trecho = url.split("?")[0].rstrip("/").split("/")[-1]
-    return "notion:" + trecho.split("-")[-1]
+    achado = re.search(r"([0-9a-f]{32})", url.split("?")[0])
+    if achado:
+        return "notion:" + achado.group(1)
+    return "notion:" + url.split("?")[0].rstrip("/").split("/")[-1].split("-")[-1]
+
+
+def chave(texto):
+    """Forma de comparar títulos: sem acento, minúsculo, espaços simples."""
+    sem = "".join(c for c in unicodedata.normalize("NFD", texto or "") if not unicodedata.combining(c))
+    return re.sub(r"\s+", " ", sem.lower()).strip()
 
 
 def montar():
     nos, ligacoes, quebrados, avisos = {}, [], [], []
 
-    arquivos = sorted(CEREBRO.rglob("*.md"))
-    for caminho in arquivos:
+    for caminho in sorted(CEREBRO.rglob("*.md")):
         meta, corpo = ler_cabecalho(caminho.read_text(encoding="utf-8"))
         pasta = caminho.relative_to(CEREBRO).parts[0]
         no_id = caminho.stem
@@ -64,53 +72,100 @@ def montar():
         nos[no_id] = {
             "id": no_id,
             "titulo": meta.get("titulo", no_id),
+            "apelidos": [a.strip() for a in meta.get("apelidos", "").split(";") if a.strip()],
             "camada": meta.get("camada", CAMADA_POR_PASTA.get(pasta, "contexto")),
             "area": meta.get("area", "sistema"),
             "tipo": meta.get("tipo", ""),
+            "genero": meta.get("genero", ""),
+            "tags": [t.strip() for t in meta.get("tags", "").split(",") if t.strip()],
             "atualizado": meta.get("atualizado", ""),
             "fonte": meta.get("fonte", ""),
             "caminho": str(caminho.relative_to(RAIZ)).replace("\\", "/"),
             "texto": corpo,
+            "_notion": [id_notion(t) for t in (meta.get("fonte", ""), meta.get("vertice_id", "")) if re.search(r"[0-9a-f]{32}", t)],
         }
 
-    pares = set()
+    # [[alvo]] vale pelo nome do arquivo, pelo título ou por um apelido
+    por_chave = {}
+    for n in nos.values():
+        for nome in [n["titulo"], *n["apelidos"]]:
+            por_chave.setdefault(chave(nome), n["id"])
+    # página do Notion que já virou arquivo no cérebro aponta para o arquivo
+    por_notion = {nid: n["id"] for n in nos.values() for nid in n.pop("_notion")}
+
+    def resolver(alvo):
+        if alvo in nos:
+            return alvo
+        return por_chave.get(chave(alvo))
+
+    pares, vizinhos = set(), {i: set() for i in nos}
 
     def ligar(a, b, tipo):
         if a == b:
             return
-        chave = tuple(sorted((a, b)))
-        if chave in pares:
+        par = tuple(sorted((a, b)))
+        if par in pares:
             return
-        pares.add(chave)
+        pares.add(par)
+        vizinhos.setdefault(a, set()).add(b)
+        vizinhos.setdefault(b, set()).add(a)
         ligacoes.append({"source": a, "target": b, "tipo": tipo})
 
     areas = {n["area"]: n["id"] for n in nos.values() if n["tipo"] == "area"}
     centro = next((n["id"] for n in nos.values() if n["camada"] == "centro"), None)
+    nucleo = {"centro", "contexto", "memoria", "acao"}
 
     for no in list(nos.values()):
         if no["camada"] == "notion":
             continue
         texto = CODIGO.sub("", no["texto"])  # exemplos dentro de código não são links
         for alvo, _ in WIKI.findall(texto):
-            alvo = alvo.strip()
-            if alvo in nos:
-                ligar(no["id"], alvo, "wiki")
+            achado = resolver(alvo.strip())
+            if achado:
+                ligar(no["id"], achado, "wiki")
             else:
-                quebrados.append(f"{no['caminho']} → [[{alvo}]]")
+                quebrados.append(f"{no['caminho']} → [[{alvo.strip()}]]")
         for titulo, url in NOTION.findall(texto):
             nid = id_notion(url)
+            if nid in por_notion:
+                ligar(no["id"], por_notion[nid], "wiki")
+                continue
             if nid not in nos:
                 nos[nid] = {
-                    "id": nid, "titulo": titulo.strip(), "camada": "notion", "area": no["area"],
-                    "tipo": "notion", "atualizado": "", "fonte": "", "caminho": "", "texto": "", "url": url,
+                    "id": nid, "titulo": titulo.strip(), "apelidos": [], "camada": "notion", "area": no["area"],
+                    "tipo": "notion", "genero": "", "tags": [], "atualizado": "", "fonte": "", "caminho": "",
+                    "texto": "", "url": url,
                 }
             ligar(no["id"], nid, "notion")
-        # todo arquivo fica preso à sua área (ou ao centro, se for do sistema)
-        hub = areas.get(no["area"]) if no["area"] != "sistema" else centro
-        if hub and no["tipo"] != "area":
-            ligar(no["id"], hub, "area")
-        if no["tipo"] == "area" and centro:
-            ligar(no["id"], centro, "area")
+        # os arquivos do núcleo ficam presos à sua área (ou ao centro, se forem do sistema)
+        if no["camada"] in nucleo:
+            hub = areas.get(no["area"]) if no["area"] != "sistema" else centro
+            if hub and no["tipo"] != "area":
+                ligar(no["id"], hub, "area")
+            if no["tipo"] == "area" and centro:
+                ligar(no["id"], centro, "area")
+
+    # grupos de notas soltos do resto: a nota mais ligada do grupo se prende à área
+    visto = set()
+    for inicio in list(nos):
+        if inicio in visto:
+            continue
+        grupo, pilha = [], [inicio]
+        while pilha:
+            atual = pilha.pop()
+            if atual in visto:
+                continue
+            visto.add(atual)
+            grupo.append(atual)
+            pilha.extend(vizinhos.get(atual, ()))
+        if centro in grupo:
+            continue
+        principal = max(grupo, key=lambda i: (len(vizinhos.get(i, ())), nos[i]["genero"] == "mapa"))
+        area = nos[principal]["area"]
+        ligar(principal, areas.get(area) if area != "sistema" and area in areas else centro, "area")
+
+    for n in nos.values():
+        n.pop("apelidos") if not n["apelidos"] else None
 
     return {
         "gerado_em": datetime.now(BRASILIA).strftime("%Y-%m-%dT%H:%M"),
@@ -139,8 +194,9 @@ def main():
 
     arquivos = sum(1 for n in dados["nos"] if n["camada"] != "notion")
     notion = len(dados["nos"]) - arquivos
+    biblioteca = sum(1 for n in dados["nos"] if n["camada"] == "biblioteca")
     print(f"Painel gerado: {SAIDA.relative_to(RAIZ)}")
-    print(f"  {arquivos} arquivos · {notion} páginas do Notion · {len(dados['ligacoes'])} ligações")
+    print(f"  {arquivos} arquivos ({biblioteca} na biblioteca) · {notion} páginas do Notion · {len(dados['ligacoes'])} ligações")
     for aviso in avisos:
         print(f"  aviso: {aviso}")
     for q in quebrados:

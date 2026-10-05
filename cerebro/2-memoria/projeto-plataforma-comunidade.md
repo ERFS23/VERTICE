@@ -1,5 +1,6 @@
 ---
 titulo: Projeto — Plataforma da Comunidade
+apelidos: Projeto — Plataforma da Comunidade
 camada: memoria
 area: comunidade
 atualizado: 2026-09-28

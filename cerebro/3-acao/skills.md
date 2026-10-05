@@ -1,5 +1,6 @@
 ---
 titulo: Skills e ferramentas
+apelidos: Skills e ferramentas
 camada: acao
 area: sistema
 atualizado: 2026-09-30
@@ -7,6 +8,8 @@ fonte: https://app.notion.com/p/3eb30eaeef2281e79f56cd913cc45053
 ---
 
 # Skills e ferramentas
+
+> Catálogo completo e mais novo (01/10/2026, 12 áreas, com plugins e skills do claude.ai): [[catalogo-skills|Skills]].
 
 ## Onde ficam
 

@@ -92,8 +92,15 @@ button,input{font:inherit;color:inherit}
 .no text{font:500 11.5px var(--f-texto);fill:var(--tinta);paint-order:stroke;stroke:var(--papel);stroke-width:3.5px;stroke-linejoin:round;pointer-events:none}
 .no[data-tipo="area"] text{font:600 13px var(--f-texto)}
 .no[data-tipo="centro"] text{font:700 17px var(--f-display)}
-.no[data-tipo="notion"] text{display:none;font-size:10.5px;fill:var(--tinta-2)}
-.no.vizinho[data-tipo="notion"] text,.no.achado[data-tipo="notion"] text,.no.selecionado[data-tipo="notion"] text{display:block}
+#mapa .no text{font-size:calc(var(--fs, 11.5px) / clamp(.6, var(--k, 1), 1))}
+#mapa .no[data-tipo="area"]{--fs:13px} #mapa .no[data-tipo="centro"]{--fs:17px}
+#mapa .no[data-tipo="biblio"],#mapa .no[data-tipo="notion"]{--fs:10.5px} #mapa .no[data-tipo="mapa"]{--fs:11px}
+.no[data-tipo="notion"] text,.no[data-tipo="biblio"] text,.no[data-tipo="mapa"] text{display:none;font-size:10.5px;fill:var(--tinta-2)}
+.no[data-tipo="mapa"] text{font-weight:600;fill:var(--tinta)}
+#mapa.perto .no[data-tipo="mapa"] text,#mapa.muito-perto .no[data-tipo="biblio"] text{display:block}
+.no.vizinho text,.no.achado text,.no.selecionado text{display:block!important}
+.no[data-tipo="biblio"] circle{stroke-width:.8}
+.sem-biblio .no[data-camada="biblioteca"],.sem-biblio .ligacao.biblio,.sem-biblio .anel-bib{display:none}
 .no.selecionado circle{stroke:var(--tinta);stroke-width:2.5}
 .apagado{opacity:.1}
 .anel{fill:none;stroke:var(--linha);stroke-dasharray:3 5}
@@ -103,7 +110,8 @@ button,input{font:inherit;color:inherit}
 .modo-camadas .camadas-extra{opacity:1}
 .modo-camadas .ligacao{stroke-opacity:.28}
 .modo-camadas .no[data-tipo="area"] text{display:none}
-.modo-camadas .no[data-tipo="arquivo"] text{font-size:10.5px}
+.modo-camadas .no[data-tipo="arquivo"]{--fs:10.5px}
+.modo-camadas .ligacao.biblio{stroke-opacity:.12}
 
 .legenda{position:absolute;left:12px;bottom:12px;display:flex;flex-direction:column;gap:8px;background:color-mix(in srgb,var(--papel) 88%,transparent);backdrop-filter:blur(6px);border:1px solid var(--linha);border-radius:8px;padding:10px 12px;max-width:calc(100% - 24px)}
 .legenda ul{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:4px 12px}
@@ -111,6 +119,9 @@ button,input{font:inherit;color:inherit}
 .legenda button[aria-pressed="true"]{text-decoration:underline;text-underline-offset:3px;font-weight:600}
 .legenda .formas{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;color:var(--tinta-2)}
 .legenda .formas span{display:inline-flex;align-items:center;gap:6px}
+.legenda .formas .alternar{font-size:12px;color:var(--tinta-2);border:1px solid var(--linha);border-radius:99px;padding:2px 9px}
+.legenda .formas .alternar[aria-pressed="true"]{color:var(--tinta);border-color:var(--tinta-2);text-decoration:none;font-weight:500}
+.ponto.pequeno{width:6px;height:6px}
 .dica{position:absolute;right:12px;top:12px;font:12px var(--f-mono);color:var(--tinta-2);background:var(--papel);padding:4px 8px;border-radius:4px;border:1px solid var(--linha)}
 
 /* Leitor */
@@ -207,6 +218,7 @@ a.wiki{color:var(--tinta);text-decoration:none;border-bottom:1.5px solid var(--a
         <div class="formas">
           <span><i class="ponto" style="--cor:var(--tinta-2)"></i>arquivo do cérebro</span>
           <span><i class="ponto oco" style="--cor:var(--tinta-2)"></i>página do Notion</span>
+          <button id="ver-biblioteca" class="alternar" aria-pressed="true"><i class="ponto pequeno" style="--cor:var(--tinta-2)"></i>Biblioteca</button>
         </div>
       </div>
     </section>
@@ -229,6 +241,7 @@ a.wiki{color:var(--tinta);text-decoration:none;border-bottom:1.5px solid var(--a
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js"></script>
 <script>
 const DADOS = __DADOS_DO_CEREBRO__;
 
@@ -237,31 +250,45 @@ const AREAS = {
   vendas: "Vendas", pessoal: "Pessoal", sistema: "Sistema"
 };
 const ORDEM_AREAS = Object.keys(AREAS);
-const CAMADAS = { centro: "Centro", area: "Áreas", contexto: "Contexto", memoria: "Memória", acao: "Ação", notion: "Notion" };
+const CAMADAS = { centro: "Centro", area: "Áreas", contexto: "Contexto", memoria: "Memória", acao: "Ação", biblioteca: "Biblioteca", notion: "Notion" };
+const GENEROS = { mapa: "Mapa", conceito: "Conceito", nota: "Nota", projeto: "Projeto", fonte: "Fonte", pessoa: "Pessoa", diario: "Diário" };
+const ORDEM_ANEIS = ["area", "contexto", "memoria", "acao", "biblioteca", "notion"];
 const anelDo = (n) => n.forma === "area" ? "area" : n.camada;
-const ANEIS = { centro: 0, area: 95, contexto: 190, memoria: 290, acao: 385, notion: 480 };
-const RAIO = { centro: 20, area: 11, arquivo: 7, notion: 4.5 };
+const RAIO = { centro: 20, area: 11, arquivo: 7, mapa: 6, biblio: 3.6, notion: 4.5 };
+// distância mínima entre vizinhos no mesmo anel, e entre faixas quando um anel não cabe numa volta só
+const ESPACO = { area: 60, contexto: 26, memoria: 26, acao: 22, biblioteca: 10, notion: 14 };
+const FAIXA = { biblioteca: 13 };
 
 const guardar = (k, v) => { try { localStorage.setItem("cerebro:" + k, v); } catch (e) {} };
 const lembrar = (k) => { try { return localStorage.getItem("cerebro:" + k); } catch (e) { return null; } };
 const semAcento = (s) => (s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+const chaveDe = (s) => semAcento(s).replace(/\s+/g, " ").trim();
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const corDa = (area) => `var(--a-${AREAS[area] ? area : "sistema"})`;
-const tipoDo = (n) => n.tipo === "centro" || n.camada === "centro" ? "centro" : n.camada === "notion" ? "notion" : n.tipo === "area" ? "area" : "arquivo";
+const tipoDo = (n) => n.tipo === "centro" || n.camada === "centro" ? "centro" : n.camada === "notion" ? "notion"
+  : n.tipo === "area" ? "area" : n.camada === "biblioteca" ? (n.genero === "mapa" ? "mapa" : "biblio") : "arquivo";
 const fmtData = (iso) => { if (!iso) return ""; const [a, m, d] = iso.slice(0, 10).split("-"); return `${d}/${m}/${a}`; };
 
 const nos = DADOS.nos.map((n) => ({ ...n, forma: tipoDo(n) }));
 const porId = new Map(nos.map((n) => [n.id, n]));
+// [[alvo]] vale pelo nome do arquivo, pelo título ou por um apelido (mesma regra do gerar.py)
+const porChave = new Map();
+nos.forEach((n) => [n.titulo, ...(n.apelidos || [])].forEach((t) => { const k = chaveDe(t); if (!porChave.has(k)) porChave.set(k, n); }));
+const resolver = (alvo) => porId.get(alvo) || porChave.get(chaveDe(alvo));
+nos.forEach((n) => { n.buscaT = chaveDe(n.titulo); n.busca = chaveDe([n.titulo, ...(n.apelidos || []), ...(n.tags || []), n.texto].join(" ")); });
 const ligacoes = DADOS.ligacoes.filter((l) => porId.has(l.source) && porId.has(l.target)).map((l) => ({ ...l }));
 const vizinhos = new Map(nos.map((n) => [n.id, new Set()]));
 ligacoes.forEach((l) => { vizinhos.get(l.source).add(l.target); vizinhos.get(l.target).add(l.source); });
+const grau = (id) => vizinhos.get(id).size;
+const naBiblioteca = (n) => n.camada === "biblioteca";
 const centro = nos.find((n) => n.forma === "centro");
 
 /* ---------- resumo ---------- */
 const nArq = nos.filter((n) => n.forma !== "notion").length;
+const nBib = nos.filter(naBiblioteca).length;
 const nNotion = nos.length - nArq;
 document.getElementById("resumo").textContent =
-  `${nArq} arquivos · ${nNotion} páginas do Notion · ${ligacoes.length} ligações · gerado ${fmtData(DADOS.gerado_em)} ${DADOS.gerado_em.slice(11, 16)}`;
+  `${nArq} arquivos · ${ligacoes.length} ligações · gerado ${fmtData(DADOS.gerado_em)}`;
 
 /* ---------- legenda ---------- */
 let areaFiltro = null;
@@ -277,6 +304,14 @@ legenda.addEventListener("click", (e) => {
   legenda.querySelectorAll("button").forEach((x) => x.setAttribute("aria-pressed", String(x.dataset.area === areaFiltro)));
   realcar();
 });
+const botaoBib = document.getElementById("ver-biblioteca");
+let verBiblioteca = lembrar("biblioteca") !== "nao";
+function aplicarBiblioteca() {
+  botaoBib.setAttribute("aria-pressed", String(verBiblioteca));
+  document.getElementById("vista-grafo").classList.toggle("sem-biblio", !verBiblioteca);
+  guardar("biblioteca", verBiblioteca ? "sim" : "nao");
+}
+botaoBib.addEventListener("click", () => { verBiblioteca = !verBiblioteca; aplicarBiblioteca(); enquadrar(true); });
 
 /* ---------- mapa ---------- */
 const svg = d3.select("#mapa");
@@ -285,44 +320,57 @@ const extra = raiz.append("g").attr("class", "camadas-extra");
 const gLig = raiz.append("g");
 const gNos = raiz.append("g");
 
-// setores por área (vista em camadas): cada área ganha uma fatia proporcional ao seu tamanho
+// vista em camadas: cada área ganha uma fatia (raiz quadrada do tamanho, para as pequenas não sumirem)
 const contagem = {}; nos.forEach((n) => { if (n.forma !== "centro") contagem[n.area] = (contagem[n.area] || 0) + 1; });
-const pesos = {}; Object.entries(contagem).forEach(([a, c]) => { pesos[a] = Math.max(c, 7); });
+const pesos = {}; Object.entries(contagem).forEach(([a, c]) => { pesos[a] = Math.max(Math.sqrt(c), 3.2); });
 const totalPesos = Object.values(pesos).reduce((a, b) => a + b, 0);
 const setores = {}; let ang = -Math.PI / 2;
 ORDEM_AREAS.forEach((a) => { if (!contagem[a]) return; const larg = (pesos[a] / totalPesos) * Math.PI * 2; setores[a] = [ang, ang + larg]; ang += larg; });
-Object.keys(ANEIS).forEach((c) => {
-  if (c === "centro") return;
+const raioDoAnel = {};
+let cursor = 95;
+ORDEM_ANEIS.forEach((c) => {
   const grupo = nos.filter((n) => anelDo(n) === c && n.forma !== "centro");
+  if (!grupo.length) return;
+  raioDoAnel[c] = cursor;
+  let maior = cursor;
   ORDEM_AREAS.forEach((a) => {
-    const doSetor = grupo.filter((n) => n.area === a).sort((x, y) => x.titulo.localeCompare(y.titulo));
-    const [i0, i1] = setores[a] || [0, 0];
-    doSetor.forEach((n, i) => {
-      const t = i0 + (i1 - i0) * (i + 0.5) / doSetor.length;
-      n.alvoX = Math.cos(t) * ANEIS[c]; n.alvoY = Math.sin(t) * ANEIS[c];
-    });
+    const doSetor = grupo.filter((n) => n.area === a)
+      .sort((x, y) => (y.forma === "mapa") - (x.forma === "mapa") || x.titulo.localeCompare(y.titulo));
+    if (!doSetor.length) return;
+    const [i0, i1] = setores[a]; const larg = i1 - i0;
+    let r = cursor, i = 0;
+    while (i < doSetor.length) {
+      const cabe = Math.max(1, Math.floor(larg * r / ESPACO[c]));
+      const fatia = doSetor.slice(i, i + cabe);
+      fatia.forEach((n, j) => { const t = i0 + larg * (j + 0.5) / fatia.length; n.alvoX = Math.cos(t) * r; n.alvoY = Math.sin(t) * r; });
+      i += cabe; maior = Math.max(maior, r);
+      if (i < doSetor.length) r += FAIXA[c] || 24;
+    }
   });
+  cursor = maior + (c === "area" ? 95 : 100);
 });
+const raioExterno = cursor - 100;
 nos.forEach((n) => { if (n.alvoX === undefined) { n.alvoX = 0; n.alvoY = 0; } });
 
-Object.entries(ANEIS).forEach(([c, r]) => {
-  if (!r || c === "area") return;
-  extra.append("circle").attr("class", "anel").attr("r", r);
-  extra.append("text").attr("class", "anel-rotulo").attr("x", 6).attr("y", -r - 6).text(CAMADAS[c]);
+Object.entries(raioDoAnel).forEach(([c, r]) => {
+  if (c === "area") return;
+  extra.append("circle").attr("class", "anel" + (c === "biblioteca" ? " anel-bib" : "")).attr("r", r - 8);
+  extra.append("text").attr("class", "anel-rotulo" + (c === "biblioteca" ? " anel-bib" : "")).attr("x", 6).attr("y", -r + 2).text(CAMADAS[c]);
 });
 Object.entries(setores).forEach(([a, [i0, i1]]) => {
-  const t = (i0 + i1) / 2, r = ANEIS.notion + 46;
+  const t = (i0 + i1) / 2, r = raioExterno + 46;
   extra.append("text").attr("class", "setor-rotulo").style("--cor", corDa(a))
     .attr("x", Math.cos(t) * r).attr("y", Math.sin(t) * r)
     .attr("text-anchor", Math.abs(Math.cos(t)) < 0.2 ? "middle" : Math.cos(t) > 0 ? "start" : "end")
     .attr("dominant-baseline", "middle").text(AREAS[a]);
   extra.append("line").attr("class", "anel").attr("x1", Math.cos(i0) * 40).attr("y1", Math.sin(i0) * 40)
-    .attr("x2", Math.cos(i0) * (ANEIS.notion + 20)).attr("y2", Math.sin(i0) * (ANEIS.notion + 20));
+    .attr("x2", Math.cos(i0) * (raioExterno + 20)).attr("y2", Math.sin(i0) * (raioExterno + 20));
 });
 
-const linhas = gLig.selectAll("line").data(ligacoes).join("line").attr("class", "ligacao");
+const linhas = gLig.selectAll("line").data(ligacoes).join("line")
+  .attr("class", (l) => "ligacao" + (naBiblioteca(porId.get(l.source)) || naBiblioteca(porId.get(l.target)) ? " biblio" : ""));
 const grupos = gNos.selectAll("g").data(nos, (d) => d.id).join("g")
-  .attr("class", "no").attr("data-tipo", (d) => d.forma).attr("tabindex", 0)
+  .attr("class", "no").attr("data-tipo", (d) => d.forma).attr("data-camada", (d) => d.camada).attr("tabindex", 0)
   .attr("role", "button").attr("aria-label", (d) => d.titulo)
   .style("--cor", (d) => corDa(d.area));
 grupos.append("circle").attr("r", (d) => RAIO[d.forma]);
@@ -330,12 +378,13 @@ grupos.append("text").attr("x", (d) => RAIO[d.forma] + 5).attr("y", 4).text((d) 
 grupos.filter((d) => d.forma === "centro").select("text").attr("x", 0).attr("y", 40).attr("text-anchor", "middle");
 
 if (centro) { centro.fx = 0; centro.fy = 0; }
-nos.forEach((n, i) => { if (n.forma !== "centro") { const t = i * 2.4; n.x = Math.cos(t) * (60 + i * 3); n.y = Math.sin(t) * (60 + i * 3); } });
+nos.forEach((n, i) => { if (n.forma !== "centro") { const t = i * 2.4; n.x = Math.cos(t) * (60 + i * 1.5); n.y = Math.sin(t) * (60 + i * 1.5); } });
 
+const ligaBib = (l) => naBiblioteca(l.source) || naBiblioteca(l.target);
 const sim = d3.forceSimulation(nos)
   .force("link", d3.forceLink(ligacoes).id((d) => d.id))
-  .force("carga", d3.forceManyBody())
-  .force("colisao", d3.forceCollide().radius((d) => RAIO[d.forma] + (d.forma === "notion" ? 4 : d.forma === "arquivo" ? 22 : 30)))
+  .force("carga", d3.forceManyBody().distanceMax(900))
+  .force("colisao", d3.forceCollide().radius((d) => RAIO[d.forma] + ({ notion: 4, biblio: 2, mapa: 8, arquivo: 22 }[d.forma] ?? 30)))
   .force("x", d3.forceX())
   .force("y", d3.forceY())
   .on("tick", desenhar)
@@ -356,37 +405,49 @@ function aplicarModo(m, animar = true) {
   document.getElementById("modo-camadas").setAttribute("aria-pressed", String(m === "camadas"));
   document.getElementById("vista-grafo").classList.toggle("modo-camadas", m === "camadas");
   if (m === "neural") {
-    sim.force("link").distance((l) => l.tipo === "notion" ? 40 : l.tipo === "area" ? 120 : 150).strength((l) => l.tipo === "notion" ? 0.8 : l.tipo === "area" ? 0.4 : 0.12);
-    sim.force("carga").strength((d) => d.forma === "centro" ? -1200 : d.forma === "area" ? -700 : d.forma === "notion" ? -60 : -420);
+    sim.force("link")
+      .distance((l) => ligaBib(l) ? (l.tipo === "area" ? 140 : 34) : l.tipo === "notion" ? 40 : l.tipo === "area" ? 120 : 150)
+      .strength((l) => ligaBib(l) ? (l.tipo === "area" ? 0.3 : 0.9 / Math.min(grau(l.source.id), grau(l.target.id)))
+        : l.tipo === "notion" ? 0.8 : l.tipo === "area" ? 0.4 : 0.12);
+    sim.force("carga").strength((d) => ({ centro: -1200, area: -700, notion: -60, biblio: -40, mapa: -220 }[d.forma] ?? -420));
     sim.force("x").x(0).strength(0.03); sim.force("y").y(0).strength(0.03);
   } else {
     sim.force("link").strength(0.004);
-    sim.force("carga").strength(-10);
-    sim.force("x").x((d) => d.alvoX).strength(0.55); sim.force("y").y((d) => d.alvoY).strength(0.55);
+    sim.force("carga").strength(-6);
+    sim.force("x").x((d) => d.alvoX).strength(0.6); sim.force("y").y((d) => d.alvoY).strength(0.6);
   }
-  if (reduzido || !animar) { sim.stop(); sim.alpha(1); for (let i = 0; i < 400; i++) sim.tick(); desenhar(); enquadrar(false); }
+  if (reduzido || !animar) { sim.stop(); sim.alpha(1); for (let i = 0; i < 360; i++) sim.tick(); desenhar(); enquadrar(false); }
   else { enquadrarNoFim = true; sim.alpha(0.9).restart(); if (m === "camadas") enquadrar(true); }
 }
 
-/* zoom */
-const zoom = d3.zoom().scaleExtent([0.2, 4]).on("zoom", (e) => raiz.attr("transform", e.transform));
+/* zoom: os nomes da biblioteca aparecem conforme você aproxima */
+const elMapa = document.getElementById("mapa");
+const zoom = d3.zoom().scaleExtent([0.1, 6]).on("zoom", (e) => {
+  raiz.attr("transform", e.transform);
+  elMapa.style.setProperty("--k", e.transform.k);
+  elMapa.classList.toggle("perto", e.transform.k >= 0.85);
+  elMapa.classList.toggle("muito-perto", e.transform.k >= 1.8);
+});
 svg.call(zoom).on("dblclick.zoom", null);
 function enquadrar(animar) {
   const el = svg.node(); const w = el.clientWidth || 800, h = el.clientHeight || 600;
   let x0, x1, y0, y1;
-  if (modo === "camadas") { x0 = y0 = -(ANEIS.notion + 110); x1 = y1 = ANEIS.notion + 110; }
-  else {
-    x0 = d3.min(nos, (d) => d.x) - 40; x1 = d3.max(nos, (d) => d.x) + 170;
-    y0 = d3.min(nos, (d) => d.y) - 30; y1 = d3.max(nos, (d) => d.y) + 30;
+  if (modo === "camadas") {
+    const r = (verBiblioteca ? raioExterno : (raioDoAnel.acao || 385)) + 110;
+    x0 = y0 = -r; x1 = y1 = r;
+  } else {
+    const vis = nos.filter((d) => verBiblioteca || !naBiblioteca(d));
+    x0 = d3.min(vis, (d) => d.x) - 40; x1 = d3.max(vis, (d) => d.x) + 170;
+    y0 = d3.min(vis, (d) => d.y) - 30; y1 = d3.max(vis, (d) => d.y) + 110; // espaço para a legenda
   }
-  const k = Math.max(0.25, Math.min(w / (x1 - x0), h / (y1 - y0), 1.4));
+  const k = Math.max(0.1, Math.min(w / (x1 - x0), h / (y1 - y0), 1.4));
   const t = d3.zoomIdentity.translate(w / 2 - k * (x0 + x1) / 2, h / 2 - k * (y0 + y1) / 2).scale(k);
   (animar ? svg.transition().duration(600) : svg).call(zoom.transform, t);
 }
 function focar(n) {
   const el = svg.node(); const w = el.clientWidth, h = el.clientHeight;
   const deslocar = !leitor.hidden && w > 760 ? -Math.min(230, w / 4) : 0;
-  const k = 1.6;
+  const k = naBiblioteca(n) ? 2 : 1.6;
   const dy = !leitor.hidden && w <= 760 ? -h * 0.3 : 0;
   svg.transition().duration(reduzido ? 0 : 600)
     .call(zoom.transform, d3.zoomIdentity.translate(w / 2 + deslocar - n.x * k, h / 2 + dy - n.y * k).scale(k));
@@ -425,10 +486,13 @@ const WIKI = /\[\[([^\]|#]+)(?:#[^\]|]*)?(?:\|([^\]]+))?\]\]/g;
 function renderMd(texto) {
   // troca [[links]] por links clicáveis, mas não mexe no que está dentro de código
   const comLinks = (texto || "").split(/(```[\s\S]*?```|`[^`\n]*`)/).map((parte, i) => i % 2 ? parte : parte.replace(WIKI, (m, alvo, rot) => {
-    const id = alvo.trim(); const n = porId.get(id);
-    return `<a class="wiki" data-no="${esc(id)}" href="#">${esc(rot || (n ? n.titulo : id))}</a>`;
+    const n = resolver(alvo.trim());
+    if (!n) return esc(rot || alvo.trim());
+    return `<a class="wiki" data-no="${esc(n.id)}" href="#">${esc(rot || alvo.trim())}</a>`;
   })).join("");
-  const html = window.marked ? marked.parse(comLinks, { gfm: true }) : `<pre>${esc(texto)}</pre>`;
+  let html = window.marked ? marked.parse(comLinks, { gfm: true }) : `<pre>${esc(texto)}</pre>`;
+  // legendas do Instagram e páginas do Notion vêm de fora: limpar antes de mostrar
+  if (window.DOMPurify) html = DOMPurify.sanitize(html);
   const div = document.createElement("div"); div.innerHTML = html;
   div.querySelectorAll("a[href^='http']").forEach((a) => { a.target = "_blank"; a.rel = "noopener"; });
   return div.innerHTML;
@@ -440,12 +504,15 @@ function abrir(id) {
   const n = porId.get(id); if (!n) return;
   selecionado = id; realcar();
   document.querySelectorAll("#leitor-chips .chip").forEach((c) => c.remove());
+  if (naBiblioteca(n) && !verBiblioteca) { verBiblioteca = true; aplicarBiblioteca(); }
   document.getElementById("leitor-chips").insertAdjacentHTML("afterbegin",
-    chipArea(n) + `<span class="chip">${CAMADAS[n.camada] || n.camada}</span>`);
+    chipArea(n) + `<span class="chip">${CAMADAS[n.camada] || n.camada}</span>` +
+    (GENEROS[n.genero] ? `<span class="chip">${GENEROS[n.genero]}</span>` : ""));
   document.getElementById("leitor-titulo").textContent = n.titulo;
   const meta = [];
   if (n.caminho) meta.push(n.caminho);
   if (n.atualizado) meta.push("atualizado " + fmtData(n.atualizado));
+  if (n.tags && n.tags.length) meta.push(n.tags.filter((t) => t !== "notion").map((t) => "#" + t).join(" "));
   document.getElementById("leitor-meta").textContent = meta.join(" · ");
   const corpo = document.getElementById("leitor-corpo");
   if (n.forma === "notion") {
@@ -453,7 +520,11 @@ function abrir(id) {
       <p><a class="botao-externo" href="${esc(n.url)}" target="_blank" rel="noopener">Abrir no Notion ↗</a></p>`;
   } else {
     corpo.innerHTML = renderMd(n.texto);
-    if (n.fonte) corpo.insertAdjacentHTML("beforeend", `<p class="etiqueta">Origem: <a href="${esc(n.fonte)}" target="_blank" rel="noopener">página no Notion ↗</a></p>`);
+    if (/^https?:\/\//.test(n.fonte || "")) {
+      const onde = /notion\./.test(n.fonte) ? "página no Notion" : /instagram\./.test(n.fonte) ? "post no Instagram"
+        : /youtu/.test(n.fonte) ? "vídeo no YouTube" : "link de origem";
+      corpo.insertAdjacentHTML("beforeend", `<p class="etiqueta">Origem: <a href="${esc(n.fonte)}" target="_blank" rel="noopener">${onde} ↗</a></p>`);
+    }
   }
   corpo.scrollTop = 0;
   const viz = [...vizinhos.get(id)].map((v) => porId.get(v)).sort((a, b) => (a.forma === "notion") - (b.forma === "notion") || a.titulo.localeCompare(b.titulo));
@@ -477,11 +548,10 @@ const campo = document.getElementById("busca");
 const lista = document.getElementById("resultados");
 let ativo = 0, encontrados = [];
 function buscar() {
-  const q = semAcento(campo.value.trim());
+  const q = chaveDe(campo.value);
   if (!q) { achados = null; lista.hidden = true; realcar(); return; }
   encontrados = nos.map((n) => {
-    const t = semAcento(n.titulo), c = semAcento(n.texto);
-    const pts = t.startsWith(q) ? 3 : t.includes(q) ? 2 : c.includes(q) ? 1 : 0;
+    const pts = n.buscaT.startsWith(q) ? 3 : n.buscaT.includes(q) ? 2 : n.busca.includes(q) ? 1 : 0;
     return { n, pts };
   }).filter((x) => x.pts).sort((a, b) => b.pts - a.pts || a.n.titulo.localeCompare(b.n.titulo)).map((x) => x.n);
   achados = new Set(encontrados.map((n) => n.id));
@@ -490,6 +560,7 @@ function buscar() {
     ? encontrados.slice(0, 10).map((n, i) => `<li><button data-no="${esc(n.id)}" class="${i === 0 ? "ativo" : ""}">
         <i class="ponto${n.forma === "notion" ? " oco" : ""}" style="--cor:${corDa(n.area)}"></i>
         <span class="tit">${esc(n.titulo)}</span><span class="etiqueta">${CAMADAS[n.camada] || ""}</span></button></li>`).join("")
+      + (encontrados.length > 10 ? `<li class="vazio">e mais ${encontrados.length - 10}. Todas estão acesas no mapa.</li>` : "")
     : `<li class="vazio">Nada encontrado para “${esc(campo.value.trim())}”.</li>`;
   lista.hidden = false;
   realcar();
@@ -579,6 +650,7 @@ document.getElementById("modo-neural").addEventListener("click", () => aplicarMo
 document.getElementById("modo-camadas").addEventListener("click", () => aplicarModo("camadas"));
 
 montarHoje();
+aplicarBiblioteca();
 aplicarModo(modo, false);
 const abaSalva = (location.hash === "#hoje" ? "hoje" : null) || lembrar("aba");
 mostrarAba(abaSalva === "hoje" ? "hoje" : "grafo");

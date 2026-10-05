@@ -1,5 +1,6 @@
 ---
 titulo: Sites — padrão premium
+apelidos: Sites — padrão premium
 camada: contexto
 area: sites
 atualizado: 2026-09-28

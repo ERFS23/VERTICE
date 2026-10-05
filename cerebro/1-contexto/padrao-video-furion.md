@@ -1,5 +1,6 @@
 ---
 titulo: Vídeo — edição padrão Furion
+apelidos: Vídeo — edição padrão Furion (Cowork)
 camada: contexto
 area: conteudo
 atualizado: 2026-09-23

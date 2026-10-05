@@ -1,5 +1,6 @@
 ---
 titulo: Projeto — Salvos do Instagram → Notion
+apelidos: Projeto — Salvos do Instagram → Notion
 camada: memoria
 area: conteudo
 atualizado: 2026-09-25

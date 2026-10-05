@@ -1,5 +1,6 @@
 ---
 titulo: Vídeo — cortes com corte-viral
+apelidos: Vídeo — cortes com corte-viral (Cowork)
 camada: contexto
 area: conteudo
 atualizado: 2026-09-15

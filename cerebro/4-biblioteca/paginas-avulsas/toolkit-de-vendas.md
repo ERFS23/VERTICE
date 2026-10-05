@@ -1,0 +1,46 @@
+---
+titulo: Toolkit de Vendas
+camada: biblioteca
+area: vendas
+genero: nota
+atualizado: 2026-09-26
+tags: notion
+fonte: https://app.notion.com/p/b5230eaeef2283efa37281a81fefbd4e
+pasta_vertice: Notion / Páginas avulsas
+origem: vertice
+vertice_id: notion-b5230eaeef2283efa37281a81fefbd4e
+---
+Fala, turma! Alfredo Soares aqui. Separei tudo nas duas frentes que definem um líder comercial: **gerar resultado** e **gerir gente**.
+
+🧰 
+**Gestão comercial sem ferramenta vira achismo**
+Eu passei anos vendendo no peito, na raça, e só destravei escala quando comecei a operar com processo e número na mesa. 
+Esse toolkit reúne as ferramentas que eu queria ter recebido prontas quando comecei a gerir time de vendas.
+
+🔴 
+**Ferramenta boa na mão de gestor despreparado vira enfeite.**
+No **G4 Gestão e Estratégia** eu ensino, ao vivo, como transformar esse toolkit numa operação que roda: processo comercial e gestão de time na prática, do lado de fundadores que tocam empresa todos os dias.
+👉 [Quero fazer o G4 Gestão e Estratégia](http://g40.co/toolkit-de-vendas)
+
+## Pra gerar mais resultado no seu negócio
+- [**Planilha de Previsibilidade de Vendas**](https://csfrg04.na1.hubspotlinks.com/Ctc/DM+113/cSFrG04/VWX1jG6M3Q6WVc0VjR14cRjgW8BHpjy5RHm2nN89-Qzg4ZD0CW5BWr2F6lZ3kPW4MTTy_5mvVQlW41fbLL8JWQYgW3NBwLR2ZDpP2VlpfMz5clP7dW1GWr0Z5_583HW8_jbpr5gHY_2VMzc1k1Xfq3MW95kWpK6M2dW_W84kkTn727Mz2W8LNLrP4qX1pgW2nkw3h4MfQfpW1GLbv-5VltJDW8QYCvh1FWWgwN4v8zvmyXCvdW2RhtKb6kh3y_W4GkwTH4YK6mjW1C_kmN3QTH1GW3Cy0wJ3Ngz6lW2stM6f1P8bjCN1JPjpxBnNrZW5n_hQZ8zdlyvN1HK7cYBC84CN2sX61-Jx-LQW7Ft_Hv1PvNN9W46KYqw99Zq6kW3MqqWk8cy1szW99snXh8-5hKmW4QwMHn6BTb2-VGcDhL648WMKW4CGDZy5YbM9lW4qDCH-884N1YW3RwHLg5HHN7bW8gg6306bmStmW1w4N484SGPVtf5ZmQRn04) — pra você parar de descobrir no dia 30 se o mês fechou.
+- [**Guia de Criação de um Funil de Vendas**](https://csfrg04.na1.hubspotlinks.com/Ctc/DM+113/cSFrG04/VWX1jG6M3Q6WVc0VjR14cRjgW8BHpjy5RHm2nN89-Qzz4ZD0CW69t95C6lZ3pDW8N6m_H2NDHdRW4xStBW8vNTLQW328D9x748fB_N1MpQztCGT7sN47X5XGQBHG2W82RNF06-TQfGW3zNcHM41KbNmW62mSrC4fjmS7W9df3xw83mlqnW7WlfzN4YPGs-W2x4W7B53_1GHW2LV5NG2b9t3ZVyzmPr1MZrP4W5xtBqV7b0m9zW3ncK9X91gjfSW3LJJZV7_NRbVN2Fs4N7pkxDQW19gcbq3WrStHTrfYx99YZKmW3r_9392_4wgSW7T6KhR35gbDqW95NMjW3fMPvLW3KjQB81j9ZKZW8wxM9Q8Bg_WbW8gvWV-7vr7B6W5Hc6Z34jFPSLW8FD1757pZLghW3TVMtk7z8x9mN6JLG_zwQT3FW33ndT_5P67JLW65YWwF43bzJnW8t4NTX8XMRx_W85L9--8tf-GNW4Jw5JG3kRms7W2RFyF-7fknpcN1Ct2tpFrKvDf6RBcqM04) — o passo a passo pra montar um funil que respeita a realidade da sua operação.
+- [**Planilha de Precificação**](https://csfrg04.na1.hubspotlinks.com/Ctc/DM+113/cSFrG04/VWX1jG6M3Q6WVc0VjR14cRjgW8BHpjy5RHm2nN89-Qzz4ZD0CW69t95C6lZ3pKW71kZTG6mD43-W9664063PNgFyW4D8q_B3f1kgSW8ZGWD-58dZBYN72SM6RPYN7CV6cvJ85pWXvkW3_bsZg60_1kHW4QVHB08HkZT-W1VNSs66SgFzXW11TK003fMf3PVw50wz8YNdhLW6_nF4K2N3b0CW6zQwx456ZMQdN8f_PVdvRDvBW2mYsSD2P7hrFN8MWBtLPWXC0W93s19C5q2sgzW1l9y1B9kKRQXW7ZZdQK2kMQyKW28YZ64926Gp8W3W1F-l3DJbQFW39frGC28C_MvW3PwrGM8gBmHqW11jXQq6Lpg_KW4XYYKc92DJL6W68zSyJ94NFfkW4S-4G71BGPPhW13JfdB6hv1C2V5Fmsj3mtMp7W2VNKVt1zm1pYW17npq12Vsm6YMd0FFX4WyhdW2w-Dl_5DRnT0W3jlbl78gxWDDW8Xw1ZG8NLtFtW90BPvz3QjGxqf3cdG6C04) — define preço com estratégia e para de deixar margem na mesa.
+- [**Calculadora de Conversão**](https://csfrg04.na1.hubspotlinks.com/Ctc/DM+113/cSFrG04/VWX1jG6M3Q6WVc0VjR14cRjgW8BHpjy5RHm2nN89-Qy-4ZD0CW50kH_H6lZ3lLW4YHpNC6mVc-TN4rHxsS-5PPHW1hzXHT3ySGtHW3rq76v4jfwKwV3JPw91PRdZSN3MRTcdXyXWnW4l0Hm846sGN2VBLq627YT697W7VbTr13H1-7jN62J0bsvCdHmN4cqN_fMfZsPW6hH4sm7XXvqZW5gxzPj5RbQb2N3_yMMRgZRnjW5L1rH22t067PW7BRPKy36dWCsW8-3-Zj1BJ8X2W21DblZ5pcJJPW4sN-wv7lFYXpW8lY50G1__bkYW8J7YJ-4-r0v0W1TX6GW5VZMSbW5Jnr3s7JY-yrW3PFCZ35_Ms-hW3fYNsr8zmglMW2GLb5M2Ggc63W9c_8d66SdTRGW377PqB3FnsfZW6M2v1T6qM48PW8sDGFc3XQXWWW3wwjM56RSZ00W3FkY2N1XDHMMf6L47_604) — calcula as taxas reais do seu processo e monta metas que desafiam sem quebrar o time.
+- [**Metodologia BANT**](https://csfrg04.na1.hubspotlinks.com/Ctc/DM+113/cSFrG04/VWX1jG6M3Q6WVc0VjR14cRjgW8BHpjy5RHm2nN89-QzT2_3wqW6N1vHY6lZ3kJW2z-fZg7_mxx4VlC8Td1Xxq46W7z_Qp578Q1lPN8p4p99Z42krW3b6t6d3zzj2FW9hqfFm6CH7QBW4MdcKp8xql8XW29Kp9B5zRXzVN5TtdsktCfz0W1sMCzg55gXXhW8TBRX82W0CN-W8CGwny735PnsW7mkv_f6rDCPpW4p-9X5798h8LW4LjFMX44l1pzW2x7lSB5zZm-bW4qnM_X5TchbYW5rFGQV2KRhsFW72J8SP5-wjwgW7W0rL07WKD-lW2JxsCc72ZvFJW7CDsb84xccxhf3hKQpK04) — o sistema de qualificação que melhora a conversão dos seus vendedores logo na entrada do funil.
+## Pra gerir um time de alta performance
+- [**Guia de Implementação da Reunião One-on-One**](https://csfrg04.na1.hubspotlinks.com/Ctc/DM+113/cSFrG04/VWX1jG6M3Q6WVc0VjR14cRjgW8BHpjy5RHm2nN89-Qy-4ZD0CW50kH_H6lZ3lYW338qhd8y98GsN6dRD1TXN0y9W99y7ZR9h9LDNW76n1qm8_yr3xW29J7f861380DW2-P3ms9gqyYwW82w_JD4RNXmPW6ys5kH6qSHW5W63-hKq4WJ4n6W1lXSqp1mPYb7W1zZf3f1WcvkLW3jX7s41lGw4KN68dTRcJDZh_W6xZsnW52SMR1W3j_Qw256pJ9xW2VbqB-38t9VFW74PPbl5FcK-cW5k-h-44jrnxhW435bn48TV0plW18-bnL3p0mplVHJDqX1HR2cPW8BR-FC4C_kgYV7DYDN9h1CysW3BThW912YTkHW3fMqf72B38P3W3GPBXj4q9v8wW3ZvBBr8S3l_BN5v5yG35fR5sN2_hNtdPGnFvW9dgjbL3bTZXmVVDh-M8gQ-LMW1bhk7j1_WLY1f6mHlQq04) — a reunião mais importante da sua empresa, feita do jeito certo.
+- [**Mapa de Vendedores de Alto Desempenho**](https://csfrg04.na1.hubspotlinks.com/Ctc/DM+113/cSFrG04/VWX1jG6M3Q6WVc0VjR14cRjgW8BHpjy5RHm2nN89-Qzz4ZD0CW69t95C6lZ3nLW4lDwvD6_3WBcW8gpPGn3ybgWMW5yZnjZ7nqJq2N6fpKRgtJdCPW4f7qnD3xSmTTW5hb_1g2jJyXnVd2NqY6BDQyvW33Ytw-4fZQ6RMvfGs_M98RSW3Bc2Bh83tc6FW7TP0Jm70JWDGW2zlqKW79YGgCW98cpyN3pFJwKW47VKyQ1Kw_7YW4vcgnQ44c19-W6Vj59g93bJTmW4nVrz_6RsntYW1CzWFg45bKv4W2SBMHR8twt6YW6s8LdD8R2c6WW2jL33N2X16Y5W1rgrfn3l-LTxW36jvm_89d9HyW2BSNwZ44hMQyW4hll6D8k2Md4W7zVDf145GjbSW4bn3nV2hJj8zN2s8zTzTCNVFW6YlFcS464yQ1N82s7Q-Z-hS2W1vp_sh7DWQr1Vmj7xt6mBdkvW3Tj0nS3cF1CpW4jzy6-4Xfrp6W1F7bPN6Zpq16N8lwffGQdQj1f54X7Sg04) — pra enxergar quem realmente carrega o resultado do time.
+- [**Planilha de Comissionamento**](https://csfrg04.na1.hubspotlinks.com/Ctc/DM+113/cSFrG04/VWX1jG6M3Q6WVc0VjR14cRjgW8BHpjy5RHm2nN89-Qzg4ZD0CW5BWr2F6lZ3lHW80K38m4vyVWxW788D8Z30m67SN7fRTsKH7Cs5W3Xtxhh18w8DHW4M1bw342SYTSW4P7Yx18mXTgqW6BXDW02ScNdWW4TFbXp2DvxyNW8pHxqn2nGXGGN8T5vN8lwMKPW8NSGp748TspBW3_8dYF1CyQj5N6QJK6GGS2sqW8tTb-56L0S6DVX1scf6qJvxLW3yQntB9bh8n1V1vFpl913mmMW1pK3FF5ysF09W8Zt1s118kY1lW84kC_J2ZmfL_W76dZ0R8RFW_RW82RZKF3T6K9fW8W2b515xsz-zW7jLWpt5qLQLpW8K7KVz6GxXTrW6d0RWc2hJJsmW101MNL28Z5ffW8N0XVt3ZfX9bN6blTlRFSgbxW5zSWTH8vGbvGN6g4hhJMgPQ8W3W0ck91WHMt-W88cD8N8kxfYHN8r1KJy_Wx_Hf1h36Kd04) — um plano de comissão que faz o vendedor bom querer ficar.
+- [**Mapa de Distribuição do Tempo dos Vendedores**](https://csfrg04.na1.hubspotlinks.com/Ctc/DM+113/cSFrG04/VWX1jG6M3Q6WVc0VjR14cRjgW8BHpjy5RHm2nN89-Qzz4ZD0CW69t95C6lZ3lxW7xQHjl6z1sK3W8qM6c_5Hg2jVW4XH2HK1njhQrW3n8qcf5zRshjW3qKtR361PDfWVTcRHY6nQTFGW6PbjS98k0lg2V-z6Lc6BVL38W3NGw-47lgn-4W6hzCSQ2SplNfW7zqw308r3pTzN635VST2vlLgW1nkX8Z4Wq8hRW3TVh4G2YVNccW5DxHDM5zbhnpVk9l_v1-1yrcN6r5HB8K6L1xW2R0Dzr3tqGFWV5X8WP5DKzFmW40V4kY80Nc0vW9fsLvv45cZZzN5VVZ7W18rc6W480xkk4wP6pgW89DVrH90crr4W5NWMn01c6t9NW8b9PMl98_MkDW3JVVLV4DqfY2W1QkPKj2SS2VXN3Dbmkb_hTFLW7_1FDY5m2NXBW2p52cH4TbP33VG3cjh4z-d_mVx7xSN6Q73Q6W7SGp1Y3HPGNNW2yZVV68jjLjQN92bkLJvw-8Hf2lPB5604) — descobre onde seu time gasta hora e onde deveria estar gastando.
+- [**Como Formar Boas Equipes**](https://csfrg04.na1.hubspotlinks.com/Ctc/DM+113/cSFrG04/VWX1jG6M3Q6WVc0VjR14cRjgW8BHpjy5RHm2nN89-Qzg4ZD0CW5BWr2F6lZ3pPN3XFT30ZbsYRW12fm_M6bJBPBW7tvRgb6MGDyXN7W0TGB7nhBxW34MqfB6Xs7P2W19t-p55j2MZvW339Vdy4smZ-wMPqHSGfLK1rW6mzPj46NJG-vW37tzMg5zZq6dVnnJWj6yd00cN4NTBNcPBYlwW1r1gTL7D2M7rN93pP_tF1TPbW3hZ3TR7WPV8rN3YxDDXHYBHKW7NnLYL8-XFF3W81fS0V55Np1LVM0McR4DLDlWW702gf18yzKRGW6Z_5Lc7KCgxJVh7yYN2tWT6rW4t90wr1x0TYgW68nNnv5crGnKW573Hbt23TtPYW7XklBq7YJ529W7FXgY912SLNSW2q0BZs1XHGcMW7vN5ZB7TmFSyW3KLK4K4XlBLgW59_6yw8Z_gTSW1wkrNM56Dt9qVMfc9m884-qKW9c_Hbd903lkDf5fKjGz04) — o guia pra atrair e liderar as pessoas certas.
+## Dois livros de cabeceira dos melhores líderes comerciais
+- [**SPIN Selling — Alcançando Excelência em Vendas**](https://csfrg04.na1.hubspotlinks.com/Ctc/DM+113/cSFrG04/VWX1jG6M3Q6WVc0VjR14cRjgW8BHpjy5RHm2nN89-QBs2_3wqW7Y8-PT6lZ3mnW6kJ_W91CD8BGW21-VK78FdYfCW4pjGWb4Jj6CgW8LDLs3343gjqW4TN84C3KWXftMLkzPfN2TSnW5QKnp94GmMkMW6-xkPD3dH77qW1xKRbl7S-4PNW47Yp326jqFmKW7kz8171qmS17W2l84C785tHwfW1xrYNG2QJC60W5x94fS1XZXJ_Vn0pFX2jbFzzVvXLZZ4469dQW7b6wb58RL-VCW7vXfyY2dmMrJN1HTZyVMjk2rV6vRMK5bNdvGW1CC6xc4s0npNN5k1cQfp6qzyM1mTBHr7y66W1Ss5MC1gFPwyW5cNGpQ79vRVyW7llyBH5_3NTwf8YZ7X604) — o resumo com o que aplicar do livro pra aumentar receita.
+- [**A Venda Desafiadora**](https://csfrg04.na1.hubspotlinks.com/Ctc/DM+113/cSFrG04/VWX1jG6M3Q6WVc0VjR14cRjgW8BHpjy5RHm2nN89-QzT2_3wqW6N1vHY6lZ3mPVVkp1N6xWQCNVRdnq03zxbnvW5m7hQC2jgw7wVYwFXB9g2nT-W4szLzt4vMc2cW3DYdZ766VMr-W36767s9jp4M4W611L0f969sd3W3LXySK50sN5LW7L0WtK2LFbgqW1wr6pg5BtKxCW2VbRRM7S-q7JW6kZVM59gCCJ7W3LKRj56bw99vW2WzKLB7JkkkCW7cvtG06JwqFrW2RDbzT2rb1BDW8tj34R2CvkwtW3NpP60868nQxN4nDwdt1xwwXW3YKj-L77kMnwW72wCQp4b3PPrf55h3hl04) — as ideias do livro pra formar vendedores que conduzem a venda.
+
+⚫ 
+**Muita coisa? Normal.**
+Começa pelo material que resolve a dor que mais sangra na sua operação hoje. Aplica, olha o número e só depois pega o próximo.
+
+---
+[Abrir no Notion](https://app.notion.com/p/b5230eaeef2283efa37281a81fefbd4e)

@@ -2,7 +2,7 @@
 titulo: Tarefas
 camada: memoria
 area: sistema
-atualizado: 2026-10-01
+atualizado: 2026-10-05
 ---
 
 # Tarefas
@@ -13,6 +13,7 @@ Formato: `- [ ] tarefa · área · origem · prazo (se houver)`. Quando concluir
 
 ## Abertas
 
+- [ ] Decidir se o artifact Vértice continua recebendo notas (a rotina de vídeos dele) ou se tudo passa a entrar direto neste cérebro · sistema · fusão de 05/10
 - [ ] Confirmar se as [[prioridades]] de agosto ainda valem · sistema · criação do cérebro
 - [ ] Pedir ao Aquino autorização para mostrar o caso na plataforma · comunidade · [[projeto-plataforma-comunidade]]
 - [ ] Trocar o conteúdo fictício da plataforma (vídeos, posts, preços) · comunidade · [[projeto-plataforma-comunidade]]
@@ -25,4 +26,5 @@ Formato: `- [ ] tarefa · área · origem · prazo (se houver)`. Quando concluir
 
 ## Concluídas recentemente
 
+- [x] Juntar o cérebro Vértice a este cérebro · sistema · 05/10/2026
 - [x] Criar o segundo cérebro no repositório VERTICE · sistema · 01/10/2026
