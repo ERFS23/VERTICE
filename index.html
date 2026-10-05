@@ -87,6 +87,22 @@
   .group::after{content:"";flex:1;height:1px;background:var(--line)}
   #ferramentas .lead + .group{margin-top:36px}
 
+  .phases{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-top:36px}
+  .phase{border-top:2px solid var(--red);padding:20px 4px 0}
+  .phase .n{font-family:var(--mono);font-size:12px;letter-spacing:.14em;color:var(--red)}
+  .phase h3{font-size:22px;font-weight:500;margin:10px 0 8px}
+  .phase p{color:var(--muted);font-size:15px}
+  .offer{display:grid;grid-template-columns:1.1fr .9fr;gap:clamp(24px,5vw,56px);align-items:center;border:1px solid #3a0c16;border-radius:26px;padding:clamp(28px,6vw,64px);
+    background:radial-gradient(circle at 80% 0,rgba(255,31,61,.25),transparent 65%),var(--card)}
+  .offer ul{list-style:none;margin-top:24px;display:grid;gap:12px}
+  .offer li{padding-left:26px;position:relative;color:var(--text)}
+  .offer li::before{content:"";position:absolute;left:0;top:9px;width:10px;height:10px;border-radius:50%;background:var(--red);box-shadow:0 0 12px rgba(255,31,61,.8)}
+  .price{text-align:center;border:1px solid var(--line);border-radius:20px;padding:32px 22px;background:#050505}
+  .price .lbl{font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+  .price .t{font-size:clamp(26px,4vw,34px);font-weight:500;margin:14px 0 8px;line-height:1.15}
+  .price p{color:var(--muted);font-size:14px}
+  .price .btn{margin-top:22px}
+  @media(max-width:760px){.offer{grid-template-columns:1fr}}
   .cta{text-align:center;border:1px solid #3a0c16;border-radius:26px;padding:clamp(36px,7vw,72px) 24px;
     background:radial-gradient(circle at 50% 0,rgba(255,31,61,.25),transparent 70%),var(--card)}
   .cta p{color:var(--muted);margin-top:14px}
@@ -129,7 +145,7 @@
       <div class="nums">
         <div class="num" data-count="14200">0<small>Hoje</small></div>
         <div class="arrow">→</div>
-        <div class="num red" data-count="25000">0<small>Meta · novembro</small></div>
+        <div class="num red" data-count="25000">0<small>Meta · novembro (no máx. até dez)</small></div>
       </div>
       <div class="bar"><b id="fill" data-w="57"></b></div>
       <div class="barlabels"><span>14,2 mil</span><span>25 mil</span></div>
@@ -189,11 +205,32 @@
     </div>
   </section>
 
-  <section>
-    <div class="cta">
-      <h2>Bora chegar nos <span class="red">25 mil?</span></h2>
-      <p>Vamos começar agora para bater a meta até novembro.</p>
-      <a class="btn" href="https://wa.me/5519981481280?text=Oi!%20Vi%20a%20proposta%20do%20Anderson%20Nutri%20e%20quero%20come%C3%A7ar." target="_blank" rel="noopener">Vamos começar</a>
+  <section id="como">
+    <h2>Como vai <span class="red">funcionar</span></h2>
+    <p class="lead">Três fases, sem enrolação.</p>
+    <div class="phases">
+      <div class="phase"><div class="n">FASE 01</div><h3>Montar a base</h3><p>Site, página de captura e agendamento, automação ManyChat e funil prontos para receber quem chegar.</p></div>
+      <div class="phase"><div class="n">FASE 02</div><h3>Produzir e postar</h3><p>Roteiros no Narrador de Impacto, vídeos otimizados e carrosséis, no ritmo certo para crescer.</p></div>
+      <div class="phase"><div class="n">FASE 03</div><h3>Replicar e escalar</h3><p>Repetir o que viraliza, ajustar o que não funciona e transformar seguidor em cliente.</p></div>
+    </div>
+  </section>
+
+  <section id="investimento">
+    <div class="offer">
+      <div>
+        <h2>Tudo isso em <span class="red">uma mensalidade.</span></h2>
+        <ul>
+          <li>As 11 ferramentas do plano, todas incluídas</li>
+          <li>Sem taxa de entrada</li>
+          <li>Meta de 25 mil seguidores até novembro, no máximo até o fim do ano</li>
+        </ul>
+      </div>
+      <div class="price">
+        <div class="lbl">Investimento</div>
+        <div class="t">Mensalidade bem menor que o valor que entrega</div>
+        <p>Você paga pouco por mês e leva um time inteiro de crescimento.</p>
+        <a class="btn" href="https://wa.me/5519981481280?text=Oi!%20Vi%20a%20proposta%20do%20Anderson%20Nutri%20e%20quero%20come%C3%A7ar." target="_blank" rel="noopener">Quero começar agora</a>
+      </div>
     </div>
   </section>
 
