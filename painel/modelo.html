@@ -111,6 +111,7 @@ button,input{font:inherit;color:inherit}
 .modo-camadas .ligacao{stroke-opacity:.28}
 .modo-camadas .no[data-tipo="area"] text{display:none}
 .modo-camadas .no[data-tipo="arquivo"]{--fs:10.5px}
+.modo-camadas #mapa .no text{font-size:calc(var(--fs, 11.5px) / clamp(.85, var(--k, 1), 1))}
 .modo-camadas .ligacao.biblio{stroke-opacity:.12}
 
 .legenda{position:absolute;left:12px;bottom:12px;display:flex;flex-direction:column;gap:8px;background:color-mix(in srgb,var(--papel) 88%,transparent);backdrop-filter:blur(6px);border:1px solid var(--linha);border-radius:8px;padding:10px 12px;max-width:calc(100% - 24px)}
@@ -186,6 +187,132 @@ a.wiki{color:var(--tinta);text-decoration:none;border-bottom:1.5px solid var(--a
   .dica{display:none}
   .legenda{font-size:12px;padding:8px 10px}
 }
+/* ---------- Painel (métricas, tarefas, briefing, perguntar, conectar) ---------- */
+#vista-hoje .hoje{display:block;padding:0}
+.painel{display:grid;gap:16px;padding:20px;max-width:1240px;margin:0 auto}
+.p-topo{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 16px}
+.p-topo h2{font:700 30px/1.1 var(--f-display);margin:0;letter-spacing:-.02em}
+.p-topo p{margin:0;color:var(--tinta-2)}
+.p-status{margin-left:auto;display:inline-flex;align-items:center;gap:6px;font:500 12px/1 var(--f-mono);color:var(--tinta-2);border:1px solid var(--linha);border-radius:99px;padding:5px 10px;background:var(--papel)}
+.p-status i{width:7px;height:7px;border-radius:50%;background:var(--tinta-2)}
+.p-status.ok i{background:var(--a-juridico)}
+.p-status.aviso i{background:var(--a-pessoal)}
+.p-colunas{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:16px;align-items:start}
+.p-colunas .coluna{display:grid;gap:16px;min-width:0}
+.bloco-cab{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.bloco-cab h2{margin:0}
+.bloco-cab .etiqueta{margin:0}
+.bloco > .etiqueta{display:block;margin-bottom:6px}
+.nota-p{color:var(--tinta-2);font-size:13.5px;margin:8px 0 0}
+
+.btn-p{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--linha);background:var(--papel);border-radius:var(--raio);padding:6px 12px;cursor:pointer;font-weight:500;font-size:13.5px;color:var(--tinta);white-space:nowrap}
+.btn-p:hover{border-color:var(--tinta-2)}
+.btn-p.forte{background:var(--tinta);color:var(--papel);border-color:var(--tinta)}
+.btn-p.forte:hover{opacity:.9}
+.btn-p[disabled]{opacity:.5;cursor:default}
+.btn-p.perigo{color:var(--a-vendas);border-color:color-mix(in srgb,var(--a-vendas) 40%,var(--linha))}
+.link-p{border:0;background:none;padding:2px 4px;cursor:pointer;font:500 12px var(--f-mono);color:var(--tinta-2);border-radius:4px}
+.link-p:hover{color:var(--tinta);background:var(--chao)}
+.link-p.perigo:hover{color:var(--a-vendas)}
+.campo-p{width:100%;border:1px solid var(--linha);background:var(--papel);border-radius:var(--raio);padding:7px 10px;min-width:0}
+.campo-p:focus{outline:2px solid var(--a-conteudo);outline-offset:0;border-color:transparent}
+textarea.campo-p{resize:vertical;min-height:70px;line-height:1.45}
+.linha-form{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.linha-form > .campo-p{flex:1 1 160px}
+.linha-form > select.campo-p,.linha-form > input[type=date].campo-p{flex:0 1 150px}
+.rotulo-p{display:grid;gap:4px;font:500 11px/1 var(--f-mono);letter-spacing:.04em;text-transform:uppercase;color:var(--tinta-2)}
+
+/* métricas */
+.metricas{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}
+.metrica{border:1px solid var(--linha);border-radius:8px;background:var(--papel);padding:14px 14px 12px;display:grid;gap:4px;min-width:0;border-top:3px solid var(--cor)}
+.metrica h3{font:600 14px/1.3 var(--f-texto);margin:0;color:var(--tinta-2)}
+.m-valor{font:700 30px/1.05 var(--f-display);letter-spacing:-.02em;margin:2px 0 0;font-variant-numeric:tabular-nums}
+.m-valor.vazio{color:var(--tinta-2);font-size:22px}
+.m-delta{font:500 12px/1.3 var(--f-mono);margin:0;color:var(--tinta-2)}
+.m-delta.sobe{color:var(--a-juridico)}
+.m-delta.desce{color:var(--a-vendas)}
+.m-meta{display:grid;gap:4px;margin-top:4px}
+.m-barra{height:6px;border-radius:99px;background:var(--chao);overflow:hidden}
+.m-barra i{display:block;height:100%;background:var(--cor);border-radius:99px}
+.m-meta span{font:12px var(--f-mono);color:var(--tinta-2)}
+.m-spark{width:100%;height:30px;margin-top:4px}
+.m-spark polyline{fill:none;stroke:var(--cor);stroke-width:1.8;stroke-linejoin:round;stroke-linecap:round}
+.m-pe{display:flex;align-items:center;justify-content:space-between;gap:6px;font:11.5px var(--f-mono);color:var(--tinta-2);margin-top:2px}
+.metrica.nova{border-style:dashed;border-top-width:1px;place-items:center;min-height:150px;cursor:pointer;color:var(--tinta-2);font-weight:600;background:none}
+.metrica.nova:hover{color:var(--tinta);border-color:var(--tinta-2)}
+.metrica form{display:grid;gap:8px}
+.metrica form .linha-form .campo-p{flex:1 1 90px}
+
+/* tarefas */
+.filtros{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 10px}
+.filtros button{cursor:pointer}
+.filtros button[aria-pressed="true"]{background:var(--tinta);color:var(--papel);border-color:var(--tinta)}
+.nova-tarefa{display:grid;gap:8px;padding:10px;border:1px dashed var(--linha);border-radius:8px;margin-bottom:6px}
+.lista-t{list-style:none;margin:0;padding:0}
+.lista-t > li{display:grid;grid-template-columns:auto minmax(0,1fr);gap:2px 10px;padding:10px 0;border-top:1px solid var(--linha)}
+.lista-t > li:first-child{border-top:0}
+.marcar{width:20px;height:20px;border:1.6px solid var(--tinta-2);border-radius:5px;background:none;cursor:pointer;margin-top:1px;display:grid;place-items:center;padding:0;color:var(--papel)}
+.marcar:hover{border-color:var(--a-juridico)}
+.marcar[aria-pressed="true"]{background:var(--a-juridico);border-color:var(--a-juridico)}
+.marcar svg{width:12px;height:12px}
+.lista-t .txt{min-width:0;overflow-wrap:anywhere}
+.lista-t .txt p{display:inline;margin:0}
+.lista-t .feito .txt{text-decoration:line-through;color:var(--tinta-2)}
+.lista-t .info{grid-column:2;display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center;font-size:12.5px;color:var(--tinta-2)}
+.lista-t .info p{display:inline;margin:0}
+.lista-t .acoes{grid-column:2;display:flex;flex-wrap:wrap;gap:2px;margin-top:2px}
+@media (hover:hover) and (min-width:761px){
+  .lista-t .acoes{opacity:0;transition:opacity .15s}
+  .lista-t > li:hover .acoes,.lista-t > li:focus-within .acoes{opacity:1}
+}
+.prazo{font:500 11.5px/1 var(--f-mono);padding:3px 7px;border-radius:99px;border:1px solid var(--linha)}
+.prazo.atrasada{color:var(--a-vendas);border-color:color-mix(in srgb,var(--a-vendas) 45%,transparent)}
+.prazo.hoje{color:var(--a-conteudo);border-color:color-mix(in srgb,var(--a-conteudo) 45%,transparent)}
+.lista-t form{grid-column:1/-1;display:grid;gap:8px}
+.ver-feitas{margin-top:10px}
+
+/* briefing, perguntar, memória, conectar */
+.resposta{margin-top:12px;border-top:1px solid var(--linha);padding-top:10px}
+.resposta .quem{font:500 11px/1 var(--f-mono);letter-spacing:.04em;text-transform:uppercase;color:var(--tinta-2);margin:12px 0 4px}
+.rastro{font:12px/1.5 var(--f-mono);color:var(--tinta-2);margin:4px 0 0;padding:0;list-style:none}
+.exemplos{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.exemplos button{cursor:pointer}
+.carregando{display:inline-flex;align-items:center;gap:8px;color:var(--tinta-2);font-size:13.5px}
+.carregando::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--a-conteudo);animation:pulsar 1.1s ease-in-out infinite}
+@keyframes pulsar{0%,100%{opacity:.25}50%{opacity:1}}
+.lista-m{list-style:none;margin:0;padding:0;display:grid}
+.lista-m li{border-top:1px solid var(--linha)}
+.lista-m li:first-child{border-top:0}
+.lista-m button.item{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:8px;align-items:baseline;width:100%;text-align:left;border:0;background:none;padding:9px 0;cursor:pointer}
+.lista-m button.item:hover .t{text-decoration:underline;text-decoration-color:var(--a-conteudo);text-underline-offset:3px}
+.lista-m .t{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lista-m .d{font:11.5px var(--f-mono);color:var(--tinta-2)}
+.conectar{display:grid;gap:14px}
+.conectar h3{font:600 15px/1.3 var(--f-texto);margin:0 0 4px}
+.conectar p{margin:0 0 8px;color:var(--tinta-2);font-size:14px}
+.conectar code{font:12.5px var(--f-mono);background:var(--chao);padding:1px 5px;border-radius:3px;word-break:break-all}
+.botoes{display:flex;flex-wrap:wrap;gap:8px}
+.aviso-p{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:50;background:var(--tinta);color:var(--papel);padding:9px 16px;border-radius:8px;font-weight:500;font-size:13.5px;box-shadow:var(--sombra);max-width:calc(100% - 32px);text-align:center}
+.copia-manual{position:fixed;inset:0;z-index:60;background:rgb(10 12 20 / .55);display:grid;place-items:center;padding:16px}
+.copia-manual > div{background:var(--papel);border:1px solid var(--linha);border-radius:10px;padding:16px;width:min(640px,100%);display:grid;gap:10px;box-shadow:var(--sombra)}
+.copia-manual textarea{min-height:240px;font:12.5px/1.5 var(--f-mono)}
+.selo-vitrine{display:inline-flex;align-items:center;gap:6px;font:500 12px/1 var(--f-mono);color:var(--a-conteudo);border:1px solid color-mix(in srgb,var(--a-conteudo) 45%,transparent);border-radius:99px;padding:5px 10px}
+.camadas-explica{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.camadas-explica article{border:1px solid var(--linha);border-radius:8px;padding:12px 14px;background:var(--papel)}
+.camadas-explica h3{font:700 17px/1.2 var(--f-display);margin:0 0 4px}
+.camadas-explica p{margin:0;color:var(--tinta-2);font-size:14px}
+
+@media (max-width:900px){
+  .p-colunas{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width:760px){
+  .painel{padding:14px;gap:12px}
+  .p-topo h2{font-size:24px}
+  .p-status{margin-left:0}
+  .metricas{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+  .m-valor{font-size:26px}
+}
+
 @media (prefers-reduced-motion: reduce){*{transition:none!important}}
 </style>
 
@@ -196,8 +323,8 @@ a.wiki{color:var(--tinta);text-decoration:none;border-bottom:1.5px solid var(--a
       <p class="sub" id="resumo"></p>
     </div>
     <div class="alternador" role="tablist" aria-label="Seção">
+      <button id="aba-hoje" role="tab" aria-selected="false" aria-controls="vista-hoje">Painel</button>
       <button id="aba-grafo" role="tab" aria-selected="true" aria-controls="vista-grafo">Mapa</button>
-      <button id="aba-hoje" role="tab" aria-selected="false" aria-controls="vista-hoje">Hoje</button>
     </div>
     <div class="busca">
       <input id="busca" type="search" placeholder="Buscar no cérebro" autocomplete="off" aria-label="Buscar no cérebro">
@@ -580,57 +707,607 @@ lista.addEventListener("click", (e) => { const b = e.target.closest("button"); i
 function escolher(id) { lista.hidden = true; achados = null; mostrarAba("grafo"); abrir(id); }
 document.addEventListener("click", (e) => { if (!e.target.closest(".busca")) lista.hidden = true; });
 
-/* ---------- aba Hoje ---------- */
-function montarHoje() {
-  const tarefas = porId.get("tarefas"), prior = porId.get("prioridades");
-  const diarios = nos.filter((n) => n.tipo === "diario").sort((a, b) => b.id.localeCompare(a.id));
-  const ultimo = diarios[0];
-  const itens = [];
-  if (tarefas) {
-    let secao = "";
-    tarefas.texto.split("\n").forEach((l) => {
-      const h = l.match(/^##\s+(.*)/); if (h) secao = h[1];
-      const m = l.match(/^\s*-\s*\[( |x|X)\]\s+(.*)$/);
-      if (m) itens.push({ feito: m[1] !== " ", partes: m[2].split(" · ").map((s) => s.trim()), secao });
-    });
+const VITRINE = false;
+const DEMO = null;
+/* ---------- Painel ----------
+   Tarefas, métricas, memória e briefing moram no banco do artefato (capacidade db).
+   Assim o painel edita, e qualquer conversa do Claude com o link deste cérebro lê e escreve
+   nas mesmas coleções: tarefas, metricas, memoria e o documento briefing/hoje. */
+const URL_CEREBRO = "https://claude.ai/artifact/Xa2kyT82vzWyioMsZCc4hw";
+const P = {
+  db: null, sample: null, downloads: null, escrever: false, conectado: false, tentou: false,
+  tarefas: null, metricas: null, memoria: null, briefing: null,
+  filtroArea: null, editTarefa: null, editMetrica: null, verFeitas: false,
+  conversa: [], perguntando: null, gerandoBriefing: false, pendente: {},
+};
+const $p = (id) => document.getElementById(id);
+const hojeISO = () => { const d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); };
+const somaDias = (iso, n) => { const d = new Date((iso || hojeISO()) + "T12:00:00"); d.setDate(d.getDate() + n); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); };
+const agoraISO = () => new Date().toISOString();
+const num = (v) => (v === null || v === undefined || v === "" || isNaN(+v)) ? null : +v;
+const fmtNum = (v, u) => v == null ? "—" : u === "R$" ? "R$ " + v.toLocaleString("pt-BR", { maximumFractionDigits: 0 }) : u === "%" ? v.toLocaleString("pt-BR", { maximumFractionDigits: 1 }) + "%" : v.toLocaleString("pt-BR", { maximumFractionDigits: 1 });
+const ddmm = (iso) => iso ? iso.slice(8, 10) + "/" + iso.slice(5, 7) : "";
+const mdInline = (t) => renderMd(t || "").replace(/^<p>|<\/p>\s*$/g, "").trim();
+const OPCOES_AREA = (sel) => Object.entries(AREAS).map(([k, v]) => `<option value="${k}"${k === sel ? " selected" : ""}>${v}</option>`).join("");
+const ICONE_OK = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg>`;
+
+async function usar(nome) {
+  try { return window.claude && typeof window.claude.use === "function" ? await window.claude.use(nome) : null; } catch (e) { return null; }
+}
+function aviso(txt, ms = 3200) {
+  let el = document.querySelector(".aviso-p");
+  if (!el) { el = document.createElement("div"); el.className = "aviso-p"; el.setAttribute("role", "status"); document.body.appendChild(el); }
+  el.textContent = txt; el.hidden = false;
+  clearTimeout(aviso.t); aviso.t = setTimeout(() => { el.hidden = true; }, ms);
+}
+function erroDb(e) {
+  const c = e && e.code;
+  if (c === "not_granted" || c === "revoked") { P.escrever = false; renderTudo(); return "Você está em modo leitura: não dá para salvar aqui."; }
+  if (c === "quota_exceeded") return "O banco do cérebro está cheio. Apague itens antigos.";
+  if (c === "resource_exhausted") return "Muitas alterações de uma vez. Espere alguns segundos.";
+  if (c === "invalid_argument") return "Não deu para salvar: o texto ficou grande demais ou sem permissão.";
+  return "Não consegui salvar. Confira a conexão e tente de novo.";
+}
+async function gravar(fn, ok) {
+  try { await fn(); if (ok) aviso(ok); return true; } catch (e) { aviso(erroDb(e), 5000); return false; }
+}
+// redesenha um bloco sem perder o que a pessoa está digitando nele
+function preservar(el, fn) {
+  const chave = (i) => i.form ? i.form.dataset.form + "|" + (i.form.dataset.id || "") + "|" + i.name : null;
+  const vals = {}; let foco = null, sel = null;
+  el.querySelectorAll("form[data-form] [name]").forEach((i) => {
+    const k = chave(i); if (!k) return; vals[k] = i.value;
+    if (i === document.activeElement) { foco = k; try { sel = [i.selectionStart, i.selectionEnd]; } catch (e) {} }
+  });
+  const abertos = [...el.querySelectorAll("details")].map((d) => d.open);
+  fn();
+  el.querySelectorAll("details").forEach((d, n) => { if (abertos[n]) d.open = true; });
+  el.querySelectorAll("form[data-form] [name]").forEach((i) => {
+    const k = chave(i); if (!k) return;
+    if (k in vals) i.value = vals[k];
+    if (k === foco) { i.focus(); if (sel && sel[0] != null) try { i.setSelectionRange(sel[0], sel[1]); } catch (e) {} }
+  });
+}
+// exclusão em dois cliques (o confirm() do navegador pode estar bloqueado dentro do Claude)
+function confirmou(b) {
+  if (b.dataset.armado === "1") return true;
+  b.dataset.armado = "1"; const antes = b.textContent; b.textContent = "Clique de novo para excluir";
+  setTimeout(() => { if (b.isConnected) { b.dataset.armado = ""; b.textContent = antes; } }, 4000);
+  return false;
+}
+
+/* ---------- copiar e exportar ---------- */
+async function copiar(texto, rotulo) {
+  try { await navigator.clipboard.writeText(texto); aviso(rotulo + " copiado."); return; } catch (e) {}
+  const capa = document.createElement("div");
+  capa.className = "copia-manual";
+  capa.innerHTML = `<div role="dialog" aria-label="Copiar"><strong>Copie o texto abaixo</strong><span class="nota-p" style="margin:0">Já está selecionado: aperte Ctrl+C e depois feche.</span><textarea class="campo-p" readonly></textarea><div class="botoes"><button class="btn-p forte" type="button">Fechar</button></div></div>`;
+  const ta = capa.querySelector("textarea"); ta.value = texto;
+  capa.querySelector("button").onclick = () => capa.remove();
+  capa.addEventListener("click", (e) => { if (e.target === capa) capa.remove(); });
+  document.body.appendChild(capa); ta.focus(); ta.select();
+}
+function textoTarefa(t) {
+  return `- [${t.feito ? "x" : " "}] ${t.texto}${t.area ? " · " + (AREAS[t.area] || t.area) : ""}${t.origem ? " · " + t.origem : ""}${t.prazo ? " · prazo " + fmtData(t.prazo) : ""}`;
+}
+function pacoteDoCerebro() {
+  const agora = new Date();
+  const arquivos = nos.filter((n) => n.forma !== "notion");
+  const ordem = { centro: 0, contexto: 1, memoria: 2, acao: 3 };
+  arquivos.sort((a, b) => (ordem[a.camada] ?? 9) - (ordem[b.camada] ?? 9) || a.titulo.localeCompare(b.titulo));
+  const L = [];
+  L.push(`# Segundo cérebro do Elias`, ``, `Exportado em ${agora.toLocaleString("pt-BR")} de ${URL_CEREBRO}`, ``);
+  L.push(`> Use este texto como a memória do Elias nesta conversa. Responda sempre em português do Brasil, passo a passo e simples. Antes de perguntar algo a ele, procure a resposta aqui. Se não estiver aqui, diga que não está no cérebro. Os links [[assim]] apontam para outro arquivo deste texto pelo id.`, ``);
+  L.push(`## Roteador: onde está cada coisa`, ``);
+  L.push(`- Quem é o Elias e as áreas do negócio: [[elias]]`, `- Como falar com ele: [[como-trabalhar-comigo]]`, `- Prioridades e tarefas: [[prioridades]] e a seção "Tarefas" abaixo`, `- Números do negócio: seção "Métricas" abaixo`, `- Regras de produção (carrossel, vídeo, sites): arquivos padrao-*`, `- Decisões e lições: [[decisoes]], [[aprendizados]]`, ``);
+  arquivos.forEach((n) => L.push(`- [[${n.id}]] ${n.titulo} · ${CAMADAS[n.camada] || n.camada} · ${AREAS[n.area] || n.area}`));
+  L.push(``, `## Arquivos`, ``);
+  arquivos.forEach((n) => {
+    L.push(`### [[${n.id}]] ${n.titulo}`, ``, `Camada: ${CAMADAS[n.camada] || n.camada} · Área: ${AREAS[n.area] || n.area}${n.atualizado ? " · atualizado " + fmtData(n.atualizado) : ""}`, ``);
+    L.push((n.texto || "").replace(/^# .*\n+/, "").trim(), ``);
+  });
+  const abertas = (P.tarefas || []).filter((t) => !t.feito);
+  if (P.tarefas) { L.push(`## Tarefas abertas (painel)`, ``); abertas.forEach((t) => L.push(textoTarefa(t))); if (!abertas.length) L.push("Nenhuma."); L.push(``); }
+  if (P.metricas && P.metricas.length) {
+    L.push(`## Métricas (painel)`, ``);
+    P.metricas.forEach((m) => L.push(`- ${m.nome}: ${fmtNum(num(m.valor), m.unidade)}${num(m.meta) != null ? " (meta " + fmtNum(num(m.meta), m.unidade) + ")" : ""}${m.atualizado ? " · atualizado " + fmtData(m.atualizado) : ""}`));
+    L.push(``);
   }
-  const abertas = itens.filter((i) => !i.feito), feitas = itens.filter((i) => i.feito);
-  const linhaTarefa = (t) => {
-    const [txt, area, ...resto] = t.partes;
-    const a = semAcento(area || "");
-    const info = [area && AREAS[a] ? `<span class="chip"><i class="ponto" style="--cor:${corDa(a)}"></i>${AREAS[a]}</span>` : (area ? esc(area) : ""),
-      ...resto.map((r) => renderMd(r).replace(/^<p>|<\/p>\s*$/g, "").replace(/<a class="wiki" data-no="([^"]+)" href="#">/g, '<button data-no="$1">').replace(/<\/a>/g, "</button>"))].filter(Boolean).join(" · ");
-    const tTxt = renderMd(txt).replace(/^<p>|<\/p>\s*$/g, "");
-    return `<li class="${t.feito ? "feito" : ""}"><span class="caixa" aria-hidden="true"></span><span class="txt">${tTxt}</span><span class="info">${info}</span></li>`;
-  };
-  const priores = prior ? [...prior.texto.matchAll(/^##\s+(?:\d+\.\s*)?(.+)$/gm)].map((m) => m[1]) : [];
-  const aviso = prior && /a confirmar/i.test(prior.texto);
+  if (P.memoria && P.memoria.length) {
+    L.push(`## Memória recente (registrada pelas conversas e pelo painel)`, ``);
+    [...P.memoria].sort((a, b) => String(b.data || "").localeCompare(String(a.data || ""))).slice(0, 25)
+      .forEach((m) => L.push(`### ${m.titulo || m.tipo} (${m.tipo || "nota"} · ${fmtData(m.data || "")})`, ``, String(m.texto || "").trim(), ``));
+  }
+  const notion = nos.filter((n) => n.forma === "notion");
+  if (notion.length) { L.push(`## Páginas do Notion ligadas`, ``); notion.forEach((n) => L.push(`- ${n.titulo} (${AREAS[n.area] || n.area}): ${n.url}`)); }
+  return L.join("\n");
+}
+const PROMPT_CLAUDE_CODE = `Use meu segundo cérebro antes de responder: ${URL_CEREBRO}
+1. Leia o artefato (Artifact, action "read") para ver os arquivos de contexto, memória e ação.
+2. Leia os dados vivos com ArtifactData nas coleções "tarefas", "metricas", "memoria" e no documento "briefing/hoje".
+3. Quando eu decidir algo, aprender algo ou combinar uma tarefa nesta conversa, grave no cérebro: tarefas em "tarefas" (texto, area, origem, prazo AAAA-MM-DD, feito false, criado) e decisões, aprendizados e notas em "memoria" (tipo, titulo, texto, data, origem).
+Responda sempre em português do Brasil.`;
+
+/* ---------- topo ---------- */
+function renderTopo() {
+  const el = $p("p-topo"); if (!el) return;
   const hojeData = new Date().toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" });
-  document.getElementById("hoje").innerHTML = `
-    <div class="saudacao"><h2>Hoje</h2><p>${esc(hojeData)} · ${abertas.length} tarefas abertas · último registro de memória ${ultimo ? fmtData(ultimo.id) : "nenhum"}</p></div>
-    <div class="coluna">
-      <section class="bloco">
-        <span class="etiqueta">Memória · tarefas</span>
-        <h2>Para fazer</h2>
-        <ul class="tarefas">${abertas.map(linhaTarefa).join("") || "<li>Nenhuma tarefa aberta.</li>"}</ul>
-        ${feitas.length ? `<ul class="tarefas">${feitas.slice(0, 3).map(linhaTarefa).join("")}</ul>` : ""}
-        <p class="etiqueta" style="margin:12px 0 0">Para marcar como feita, peça ao Claude ou edite <button class="link-abrir" data-no="tarefas">tarefas.md</button></p>
-      </section>
-    </div>
-    <div class="coluna">
-      <section class="bloco">
-        <span class="etiqueta">Memória · prioridades${aviso ? " · a confirmar" : ""}</span>
-        <h2>Foco</h2>
-        <ol class="prioridades">${priores.map((p) => `<li>${esc(p)}</li>`).join("")}</ol>
-        <p style="margin:12px 0 0"><button class="link-abrir" data-no="prioridades">Ver prioridades completas</button></p>
-      </section>
-      ${ultimo ? `<section class="bloco">
-        <span class="etiqueta">Memória · diário</span>
-        <h2>${esc(ultimo.titulo)}</h2>
-        <div class="md">${renderMd(ultimo.texto)}</div>
-      </section>` : ""}
+  const abertas = (P.tarefas || tarefasDoMd()).filter((t) => !t.feito);
+  const atrasadas = abertas.filter((t) => t.prazo && t.prazo < hojeISO()).length;
+  let status;
+  if (VITRINE) status = `<span class="selo-vitrine">Vitrine · dados de exemplo</span>`;
+  else if (P.conectado) status = `<span class="p-status ok"><i></i>${P.escrever ? "Conectado · salvando no cérebro" : "Conectado · só leitura"}</span>`;
+  else status = `<span class="p-status aviso"><i></i>${P.tentou ? "Sem banco: mostrando o tarefas.md" : "Conectando ao banco…"}</span>`;
+  el.innerHTML = `<h2>Painel</h2><p>${esc(hojeData)} · ${abertas.length} tarefas abertas${atrasadas ? ` · <strong>${atrasadas} atrasada${atrasadas > 1 ? "s" : ""}</strong>` : ""}</p>${status}`;
+}
+
+/* ---------- métricas ---------- */
+function sparkline(hist) {
+  const pts = (hist || []).filter((h) => num(h.v) != null).slice(-30);
+  if (pts.length < 2) return "";
+  const vs = pts.map((h) => +h.v), min = Math.min(...vs), max = Math.max(...vs), amp = max - min || 1;
+  const xy = pts.map((h, i) => `${(i / (pts.length - 1) * 118 + 1).toFixed(1)},${(27 - (h.v - min) / amp * 24).toFixed(1)}`).join(" ");
+  return `<svg class="m-spark" viewBox="0 0 120 30" preserveAspectRatio="none" aria-hidden="true"><polyline points="${xy}"/></svg>`;
+}
+function cartaoMetrica(m) {
+  const cor = corDa(m.area);
+  if (P.editMetrica === m.id) return formMetrica(m);
+  const v = num(m.valor), meta = num(m.meta);
+  const hist = (m.historico || []).filter((h) => num(h.v) != null);
+  let delta = "";
+  if (hist.length >= 2) {
+    const ant = hist[hist.length - 2], d = +hist[hist.length - 1].v - +ant.v;
+    if (d) delta = `<p class="m-delta ${d > 0 ? "sobe" : "desce"}">${d > 0 ? "▲ +" : "▼ "}${fmtNum(Math.abs(d), m.unidade === "R$" ? "R$" : "")} desde ${ddmm(ant.d)}</p>`;
+    else delta = `<p class="m-delta">igual a ${ddmm(ant.d)}</p>`;
+  }
+  const derivado = v != null && num(m.receita_por_unidade) != null ? `<p class="m-delta">≈ ${fmtNum(v * num(m.receita_por_unidade), "R$")}/mês</p>` : "";
+  const barra = meta ? `<div class="m-meta"><div class="m-barra"><i style="width:${Math.max(0, Math.min(100, (v || 0) / meta * 100)).toFixed(0)}%"></i></div><span>${Math.round((v || 0) / meta * 100)}% da meta de ${fmtNum(meta, m.unidade)}</span></div>` : "";
+  return `<article class="metrica" style="--cor:${cor}">
+    <h3>${esc(m.nome || "Métrica")}</h3>
+    <p class="m-valor${v == null ? " vazio" : ""}">${v == null ? "sem valor" : fmtNum(v, m.unidade)}</p>
+    ${delta}${derivado}${barra}${sparkline(hist)}
+    <div class="m-pe"><span>${m.atualizado ? "atualizado " + ddmm(m.atualizado.slice(0, 10)) : "nunca atualizado"}${m.fonte === "claude" ? " · pelo Claude" : ""}</span>
+    ${P.escrever ? `<button class="link-p" data-acao="editar-metrica" data-id="${esc(m.id)}">${v == null ? "Informar" : "Atualizar"}</button>` : ""}</div>
+  </article>`;
+}
+function formMetrica(m) {
+  const nova = !m;
+  m = m || { nome: "", unidade: "", area: "conteudo" };
+  return `<article class="metrica" style="--cor:${corDa(m.area)}"><form data-form="metrica" data-id="${nova ? "" : esc(m.id)}">
+    <label class="rotulo-p">Valor de hoje<input class="campo-p" name="valor" type="number" step="any" inputmode="decimal" value="${num(m.valor) ?? ""}" ${nova ? "" : "autofocus"}></label>
+    <details${nova ? " open" : ""}><summary class="link-p" style="display:inline">Detalhes</summary>
+      <div style="display:grid;gap:8px;margin-top:8px">
+        <label class="rotulo-p">Nome<input class="campo-p" name="nome" required maxlength="60" value="${esc(m.nome || "")}"></label>
+        <div class="linha-form">
+          <label class="rotulo-p" style="flex:1">Unidade<select class="campo-p" name="unidade">
+            ${[["", "número"], ["R$", "R$"], ["%", "%"]].map(([k, r]) => `<option value="${k}"${(m.unidade || "") === k ? " selected" : ""}>${r}</option>`).join("")}</select></label>
+          <label class="rotulo-p" style="flex:1">Meta<input class="campo-p" name="meta" type="number" step="any" value="${num(m.meta) ?? ""}"></label>
+        </div>
+        <label class="rotulo-p">Área<select class="campo-p" name="area">${OPCOES_AREA(m.area)}</select></label>
+      </div>
+    </details>
+    <div class="botoes"><button class="btn-p forte" type="submit">Salvar</button><button class="btn-p" type="button" data-acao="cancelar-metrica">Cancelar</button>
+    ${nova ? "" : `<button class="link-p perigo" type="button" data-acao="excluir-metrica" data-id="${esc(m.id)}">Excluir</button>`}</div>
+  </form></article>`;
+}
+function renderMetricas() {
+  const el = $p("p-metricas"); if (!el) return;
+  preservar(el, () => {
+    const cab = `<div class="bloco-cab"><div><span class="etiqueta">Ação · números do negócio</span><h2>Métricas</h2></div>${P.conectado && P.escrever && !VITRINE ? `<span class="nota-p" style="margin:0">Clique em Atualizar e informe o número de hoje. O histórico vira o gráfico.</span>` : ""}</div>`;
+    if (!P.metricas) { el.innerHTML = cab + `<p class="carregando">${P.tentou ? "As métricas aparecem quando o painel abre dentro do Claude." : "Carregando métricas…"}</p>`; return; }
+    const lista = [...P.metricas].sort((a, b) => (num(a.ordem) ?? 99) - (num(b.ordem) ?? 99) || String(a.nome).localeCompare(String(b.nome)));
+    el.innerHTML = cab + `<div class="metricas">${lista.map(cartaoMetrica).join("")}
+      ${P.editMetrica === "nova" ? formMetrica(null) : P.escrever ? `<button class="metrica nova" data-acao="nova-metrica">+ Nova métrica</button>` : ""}</div>
+      ${!lista.length && !P.escrever ? `<p class="nota-p">Nenhuma métrica ainda.</p>` : ""}`;
+    const foco = el.querySelector("[autofocus]"); if (foco) foco.focus();
+  });
+}
+
+/* ---------- tarefas ---------- */
+function tarefasDoMd() {
+  const t = porId.get("tarefas"), out = [];
+  if (!t) return out;
+  t.texto.split("\n").forEach((l) => {
+    const m = l.match(/^\s*-\s*\[( |x|X)\]\s+(.*)$/); if (!m) return;
+    const [texto, area = "", origem = ""] = m[2].split(" · ").map((s) => s.trim());
+    out.push({ id: "md-" + out.length, texto, area: semAcento(area), origem, prazo: "", feito: m[1] !== " " });
+  });
+  return out;
+}
+function ordenarAbertas(a, b) {
+  const h = hojeISO();
+  const peso = (t) => !t.prazo ? 3 : t.prazo < h ? 0 : t.prazo === h ? 1 : 2;
+  return peso(a) - peso(b) || String(a.prazo || "").localeCompare(String(b.prazo || "")) || String(a.criado || "").localeCompare(String(b.criado || ""));
+}
+function seloPrazo(p) {
+  if (!p) return "";
+  const h = hojeISO();
+  if (p < h) return `<span class="prazo atrasada">atrasada · ${ddmm(p)}</span>`;
+  if (p === h) return `<span class="prazo hoje">hoje</span>`;
+  if (p === somaDias(h, 1)) return `<span class="prazo">amanhã</span>`;
+  return `<span class="prazo">${ddmm(p)}</span>`;
+}
+function linhaTarefa(t, editavel) {
+  if (P.editTarefa === t.id) return `<li><form data-form="editar-tarefa" data-id="${esc(t.id)}">
+      <input class="campo-p" name="texto" required maxlength="300" value="${esc(t.texto)}" autofocus>
+      <div class="linha-form"><select class="campo-p" name="area" aria-label="Área"><option value="">Sem área</option>${OPCOES_AREA(t.area)}</select>
+        <input class="campo-p" name="prazo" type="date" value="${esc(t.prazo || "")}" aria-label="Prazo">
+        <input class="campo-p" name="origem" maxlength="160" value="${esc(t.origem || "")}" placeholder="Origem (opcional)"></div>
+      <div class="botoes"><button class="btn-p forte" type="submit">Salvar</button><button class="btn-p" type="button" data-acao="cancelar-tarefa">Cancelar</button></div>
+    </form></li>`;
+  const a = semAcento(t.area || "");
+  const info = [a && AREAS[a] ? `<span class="chip"><i class="ponto" style="--cor:${corDa(a)}"></i>${AREAS[a]}</span>` : "",
+    seloPrazo(t.feito ? "" : t.prazo), t.origem ? `<span>${mdInline(t.origem)}</span>` : "",
+    t.feito && t.concluido ? `<span>feita ${ddmm(t.concluido.slice(0, 10))}</span>` : ""].filter(Boolean).join(" ");
+  const marcar = editavel
+    ? `<button class="marcar" data-acao="marcar" data-id="${esc(t.id)}" aria-pressed="${!!t.feito}" aria-label="${t.feito ? "Reabrir" : "Concluir"}: ${esc(t.texto)}">${t.feito ? ICONE_OK : ""}</button>`
+    : `<span class="marcar" aria-hidden="true" style="cursor:default${t.feito ? ";background:var(--a-juridico);border-color:var(--a-juridico)" : ""}">${t.feito ? ICONE_OK : ""}</span>`;
+  const acoes = editavel ? `<div class="acoes">
+      <button class="link-p" data-acao="editar-tarefa" data-id="${esc(t.id)}">Editar</button>
+      ${t.feito ? "" : `<button class="link-p" data-acao="adiar" data-dias="1" data-id="${esc(t.id)}">Adiar 1 dia</button><button class="link-p" data-acao="adiar" data-dias="7" data-id="${esc(t.id)}">Adiar 1 semana</button>`}
+      <button class="link-p perigo" data-acao="excluir-tarefa" data-id="${esc(t.id)}">Excluir</button></div>` : "";
+  return `<li class="${t.feito ? "feito" : ""}">${marcar}<span class="txt">${mdInline(t.texto)}</span>${info ? `<span class="info">${info}</span>` : ""}${acoes}</li>`;
+}
+function renderTarefas() {
+  const el = $p("p-tarefas"); if (!el) return;
+  preservar(el, () => {
+    const doBanco = !!P.tarefas;
+    const todas = doBanco ? P.tarefas : tarefasDoMd();
+    const editavel = doBanco && P.escrever && !VITRINE;
+    const areasUsadas = [...new Set(todas.filter((t) => !t.feito).map((t) => semAcento(t.area || "")).filter((a) => AREAS[a]))];
+    const filtro = (t) => !P.filtroArea || semAcento(t.area || "") === P.filtroArea;
+    const abertas = todas.filter((t) => !t.feito && filtro(t)).sort(ordenarAbertas);
+    const feitas = todas.filter((t) => t.feito && filtro(t)).sort((a, b) => String(b.concluido || "").localeCompare(String(a.concluido || "")));
+    let html = `<div class="bloco-cab"><div><span class="etiqueta">Memória · tarefas${doBanco ? "" : " · do tarefas.md"}</span><h2>Para fazer</h2></div><span class="etiqueta">${abertas.length} abertas</span></div>`;
+    if (editavel) html += `<form class="nova-tarefa" data-form="nova-tarefa">
+        <input class="campo-p" name="texto" required maxlength="300" placeholder="Nova tarefa… (Enter para adicionar)" aria-label="Nova tarefa">
+        <div class="linha-form"><select class="campo-p" name="area" aria-label="Área"><option value="">Sem área</option>${OPCOES_AREA(P.filtroArea || "")}</select>
+        <input class="campo-p" name="prazo" type="date" aria-label="Prazo"><button class="btn-p forte" type="submit">Adicionar</button></div></form>`;
+    if (areasUsadas.length > 1) html += `<div class="filtros" role="group" aria-label="Filtrar por área"><button class="chip" data-acao="filtro" data-area="" aria-pressed="${!P.filtroArea}">Todas</button>${areasUsadas.map((a) => `<button class="chip" data-acao="filtro" data-area="${a}" aria-pressed="${P.filtroArea === a}"><i class="ponto" style="--cor:${corDa(a)}"></i>${AREAS[a]}</button>`).join("")}</div>`;
+    html += `<ul class="lista-t">${abertas.map((t) => linhaTarefa(t, editavel)).join("") || `<li style="display:block;color:var(--tinta-2)">Nenhuma tarefa aberta${P.filtroArea ? " nesta área" : ""}.</li>`}</ul>`;
+    if (feitas.length) html += `<button class="link-p ver-feitas" data-acao="ver-feitas">${P.verFeitas ? "Esconder" : "Ver"} concluídas (${feitas.length})</button>${P.verFeitas ? `<ul class="lista-t">${feitas.slice(0, 15).map((t) => linhaTarefa(t, editavel)).join("")}</ul>` : ""}`;
+    if (doBanco && !P.tarefas.length && editavel) html += `<p class="nota-p">O banco está vazio. <button class="link-abrir" data-acao="importar-md">Importar as tarefas do tarefas.md</button></p>`;
+    if (!doBanco && !VITRINE) html += `<p class="nota-p">${P.tentou ? "Abra este painel dentro do Claude para marcar, criar e editar tarefas." : "Conectando ao banco para liberar a edição…"}</p>`;
+    el.innerHTML = html;
+    const foco = el.querySelector("[autofocus]"); if (foco) { foco.focus(); foco.select && foco.select(); }
+  });
+}
+
+/* ---------- briefing ---------- */
+function renderBriefing() {
+  const el = $p("p-briefing"); if (!el) return;
+  const b = P.briefing;
+  const deHoje = b && b.data === hojeISO();
+  let corpo;
+  if (P.gerandoBriefing) corpo = `<p class="carregando">Lendo tarefas, métricas e prioridades…</p>`;
+  else if (b && b.texto) corpo = `${deHoje ? "" : `<p class="etiqueta" style="margin:0 0 6px">De ${fmtData(b.data)}</p>`}<div class="md">${renderMd(b.texto)}</div>`;
+  else corpo = `<p class="nota-p" style="margin-top:0">Nenhum briefing ainda. ${P.sample ? "Gere o de hoje com um clique." : "A rotina da manhã grava o briefing aqui."}</p>`;
+  el.innerHTML = `<div class="bloco-cab"><div><span class="etiqueta">Memória · resumo do dia</span><h2>Briefing da manhã</h2></div>
+    ${P.sample && !VITRINE ? `<button class="btn-p" data-acao="gerar-briefing"${P.gerandoBriefing ? " disabled" : ""}>${deHoje ? "Refazer" : "Gerar o de hoje"}</button>` : ""}</div>${corpo}`;
+}
+async function gerarBriefing() {
+  if (!P.sample || P.gerandoBriefing) return;
+  P.gerandoBriefing = true; renderBriefing();
+  const prior = porId.get("prioridades");
+  const diario = nos.filter((n) => n.tipo === "diario").sort((a, b) => b.id.localeCompare(a.id))[0];
+  const abertas = (P.tarefas || tarefasDoMd()).filter((t) => !t.feito).sort(ordenarAbertas);
+  const mem = [...(P.memoria || [])].sort((a, b) => String(b.data || "").localeCompare(String(a.data || ""))).slice(0, 6);
+  const pedido = `Você escreve o briefing da manhã do Elias, em português do Brasil, simples e direto.
+Hoje é ${new Date().toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long", year: "numeric" })} (data ${hojeISO()}).
+Formato em markdown, no máximo 140 palavras:
+**Foco do dia:** uma frase.
+Depois 3 a 5 itens com o que fazer hoje, primeiro o que está atrasado ou vence hoje.
+Por fim, uma linha "**De olho:**" com um número das métricas ou um risco. Não invente nada que não esteja abaixo.
+
+TAREFAS ABERTAS:
+${abertas.map(textoTarefa).join("\n") || "nenhuma"}
+
+MÉTRICAS:
+${(P.metricas || []).map((m) => `- ${m.nome}: ${fmtNum(num(m.valor), m.unidade)}${num(m.meta) != null ? " (meta " + fmtNum(num(m.meta), m.unidade) + ")" : ""}`).join("\n") || "sem números ainda"}
+
+PRIORIDADES:
+${prior ? prior.texto.slice(0, 2500) : "não definidas"}
+
+MEMÓRIA RECENTE:
+${mem.map((m) => `- ${m.tipo}: ${m.titulo} — ${String(m.texto || "").slice(0, 300)}`).join("\n") || (diario ? diario.texto.slice(0, 1200) : "nada")}`;
+  try {
+    const r = await P.sample(pedido, { modelTier: "quick", cache: false });
+    const doc = { data: hojeISO(), texto: r.text.trim(), gerado: agoraISO(), origem: "painel" };
+    P.briefing = doc;
+    if (P.db && P.escrever) await gravar(() => P.db.doc("briefing/hoje").set(doc));
+  } catch (e) {
+    if (e && e.code !== "cancelled") aviso(e.code === "not_granted" ? "Sem permissão para perguntar ao Claude por aqui." : e.code === "rate_limited" ? "Limite de uso atingido. Tente mais tarde." : "Não consegui gerar o briefing agora.", 5000);
+  }
+  P.gerandoBriefing = false; renderBriefing();
+}
+
+/* ---------- perguntar ao cérebro ---------- */
+function buscarNoCerebro(q) {
+  const termos = semAcento(q).split(/[^a-z0-9]+/).filter((w) => w.length > 2);
+  if (!termos.length) return [];
+  const pontuar = (titulo, texto) => termos.reduce((s, w) => s + (semAcento(titulo).includes(w) ? 4 : 0) + Math.min(3, (semAcento(texto).split(w).length - 1)), 0);
+  const trecho = (texto) => {
+    const t = (texto || "").replace(/\s+/g, " "); const i = semAcento(t).indexOf(termos[0]);
+    return t.slice(Math.max(0, i - 80), Math.max(0, i - 80) + 260);
+  };
+  // arquivos do cérebro: usa o texto já normalizado na carga (são mais de 600)
+  const pontuarNo = (n) => termos.reduce((s, w) => s + (n.buscaT.includes(w) ? 4 : 0) + Math.min(3, n.busca.split(w).length - 1), 0);
+  const res = nos.filter((n) => n.forma !== "notion").map((n) => ({ id: n.id, titulo: n.titulo, camada: n.camada, pts: pontuarNo(n) }))
+    .filter((r) => r.pts > 0).map((r) => ({ ...r, trecho: trecho(porId.get(r.id).texto) }));
+  (P.memoria || []).forEach((m) => res.push({ id: "memoria:" + m.id, titulo: m.titulo || m.tipo, camada: "memoria (" + (m.tipo || "nota") + ", " + (m.data || "") + ")", pts: pontuar(m.titulo || "", m.texto || ""), trecho: trecho(m.texto) }));
+  nos.filter((n) => n.forma === "notion").forEach((n) => res.push({ id: n.id, titulo: n.titulo, camada: "página do Notion (só o título está no cérebro)", pts: pontuar(n.titulo, "") }));
+  return res.filter((r) => r.pts > 0).sort((a, b) => b.pts - a.pts).slice(0, 8);
+}
+function lerDoCerebro(id) {
+  if (String(id).startsWith("memoria:")) { const m = (P.memoria || []).find((x) => "memoria:" + x.id === id); return m ? { titulo: m.titulo, tipo: m.tipo, data: m.data, texto: String(m.texto || "").slice(0, 8000) } : { erro: "não existe" }; }
+  const n = porId.get(id);
+  if (!n) return { erro: "Não existe arquivo com esse id. Use buscar_no_cerebro." };
+  if (n.forma === "notion") return { titulo: n.titulo, aviso: "Página do Notion: o conteúdo não está no cérebro, só o link.", url: n.url };
+  return { titulo: n.titulo, camada: n.camada, area: n.area, atualizado: n.atualizado, texto: n.texto.slice(0, 9000) };
+}
+const FERRAMENTAS = [
+  { name: "buscar_no_cerebro", description: "Procura por palavras nos arquivos do cérebro e na memória registrada. Devolve ids, títulos e trechos.", inputSchema: { type: "object", properties: { consulta: { type: "string" } }, required: ["consulta"] }, execute: ({ consulta }) => buscarNoCerebro(consulta) },
+  { name: "ler_arquivo", description: "Lê o arquivo inteiro do cérebro pelo id (por exemplo 'padrao-carrosseis' ou 'memoria:abc').", inputSchema: { type: "object", properties: { id: { type: "string" } }, required: ["id"] }, execute: ({ id }) => lerDoCerebro(id) },
+  { name: "listar_tarefas", description: "Lista as tarefas do painel (abertas e concluídas recentes) com área, origem e prazo.", inputSchema: { type: "object", properties: {} }, execute: () => (P.tarefas || tarefasDoMd()).map((t) => ({ texto: t.texto, area: t.area, origem: t.origem, prazo: t.prazo, feito: !!t.feito })) },
+  { name: "listar_metricas", description: "Lista as métricas do negócio com valor atual, meta e histórico.", inputSchema: { type: "object", properties: {} }, execute: () => (P.metricas || []).map((m) => ({ nome: m.nome, valor: num(m.valor), unidade: m.unidade, meta: num(m.meta), historico: (m.historico || []).slice(-10), atualizado: m.atualizado })) },
+];
+function roteador() {
+  // o núcleo entra inteiro; da biblioteca (centenas de notas) só os mapas, que são os índices de cada tema
+  const linhas = nos.filter((n) => n.forma !== "notion" && (!naBiblioteca(n) || n.forma === "mapa"))
+    .map((n) => `- ${n.id}: ${n.titulo} (${CAMADAS[n.camada] || n.camada}, ${AREAS[n.area] || n.area})`);
+  const resto = nos.filter((n) => naBiblioteca(n) && n.forma !== "mapa").length;
+  return linhas.join("\n") + (resto ? `\n(+ ${resto} notas da Biblioteca fora desta lista: vídeos analisados, estudos e páginas do Notion. Ache com buscar_no_cerebro.)` : "");
+}
+function renderPerguntar() {
+  const el = $p("p-perguntar"); if (!el) return;
+  if (!P.sample || VITRINE) { el.hidden = true; return; }
+  el.hidden = false;
+  if (!el.dataset.montado) {
+    el.dataset.montado = "1";
+    el.innerHTML = `<div class="bloco-cab"><div><span class="etiqueta">Ação · busca por sentido</span><h2>Perguntar ao cérebro</h2></div><button class="link-p" data-acao="nova-conversa">Nova conversa</button></div>
+      <form data-form="perguntar" style="display:grid;gap:8px">
+        <textarea class="campo-p" name="q" rows="2" maxlength="1500" placeholder="Ex.: quais são as regras do meu carrossel?" aria-label="Pergunta"></textarea>
+        <div class="botoes"><button class="btn-p forte" type="submit">Perguntar</button><button class="btn-p" type="button" data-acao="parar" hidden>Parar</button></div>
+      </form>
+      <div class="exemplos">${["O que está atrasado e o que faço primeiro?", "Quais as regras do meu carrossel?", "Como eu edito vídeo no padrão Furion?", "O que já decidi sobre a Comunidade?"].map((t) => `<button class="chip" data-acao="exemplo">${t}</button>`).join("")}</div>
+      <div class="resposta" id="p-resposta" hidden></div>`;
+  }
+  const out = $p("p-resposta");
+  const rodando = !!P.perguntando;
+  el.querySelector("[data-acao=parar]").hidden = !rodando;
+  el.querySelector("button[type=submit]").disabled = rodando;
+  if (!P.conversa.length) { out.hidden = true; return; }
+  out.hidden = false;
+  out.innerHTML = P.conversa.map((m) => m.role === "user"
+    ? `<p class="quem">Você</p><p style="margin:0">${esc(m.content)}</p>`
+    : `<p class="quem">Cérebro</p>${m.rastro && m.rastro.length ? `<ul class="rastro">${m.rastro.map((r) => `<li>${esc(r)}</li>`).join("")}</ul>` : ""}<div class="md">${m.content ? renderMd(m.content) : `<p class="carregando">Procurando no cérebro…</p>`}</div>`).join("");
+}
+async function perguntar(q) {
+  q = (q || "").trim(); if (!q || !P.sample || P.perguntando) return;
+  const resp = { role: "assistant", content: "", rastro: [] };
+  P.conversa.push({ role: "user", content: q }, resp);
+  const ctl = new AbortController(); P.perguntando = ctl; renderPerguntar();
+  const sistema = `Você é o segundo cérebro do Elias. Responda em português do Brasil, simples, curto e passo a passo quando for instrução.
+Use as ferramentas para consultar o cérebro antes de responder: veja o roteador abaixo, abra os arquivos certos com ler_arquivo (leia inteiro antes de afirmar) e use buscar_no_cerebro quando não souber onde está. Para tarefas e números use listar_tarefas e listar_metricas.
+Cite os arquivos que usou no fim, como [[id]]. Se a resposta não estiver no cérebro, diga isso claramente e não invente. Hoje é ${hojeISO()}.
+
+ROTEADOR (id: título):
+${roteador()}`;
+  const hist = P.conversa.slice(0, -1).filter((m) => m.content).slice(-7).map((m) => ({ role: m.role, content: m.content }));
+  while (hist.length && hist[0].role !== "user") hist.shift();
+  hist[0] = { role: "user", content: sistema + "\n\nPERGUNTA: " + hist[0].content };
+  const ferramentas = FERRAMENTAS.map((f) => ({ ...f, execute: (inp) => { resp.rastro.push(f.name === "ler_arquivo" ? "leu: " + ((porId.get(inp.id) || {}).titulo || inp.id) : f.name === "buscar_no_cerebro" ? "buscou: " + inp.consulta : f.name.replace("_", " ")); renderPerguntar(); return f.execute(inp); } }));
+  try {
+    const r = await P.sample(hist, { tools: ferramentas, signal: ctl.signal, onText: ({ text }) => { resp.content = text; renderPerguntar(); } });
+    resp.content = r.text;
+  } catch (e) {
+    if (e && e.code === "cancelled") resp.content = e.text || "_Parado._";
+    else resp.content = (e && e.text) || (e && e.code === "rate_limited" ? "_Limite de uso atingido. Tente mais tarde._" : e && e.code === "not_granted" ? "_Sem permissão para perguntar ao Claude por aqui._" : "_Não consegui responder agora._");
+  }
+  P.perguntando = null; renderPerguntar();
+}
+
+/* ---------- foco, memória e conectar ---------- */
+function renderFoco() {
+  const el = $p("p-foco"); if (!el) return;
+  const prior = porId.get("prioridades");
+  const priores = prior ? [...prior.texto.matchAll(/^##\s+(?:\d+\.\s*)?(.+)$/gm)].map((m) => m[1]) : [];
+  const confirmar = prior && /a confirmar/i.test(prior.texto);
+  el.innerHTML = `<span class="etiqueta">Memória · prioridades${confirmar ? " · a confirmar" : ""}</span><h2>Foco</h2>
+    <ol class="prioridades">${priores.map((p) => `<li>${esc(p)}</li>`).join("")}</ol>
+    <p style="margin:12px 0 0"><button class="link-abrir" data-no="prioridades">Ver prioridades completas</button></p>`;
+}
+function abrirTexto(titulo, texto, chips, meta) {
+  selecionado = null; realcar();
+  document.querySelectorAll("#leitor-chips .chip").forEach((c) => c.remove());
+  $p("leitor-chips").insertAdjacentHTML("afterbegin", chips.map((c) => `<span class="chip">${esc(c)}</span>`).join(""));
+  $p("leitor-titulo").textContent = titulo;
+  $p("leitor-meta").textContent = meta || "";
+  $p("leitor-corpo").innerHTML = renderMd(texto);
+  $p("leitor-rodape").innerHTML = "";
+  leitor.hidden = false;
+}
+const TIPOS_MEM = { diario: "Diário", decisao: "Decisão", aprendizado: "Aprendizado", nota: "Nota", reuniao: "Reunião" };
+function renderMemoria() {
+  const el = $p("p-memoria"); if (!el) return;
+  preservar(el, () => {
+    const diarios = nos.filter((n) => n.tipo === "diario").map((n) => ({ chave: "no:" + n.id, tipo: "diario", titulo: n.titulo, data: n.id, origem: "arquivo" }));
+    const vivos = (P.memoria || []).map((m) => ({ chave: "mem:" + m.id, tipo: m.tipo || "nota", titulo: m.titulo || TIPOS_MEM[m.tipo] || "Nota", data: m.data || "", origem: m.origem || "" }));
+    const itens = [...vivos, ...diarios].sort((a, b) => String(b.data).localeCompare(String(a.data))).slice(0, 8);
+    el.innerHTML = `<div class="bloco-cab"><div><span class="etiqueta">Memória · registros</span><h2>Memória recente</h2></div></div>
+      <ul class="lista-m">${itens.map((i) => `<li><button class="item" data-acao="abrir-memoria" data-chave="${esc(i.chave)}"><span class="chip">${TIPOS_MEM[i.tipo] || i.tipo}</span><span class="t">${esc(i.titulo)}</span><span class="d">${ddmm(String(i.data).slice(0, 10))}</span></button></li>`).join("") || `<li class="nota-p">Nada registrado ainda.</li>`}</ul>
+      ${P.conectado && P.escrever && !VITRINE ? `<details style="margin-top:10px"><summary class="link-p" style="display:inline">+ Registrar no cérebro</summary>
+        <form data-form="memoria" style="display:grid;gap:8px;margin-top:8px">
+          <div class="linha-form"><select class="campo-p" name="tipo" aria-label="Tipo">${Object.entries(TIPOS_MEM).map(([k, v]) => `<option value="${k}"${k === "nota" ? " selected" : ""}>${v}</option>`).join("")}</select>
+          <input class="campo-p" name="titulo" required maxlength="120" placeholder="Título"></div>
+          <textarea class="campo-p" name="texto" required maxlength="8000" placeholder="O que aconteceu, o que decidiu ou o que aprendeu"></textarea>
+          <div class="botoes"><button class="btn-p forte" type="submit">Registrar</button></div>
+        </form></details>` : ""}`;
+  });
+}
+function renderConectar() {
+  const el = $p("p-conectar"); if (!el) return;
+  if (VITRINE) {
+    el.innerHTML = `<span class="etiqueta">Como funciona</span><h2>Três camadas</h2>
+      <div class="camadas-explica" style="margin-top:10px">
+        <article><h3>Contexto</h3><p>Quem sou, áreas do negócio, padrões de produção e como trabalhar comigo. Muda pouco.</p></article>
+        <article><h3>Memória</h3><p>Diário, decisões, aprendizados, prioridades e tarefas. Rotinas automáticas alimentam todo dia.</p></article>
+        <article><h3>Ação</h3><p>Skills, conectores (Notion, Gmail, Agenda) e rotinas que trabalham por mim.</p></article>
+      </div>
+      <p class="nota-p">Qualquer conversa com o Claude se conecta ao cérebro pelo link do painel e lê e escreve tarefas, métricas e memória.</p>`;
+    return;
+  }
+  const temDown = !!P.downloads;
+  el.innerHTML = `<span class="etiqueta">Ação · conexões</span><h2>Conectar a uma conversa</h2>
+    <div class="conectar" style="margin-top:10px">
+      <div><h3>No Claude Code (aqui no PC)</h3>
+        <p>Abra uma conversa e digite <code>/segundo-cerebro</code> ou diga "use meu segundo cérebro". O Claude lê este painel e grava tarefas e decisões aqui.</p>
+        <div class="botoes"><button class="btn-p" data-acao="copiar-prompt">Copiar instrução para colar no chat</button></div></div>
+      <div><h3>Em qualquer outro chat (Claude.ai, ChatGPT, Gemini)</h3>
+        <p>Leva o cérebro inteiro como texto: roteador, arquivos, tarefas, métricas e memória. Cole no começo da conversa.</p>
+        <div class="botoes"><button class="btn-p forte" data-acao="copiar-pacote">Copiar cérebro como texto</button>${temDown ? `<button class="btn-p" data-acao="baixar-pacote">Baixar cerebro.md</button>` : ""}</div></div>
+      <div><h3>Link do painel</h3><p><code>${URL_CEREBRO}</code></p></div>
     </div>`;
 }
+function renderTudo() { renderTopo(); renderMetricas(); renderTarefas(); renderBriefing(); renderPerguntar(); renderFoco(); renderMemoria(); renderConectar(); }
+
+function montarHoje() {
+  $p("hoje").innerHTML = `<div class="painel">
+    <header class="p-topo" id="p-topo"></header>
+    <section class="bloco" id="p-metricas"></section>
+    <div class="p-colunas">
+      <div class="coluna"><section class="bloco" id="p-tarefas"></section><section class="bloco" id="p-memoria"></section></div>
+      <div class="coluna"><section class="bloco" id="p-briefing"></section><section class="bloco" id="p-perguntar" hidden></section><section class="bloco" id="p-foco"></section><section class="bloco" id="p-conectar"></section></div>
+    </div></div>`;
+  renderTudo();
+}
+
+/* ---------- ações ---------- */
+const docT = (id) => P.db.collection("tarefas").doc(id);
+const achar = (lista, id) => (lista || []).find((x) => x.id === id);
+$p("hoje").addEventListener("click", async (e) => {
+  const b = e.target.closest("[data-acao]"); if (!b) return;
+  const id = b.dataset.id, acao = b.dataset.acao;
+  if (acao === "filtro") { P.filtroArea = b.dataset.area || null; renderTarefas(); }
+  else if (acao === "ver-feitas") { P.verFeitas = !P.verFeitas; renderTarefas(); }
+  else if (acao === "marcar") {
+    const t = achar(P.tarefas, id); if (!t) return;
+    const feito = !t.feito; t.feito = feito; t.concluido = feito ? agoraISO() : ""; renderTarefas(); renderTopo();
+    await gravar(() => docT(id).update({ feito, concluido: t.concluido, atualizado: agoraISO() }), feito ? "Tarefa concluída." : "Tarefa reaberta.");
+  }
+  else if (acao === "editar-tarefa") { P.editTarefa = id; renderTarefas(); }
+  else if (acao === "cancelar-tarefa") { P.editTarefa = null; renderTarefas(); }
+  else if (acao === "adiar") {
+    const t = achar(P.tarefas, id); if (!t) return;
+    const base = t.prazo && t.prazo > hojeISO() ? t.prazo : hojeISO();
+    const prazo = somaDias(base, +b.dataset.dias); t.prazo = prazo; renderTarefas(); renderTopo();
+    await gravar(() => docT(id).update({ prazo, atualizado: agoraISO() }), "Adiada para " + fmtData(prazo) + ".");
+  }
+  else if (acao === "excluir-tarefa") {
+    const t = achar(P.tarefas, id); if (!t || !confirmou(b)) return;
+    await gravar(() => docT(id).delete(), "Tarefa excluída.");
+  }
+  else if (acao === "importar-md") {
+    b.disabled = true;
+    for (const t of tarefasDoMd()) { const { id: _x, ...dados } = t; await gravar(() => P.db.collection("tarefas").add({ ...dados, criado: agoraISO(), concluido: t.feito ? agoraISO() : "" })); }
+    aviso("Tarefas importadas.");
+  }
+  else if (acao === "editar-metrica") { P.editMetrica = id; renderMetricas(); }
+  else if (acao === "nova-metrica") { P.editMetrica = "nova"; renderMetricas(); }
+  else if (acao === "cancelar-metrica") { P.editMetrica = null; renderMetricas(); }
+  else if (acao === "excluir-metrica") {
+    const m = achar(P.metricas, id); if (!m || !confirmou(b)) return;
+    P.editMetrica = null; await gravar(() => P.db.collection("metricas").doc(id).delete(), "Métrica excluída.");
+  }
+  else if (acao === "gerar-briefing") gerarBriefing();
+  else if (acao === "exemplo") { const ta = document.querySelector("[data-form=perguntar] textarea"); ta.value = b.textContent; perguntar(b.textContent); ta.value = ""; }
+  else if (acao === "parar") { if (P.perguntando) P.perguntando.abort(); }
+  else if (acao === "nova-conversa") { if (P.perguntando) P.perguntando.abort(); P.conversa = []; renderPerguntar(); }
+  else if (acao === "abrir-memoria") {
+    const ch = b.dataset.chave;
+    if (ch.startsWith("no:")) abrir(ch.slice(3));
+    else { const m = (P.memoria || []).find((x) => "mem:" + x.id === ch); if (m) abrirTexto(m.titulo || "Nota", m.texto || "", [TIPOS_MEM[m.tipo] || "Nota", "Memória"], [fmtData(m.data || ""), m.origem].filter(Boolean).join(" · ")); }
+  }
+  else if (acao === "copiar-prompt") copiar(PROMPT_CLAUDE_CODE, "Instrução");
+  else if (acao === "copiar-pacote") copiar(pacoteDoCerebro(), "Cérebro");
+  else if (acao === "baixar-pacote") {
+    try { await P.downloads.save({ filename: `cerebro-do-elias-${hojeISO()}.md`, data: pacoteDoCerebro() }); }
+    catch (er) { if (er && er.code === "unavailable") { P.downloads = null; renderConectar(); } else if (er && er.code !== "cancelled" && er.code !== "declined") aviso("Não consegui baixar o arquivo."); }
+  }
+});
+$p("hoje").addEventListener("submit", async (e) => {
+  const f = e.target.closest("form[data-form]"); if (!f) return;
+  e.preventDefault();
+  const d = Object.fromEntries(new FormData(f).entries());
+  const tipo = f.dataset.form;
+  if (tipo === "nova-tarefa") {
+    const texto = (d.texto || "").trim(); if (!texto) return;
+    f.querySelector("[name=texto]").value = ""; f.querySelector("[name=prazo]").value = "";
+    const ok = await gravar(() => P.db.collection("tarefas").add({ texto, area: d.area || "", prazo: d.prazo || "", origem: "painel", feito: false, concluido: "", criado: agoraISO() }), "Tarefa adicionada.");
+    const atual = document.querySelector("[data-form=nova-tarefa] [name=texto]");
+    if (!ok && atual) atual.value = texto;
+  } else if (tipo === "editar-tarefa") {
+    const id = f.dataset.id, texto = (d.texto || "").trim(); if (!texto) return;
+    P.editTarefa = null;
+    const t = achar(P.tarefas, id); if (t) Object.assign(t, { texto, area: d.area, prazo: d.prazo, origem: d.origem });
+    document.activeElement && document.activeElement.blur(); renderTarefas();
+    await gravar(() => docT(id).update({ texto, area: d.area || "", prazo: d.prazo || "", origem: (d.origem || "").trim(), atualizado: agoraISO() }), "Tarefa salva.");
+  } else if (tipo === "metrica") {
+    const id = f.dataset.id, antigo = id ? achar(P.metricas, id) : null;
+    const valor = num(d.valor), hoje = hojeISO();
+    const dados = { nome: (d.nome || (antigo && antigo.nome) || "Métrica").trim(), unidade: d.unidade ?? (antigo && antigo.unidade) ?? "", meta: num(d.meta), area: d.area || (antigo && antigo.area) || "sistema" };
+    let hist = [...((antigo && antigo.historico) || [])];
+    if (valor != null && (!antigo || num(antigo.valor) !== valor || !hist.length)) {
+      hist = hist.filter((h) => h.d !== hoje); hist.push({ d: hoje, v: valor }); hist = hist.slice(-120);
+      Object.assign(dados, { valor, historico: hist, atualizado: agoraISO(), fonte: "manual" });
+    } else if (valor == null && antigo && num(antigo.valor) != null) Object.assign(dados, { valor: null });
+    P.editMetrica = null; document.activeElement && document.activeElement.blur();
+    if (antigo) await gravar(() => P.db.collection("metricas").doc(id).update(dados), "Métrica salva.");
+    else await gravar(() => P.db.collection("metricas").add({ ...dados, valor: valor, historico: valor != null ? [{ d: hoje, v: valor }] : [], ordem: 50, criado: agoraISO(), atualizado: valor != null ? agoraISO() : "" }), "Métrica criada.");
+    renderMetricas();
+  } else if (tipo === "memoria") {
+    f.querySelectorAll("input,textarea").forEach((i) => { i.value = ""; });
+    const ok = await gravar(() => P.db.collection("memoria").add({ tipo: d.tipo || "nota", titulo: (d.titulo || "").trim(), texto: (d.texto || "").trim(), data: hojeISO(), origem: "painel" }), "Registrado no cérebro.");
+    const det = document.querySelector("#p-memoria details"); if (ok && det) det.open = false;
+  } else if (tipo === "perguntar") {
+    const q = d.q; f.reset(); perguntar(q);
+  }
+});
+$p("hoje").addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && !e.shiftKey && e.target.matches("[data-form=perguntar] textarea")) { e.preventDefault(); e.target.form.requestSubmit(); }
+  if (e.key === "Escape" && (P.editTarefa || P.editMetrica)) { P.editTarefa = P.editMetrica = null; document.activeElement.blur(); renderTarefas(); renderMetricas(); }
+});
+
+/* ---------- conexão com o banco e com o Claude ---------- */
+function assinar(nome, chave, depois) {
+  const ref = nome.includes("/") ? P.db.doc(nome) : P.db.collection(nome);
+  ref.onSnapshot((s) => {
+    P[chave] = s.docs ? s.docs.map((d) => ({ id: d.id, ...d.data() })) : (s.exists ? s.data() : null);
+    P.conectado = true; depois();
+  }, (e) => {
+    if (e && e.code === "unavailable") setTimeout(() => assinar(nome, chave, depois), 2000 + Math.random() * 3000);
+    else if (e && (e.code === "revoked" || e.code === "not_granted")) { P.escrever = false; renderTudo(); }
+  });
+}
+async function conectar() {
+  if (VITRINE) {
+    Object.assign(P, { tarefas: DEMO.tarefas, metricas: DEMO.metricas, memoria: DEMO.memoria, briefing: DEMO.briefing, conectado: true, escrever: false, tentou: true });
+    renderTudo(); return;
+  }
+  const [db, sample, downloads, user] = await Promise.all([usar("db"), usar("sample"), usar("downloads"), usar("user")]);
+  P.tentou = true; P.sample = sample; P.downloads = downloads;
+  if (db) {
+    P.db = db;
+    let pode = null; try { pode = user ? await user.can("data.write") : null; } catch (e) {}
+    P.escrever = pode !== false;
+    assinar("tarefas", "tarefas", () => { renderTarefas(); renderTopo(); });
+    assinar("metricas", "metricas", renderMetricas);
+    assinar("memoria", "memoria", renderMemoria);
+    assinar("briefing/hoje", "briefing", renderBriefing);
+  }
+  renderTudo();
+}
+conectar();
 
 /* ---------- abas ---------- */
 function mostrarAba(qual) {
@@ -652,6 +1329,6 @@ document.getElementById("modo-camadas").addEventListener("click", () => aplicarM
 montarHoje();
 aplicarBiblioteca();
 aplicarModo(modo, false);
-const abaSalva = (location.hash === "#hoje" ? "hoje" : null) || lembrar("aba");
-mostrarAba(abaSalva === "hoje" ? "hoje" : "grafo");
+const abaSalva = location.hash === "#mapa" ? "grafo" : /^#(painel|hoje)$/.test(location.hash) ? "hoje" : (lembrar("aba") || "hoje");
+mostrarAba(abaSalva === "grafo" ? "grafo" : "hoje");
 </script>

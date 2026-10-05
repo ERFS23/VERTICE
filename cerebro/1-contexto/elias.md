@@ -35,6 +35,9 @@ Ver [[como-trabalhar-comigo]].
 
 - Prioridades: [[prioridades]]
 - Tarefas: [[tarefas]]
+- Painel com números e tarefas: [[painel]] · [[metricas]]
+- Como ligar o cérebro a uma conversa: [[conectar-conversa]]
+- Em que nível o cérebro está: [[niveis-do-cerebro]]
 - Último registro do dia: pasta `2-memoria/diario/`
 
 ## Biblioteca (o antigo cérebro Vértice)

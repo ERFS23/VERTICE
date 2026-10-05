@@ -3,7 +3,7 @@ titulo: Rotina — intake diário
 camada: acao
 area: sistema
 tipo: rotina
-atualizado: 2026-10-01
+atualizado: 2026-10-04
 ---
 
 # Rotina — intake diário
@@ -37,3 +37,7 @@ Nunca invente fatos. Nunca copie senhas, tokens ou dados bancários para o cére
 ```
 
 Rotina irmã: [[rotina-manutencao-semanal]].
+
+## Atualização de 04/10/2026
+
+Tarefas, métricas e memória do dia agora ficam no banco do [[painel]]. Ao ligar a rotina, acrescentar ao prompt: "Além dos arquivos, grave as tarefas novas na coleção `tarefas` e o resumo do dia na coleção `memoria` (tipo diario) do artefato https://claude.ai/artifact/Xa2kyT82vzWyioMsZCc4hw, e escreva o briefing de amanhã no documento `briefing/hoje`." Ver [[conectar-conversa]].

@@ -3,7 +3,7 @@ titulo: Aprendizados
 apelidos: Insights e lições aprendidas
 camada: memoria
 area: sistema
-atualizado: 2026-09-30
+atualizado: 2026-10-04
 fonte: https://app.notion.com/p/3eb30eaeef2281db8dcfe53685a4725c
 ---
 
@@ -21,3 +21,6 @@ Lições que valem para o futuro. Quando algo der errado e for resolvido, regist
 - **Economia de créditos:** a partir de 60% do uso semanal, usar `/compact`.
 - **Borda de corte não se estima pela cadência:** gerar tempo por palavra (faster-whisper `medium`) e conferir no arquivo renderizado. Ver [[padrao-video-cortes]].
 - **SFX sintetizado fica ruim** e SFX bruto estoura a mix: usar a biblioteca com `gain_db`. Ver [[padrao-video-sfx]].
+- **Grafo bonito não trabalha:** o valor do cérebro está no painel (números, tarefas, briefing) e nas automações. Ver [[painel]].
+- **O agente acha de novo?** Se não acha, falta roteamento, não ferramenta. Ver [[niveis-do-cerebro]].
+- **Contexto x conexões:** só entra no cérebro o que vale daqui a um ano; o resto o cérebro sabe onde buscar.

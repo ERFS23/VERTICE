@@ -2,7 +2,7 @@
 titulo: Conectores
 camada: acao
 area: sistema
-atualizado: 2026-10-01
+atualizado: 2026-10-04
 ---
 
 # Conectores
@@ -20,3 +20,5 @@ Os "braços" do cérebro: aplicativos que o Claude consegue ler e onde consegue 
 | **GitHub** (repositório VERTICE) | o próprio cérebro | salva memória nova (commit) |
 
 Quem usa os conectores para alimentar o cérebro: [[rotina-intake-diario]].
+
+Como ligar o cérebro a uma conversa: [[conectar-conversa]].
