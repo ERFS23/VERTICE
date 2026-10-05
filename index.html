@@ -62,6 +62,18 @@
   .barlabels span:last-child{color:var(--text)}
   .gap{margin-top:28px;font-weight:500}
 
+  .viral{display:grid;grid-template-columns:1fr 1fr;gap:clamp(24px,5vw,56px);align-items:center}
+  .vcard{display:block;border:1px solid #3a0c16;border-radius:22px;padding:clamp(24px,4vw,40px);background:radial-gradient(circle at 20% 0,rgba(255,31,61,.22),transparent 65%),var(--card);transition:.25s}
+  .vcard:hover{border-color:var(--red);box-shadow:0 0 40px -12px rgba(255,31,61,.7)}
+  .vcard .big{font-size:clamp(52px,9vw,84px);font-weight:500;letter-spacing:-.04em;line-height:1;color:var(--red);text-shadow:0 0 40px rgba(255,31,61,.45)}
+  .vcard .lbl{font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-top:12px}
+  .vcard .go{display:inline-block;margin-top:22px;font-weight:600;color:var(--red-2)}
+  .steps{list-style:none;margin-top:28px;display:grid;gap:12px}
+  .steps li{display:flex;gap:16px;align-items:baseline;border-bottom:1px solid var(--line);padding-bottom:12px}
+  .steps b{font-family:var(--mono);font-size:12px;color:var(--red);letter-spacing:.14em}
+  .steps span{color:var(--muted)}
+  .steps strong{color:var(--text);font-weight:500}
+  @media(max-width:760px){.viral{grid-template-columns:1fr}}
   .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px}
   .tool{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:26px;transition:.25s}
   .tool:hover{border-color:var(--red);background:#120508;box-shadow:0 0 30px -12px rgba(255,31,61,.6)}
@@ -122,6 +134,24 @@
       <div class="bar"><b id="fill" data-w="57"></b></div>
       <div class="barlabels"><span>14,2 mil</span><span>25 mil</span></div>
       <p class="gap">Faltam <span class="red">10,8 mil</span> seguidores. É isso que vamos buscar.</p>
+    </div>
+  </section>
+
+  <section id="viral">
+    <div class="viral">
+      <div>
+        <h2>Você já viralizou. <span class="red">Agora é replicar.</span></h2>
+        <ul class="steps">
+          <li><b>01</b><span><strong>Entender</strong> por que esse vídeo funcionou: gancho, ritmo e tema.</span></li>
+          <li><b>02</b><span><strong>Replicar</strong> a fórmula em novos vídeos, de novo e de novo.</span></li>
+          <li><b>03</b><span><strong>Escalar</strong> o que dá resultado e cortar o que não dá.</span></li>
+        </ul>
+      </div>
+      <a class="vcard" href="https://www.instagram.com/p/DYrmFgSOpFe/" target="_blank" rel="noopener">
+        <div class="big">+5 mil</div>
+        <div class="lbl">curtidas no seu vídeo que mais viralizou</div>
+        <span class="go">Ver o vídeo →</span>
+      </a>
     </div>
   </section>
 
