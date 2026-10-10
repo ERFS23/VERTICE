@@ -1,0 +1,241 @@
+{
+ "video": "projects/demo/raw.mp4",
+ "objectPosition": "50% 50%",
+ "brandTag": "Claude",
+ "durationSec": 13.2,
+ "chapters": [
+  {
+   "label": "O gancho",
+   "start": 0,
+   "end": 4.9,
+   "elements": [
+    {
+     "type": "kinetic",
+     "text": "Instagram",
+     "at": 0.05,
+     "explodeAt": 1.35,
+     "out": 2.1,
+     "x": 540,
+     "y": 520
+    },
+    {
+     "type": "phone",
+     "at": 1.7,
+     "out": 10.2,
+     "x": 540,
+     "y": 590,
+     "scale": 0.95,
+     "tiles": [
+      {
+       "label": "I"
+      },
+      {
+       "label": "n"
+      },
+      {
+       "label": "s"
+      },
+      {
+       "label": "t"
+      },
+      {
+       "label": "a"
+      },
+      {
+       "label": "g"
+      },
+      {
+       "label": "r"
+      },
+      {
+       "label": "a"
+      },
+      {
+       "label": "m"
+      }
+     ],
+     "tilesAt": 2.1,
+     "highlight": 4,
+     "highlightAt": 2.9,
+     "swap": {
+      "at": 3.5,
+      "tiles": [
+       {
+        "icon": "menu"
+       },
+       {
+        "icon": "carousel"
+       },
+       {
+        "icon": "calendar"
+       },
+       {
+        "icon": "flame"
+       },
+       {
+        "icon": "smile"
+       },
+       {
+        "icon": "hash"
+       },
+       {
+        "icon": "users"
+       },
+       {
+        "icon": "recycle"
+       },
+       {
+        "icon": "user"
+       }
+      ]
+     },
+     "moveTo": [
+      {
+       "at": 4.9,
+       "x": 270,
+       "y": 600,
+       "scale": 0.92,
+       "dur": 0.5
+      }
+     ]
+    },
+    {
+     "type": "chip",
+     "text": "Tocando o seu perfil",
+     "at": 4.0,
+     "x": 830,
+     "y": 420
+    },
+    {
+     "type": "cursor",
+     "at": 0.3,
+     "path": [
+      {
+       "at": 0.3,
+       "x": 760,
+       "y": 300
+      },
+      {
+       "at": 1.2,
+       "x": 880,
+       "y": 420
+      },
+      {
+       "at": 2.8,
+       "x": 560,
+       "y": 640,
+       "click": true
+      },
+      {
+       "at": 4.3,
+       "x": 650,
+       "y": 660
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "label": "A skill",
+   "start": 4.9,
+   "end": 8.4,
+   "elements": [
+    {
+     "type": "card",
+     "at": 5.3,
+     "out": 10.2,
+     "x": 750,
+     "y": 560,
+     "scale": 0.92,
+     "eyebrow": "Skill pack",
+     "title": "Instagram Skills",
+     "accent": "Instagram",
+     "sub": "github · seu_usuario",
+     "footnote": "código aberto · licença MIT",
+     "moveTo": [
+      {
+       "at": 8.4,
+       "y": 640,
+       "scale": 0.85
+      }
+     ]
+    },
+    {
+     "type": "badge",
+     "at": 7.05,
+     "out": 8.4,
+     "x": 935,
+     "y": 400,
+     "scale": 0.85,
+     "text": "100%",
+     "sub": "GRÁTIS"
+    },
+    {
+     "type": "cursor",
+     "at": 4.9,
+     "out": 8.4,
+     "path": [
+      {
+       "at": 4.9,
+       "x": 650,
+       "y": 660
+      },
+      {
+       "at": 5.8,
+       "x": 420,
+       "y": 520
+      },
+      {
+       "at": 6.6,
+       "x": 800,
+       "y": 500,
+       "click": true
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "label": "Os agentes",
+   "start": 8.4,
+   "end": 13.2,
+   "titleAt": 11.4,
+   "title": {
+    "text": "Cada um na sua área",
+    "accent": "sua"
+   },
+   "elements": [
+    {
+     "type": "counter",
+     "at": 9.4,
+     "out": 10.2,
+     "x": 760,
+     "y": 400,
+     "from": 2,
+     "to": 9,
+     "duration": 0.7,
+     "label": "agentes"
+    },
+    {
+     "type": "robots",
+     "at": 10.2,
+     "x": 540,
+     "y": 650,
+     "scale": 0.8,
+     "labelsAt": 10.9,
+     "labels": [
+      "legenda",
+      "carrossel",
+      "plano",
+      "gancho",
+      "humano",
+      "hashtags",
+      "nicho",
+      "reuso",
+      "perfil"
+     ]
+    }
+   ]
+  }
+ ]
+}

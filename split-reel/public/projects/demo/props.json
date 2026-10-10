@@ -1,0 +1,475 @@
+{
+ "video": "projects/demo/raw.mp4",
+ "objectPosition": "50% 50%",
+ "brandTag": "Claude",
+ "durationSec": 13.2,
+ "chapters": [
+  {
+   "label": "O gancho",
+   "start": 0,
+   "end": 4.9,
+   "elements": [
+    {
+     "type": "kinetic",
+     "text": "Instagram",
+     "at": 0.05,
+     "explodeAt": 1.35,
+     "out": 2.1,
+     "x": 540,
+     "y": 520
+    },
+    {
+     "type": "phone",
+     "at": 1.7,
+     "out": 10.2,
+     "x": 540,
+     "y": 590,
+     "scale": 0.95,
+     "tiles": [
+      {
+       "label": "I"
+      },
+      {
+       "label": "n"
+      },
+      {
+       "label": "s"
+      },
+      {
+       "label": "t"
+      },
+      {
+       "label": "a"
+      },
+      {
+       "label": "g"
+      },
+      {
+       "label": "r"
+      },
+      {
+       "label": "a"
+      },
+      {
+       "label": "m"
+      }
+     ],
+     "tilesAt": 2.1,
+     "highlight": 4,
+     "highlightAt": 2.9,
+     "swap": {
+      "at": 3.5,
+      "tiles": [
+       {
+        "icon": "menu"
+       },
+       {
+        "icon": "carousel"
+       },
+       {
+        "icon": "calendar"
+       },
+       {
+        "icon": "flame"
+       },
+       {
+        "icon": "smile"
+       },
+       {
+        "icon": "hash"
+       },
+       {
+        "icon": "users"
+       },
+       {
+        "icon": "recycle"
+       },
+       {
+        "icon": "user"
+       }
+      ]
+     },
+     "moveTo": [
+      {
+       "at": 4.9,
+       "x": 270,
+       "y": 600,
+       "scale": 0.92,
+       "dur": 0.5
+      }
+     ]
+    },
+    {
+     "type": "chip",
+     "text": "Tocando o seu perfil",
+     "at": 4,
+     "x": 830,
+     "y": 420
+    },
+    {
+     "type": "cursor",
+     "at": 0.3,
+     "path": [
+      {
+       "at": 0.3,
+       "x": 760,
+       "y": 300
+      },
+      {
+       "at": 1.2,
+       "x": 880,
+       "y": 420
+      },
+      {
+       "at": 2.8,
+       "x": 560,
+       "y": 640,
+       "click": true
+      },
+      {
+       "at": 4.3,
+       "x": 650,
+       "y": 660
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "label": "A skill",
+   "start": 4.9,
+   "end": 8.4,
+   "elements": [
+    {
+     "type": "card",
+     "at": 5.3,
+     "out": 10.2,
+     "x": 750,
+     "y": 560,
+     "scale": 0.92,
+     "eyebrow": "Skill pack",
+     "title": "Instagram Skills",
+     "accent": "Instagram",
+     "sub": "github · seu_usuario",
+     "footnote": "código aberto · licença MIT",
+     "moveTo": [
+      {
+       "at": 8.4,
+       "y": 640,
+       "scale": 0.85
+      }
+     ]
+    },
+    {
+     "type": "badge",
+     "at": 7.05,
+     "out": 8.4,
+     "x": 935,
+     "y": 400,
+     "scale": 0.85,
+     "text": "100%",
+     "sub": "GRÁTIS"
+    },
+    {
+     "type": "cursor",
+     "at": 4.9,
+     "out": 8.4,
+     "path": [
+      {
+       "at": 4.9,
+       "x": 650,
+       "y": 660
+      },
+      {
+       "at": 5.8,
+       "x": 420,
+       "y": 520
+      },
+      {
+       "at": 6.6,
+       "x": 800,
+       "y": 500,
+       "click": true
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "label": "Os agentes",
+   "start": 8.4,
+   "end": 13.2,
+   "titleAt": 11.4,
+   "title": {
+    "text": "Cada um na sua área",
+    "accent": "sua"
+   },
+   "elements": [
+    {
+     "type": "counter",
+     "at": 9.4,
+     "out": 10.2,
+     "x": 760,
+     "y": 400,
+     "from": 2,
+     "to": 9,
+     "duration": 0.7,
+     "label": "agentes"
+    },
+    {
+     "type": "robots",
+     "at": 10.2,
+     "x": 540,
+     "y": 650,
+     "scale": 0.8,
+     "labelsAt": 10.9,
+     "labels": [
+      "legenda",
+      "carrossel",
+      "plano",
+      "gancho",
+      "humano",
+      "hashtags",
+      "nicho",
+      "reuso",
+      "perfil"
+     ]
+    }
+   ]
+  }
+ ],
+ "words": [
+  {
+   "w": "O",
+   "s": 0,
+   "e": 0.15
+  },
+  {
+   "w": "Claude",
+   "s": 0.15,
+   "e": 0.55
+  },
+  {
+   "w": "acabou",
+   "s": 0.55,
+   "e": 0.95,
+   "brk": true
+  },
+  {
+   "w": "de",
+   "s": 0.95,
+   "e": 1.04
+  },
+  {
+   "w": "matar",
+   "s": 1.04,
+   "e": 1.19
+  },
+  {
+   "w": "o",
+   "s": 1.19,
+   "e": 1.26
+  },
+  {
+   "w": "Instagram",
+   "s": 1.26,
+   "e": 1.5,
+   "brk": true
+  },
+  {
+   "w": "e",
+   "s": 1.5,
+   "e": 1.61
+  },
+  {
+   "w": "agora",
+   "s": 1.61,
+   "e": 1.87
+  },
+  {
+   "w": "você",
+   "s": 1.87,
+   "e": 2.08
+  },
+  {
+   "w": "consegue",
+   "s": 2.08,
+   "e": 2.45,
+   "brk": true
+  },
+  {
+   "w": "colocar",
+   "s": 2.45,
+   "e": 2.8
+  },
+  {
+   "w": "ele",
+   "s": 2.8,
+   "e": 2.99
+  },
+  {
+   "w": "pra",
+   "s": 2.99,
+   "e": 3.18
+  },
+  {
+   "w": "tocar",
+   "s": 3.18,
+   "e": 3.45,
+   "brk": true
+  },
+  {
+   "w": "todo",
+   "s": 3.45,
+   "e": 3.61
+  },
+  {
+   "w": "o",
+   "s": 3.61,
+   "e": 3.69
+  },
+  {
+   "w": "conteúdo",
+   "s": 3.69,
+   "e": 3.95,
+   "brk": true
+  },
+  {
+   "w": "do",
+   "s": 3.95,
+   "e": 4.16
+  },
+  {
+   "w": "seu",
+   "s": 4.16,
+   "e": 4.43
+  },
+  {
+   "w": "perfil.",
+   "s": 4.43,
+   "e": 4.9,
+   "brk": true
+  },
+  {
+   "w": "Se",
+   "s": 4.9,
+   "e": 5.17
+  },
+  {
+   "w": "chama",
+   "s": 5.17,
+   "e": 5.63
+  },
+  {
+   "w": "Instagram",
+   "s": 5.63,
+   "e": 6.37
+  },
+  {
+   "w": "Skills",
+   "s": 6.37,
+   "e": 6.9,
+   "brk": true
+  },
+  {
+   "w": "e",
+   "s": 6.9,
+   "e": 7.09
+  },
+  {
+   "w": "é",
+   "s": 7.09,
+   "e": 7.28
+  },
+  {
+   "w": "100%",
+   "s": 7.28,
+   "e": 7.65
+  },
+  {
+   "w": "de",
+   "s": 7.65,
+   "e": 7.9
+  },
+  {
+   "w": "graça.",
+   "s": 7.9,
+   "e": 8.4,
+   "brk": true
+  },
+  {
+   "w": "E",
+   "s": 8.4,
+   "e": 8.54
+  },
+  {
+   "w": "ele",
+   "s": 8.54,
+   "e": 8.76
+  },
+  {
+   "w": "vai",
+   "s": 8.76,
+   "e": 8.99
+  },
+  {
+   "w": "colocar",
+   "s": 8.99,
+   "e": 9.4,
+   "brk": true
+  },
+  {
+   "w": "9",
+   "s": 9.4,
+   "e": 9.63
+  },
+  {
+   "w": "agentes,",
+   "s": 9.63,
+   "e": 10.4,
+   "brk": true
+  },
+  {
+   "w": "onde",
+   "s": 10.4,
+   "e": 10.67
+  },
+  {
+   "w": "cada",
+   "s": 10.67,
+   "e": 10.95
+  },
+  {
+   "w": "um",
+   "s": 10.95,
+   "e": 11.13
+  },
+  {
+   "w": "é",
+   "s": 11.13,
+   "e": 11.26
+  },
+  {
+   "w": "especialista",
+   "s": 11.26,
+   "e": 11.9,
+   "brk": true
+  },
+  {
+   "w": "em",
+   "s": 11.9,
+   "e": 12.15
+  },
+  {
+   "w": "uma",
+   "s": 12.15,
+   "e": 12.46
+  },
+  {
+   "w": "área.",
+   "s": 12.46,
+   "e": 12.9,
+   "brk": true
+  }
+ ]
+}

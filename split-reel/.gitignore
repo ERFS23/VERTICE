@@ -1,0 +1,5 @@
+node_modules/
+out/
+public/projects/*/
+!public/projects/demo/
+public/projects/demo/*.mp4
