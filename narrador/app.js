@@ -145,6 +145,7 @@
     imgMax: 0
   };
   const viralFiles = {};
+  const viralFrames = {};
   try { const v = localStorage.getItem('ndi:view'); if (v && viewOk(v)) ui.view = v; } catch (e) { }
   if (/^#[a-z]+$/.test(location.hash) && viewOk(location.hash.slice(1))) ui.view = location.hash.slice(1);
   try { const t = localStorage.getItem('ndi:tier'); if (t === 'default' || t === 'complex') ui.studio.tier = t; } catch (e) { }
@@ -1442,8 +1443,13 @@
           <label class="field"><span>Assunto / título</span><input type="text" id="vf-titulo" data-bind="v.titulo" value="${esc(d.titulo || '')}" placeholder="Ex.: 3 erros de quem vende pelo direct"></label>
           <label class="field"><span>Nicho do perfil de origem</span><input type="text" id="vf-nicho" data-bind="v.nicho" value="${esc(d.nicho || '')}" placeholder="Ex.: finanças pessoais"></label>
         </div></section>
-      <section><div class="eyebrow">Prints (opcional)</div>
-        <p class="faint" style="margin:6px 0 10px; font-size:13.5px">Frame 0, cenas-chave ou a tela com os números. A IA usa os prints pra ler a edição e pode preencher os números. Só a primeira imagem fica guardada, como capa pequena; as outras valem só nesta sessão.</p>
+      <section><div class="eyebrow">Vídeo do Reel (opcional, recomendado)</div>
+        <p class="faint" style="margin:6px 0 10px; font-size:13.5px">Baixe o Reel e suba o arquivo aqui. O app tira quadros do vídeo ao longo do tempo (o primeiro frame, os 3 primeiros segundos e o resto) e a IA "assiste" por eles: enquadramento, texto na tela, cortes, ritmo e prova. O app não ouve o áudio: cole a fala em "Transcrição" (a legenda automática do Instagram ajuda). O vídeo não fica salvo; os quadros valem nesta sessão.</p>
+        <div class="files">${(M.frames || []).map((f, i) => `<div class="fprev"><img src="${esc(M.frameUrls[i])}" alt="Quadro aos ${f.t.toFixed(1)} s"><span class="tag mono" style="position:absolute; left:4px; bottom:4px; height:18px; font-size:10px">${f.t.toFixed(1)}s</span></div>`).join('')}
+          <label class="fadd" for="v-video">${ic('upload')}<span>${M.extraindo ? 'Lendo o vídeo…' : (M.frames || []).length ? 'Trocar vídeo' : 'Subir vídeo'}</span></label><input type="file" id="v-video" accept="video/*" hidden></div>
+        ${(M.frames || []).length ? `<div class="toolbar" style="margin-top:8px"><span class="tag good">${M.frames.length} quadros${M.videoDur ? ' · ' + Math.round(M.videoDur) + ' s' : ''}</span><button class="btn xs ghost" data-a="rm-video">${ic('x', 'sm')} Tirar vídeo</button></div>` : ''}</section>
+      <section><div class="eyebrow">Prints do post e do perfil (opcional)</div>
+        <p class="faint" style="margin:6px 0 10px; font-size:13.5px">Print do Reel com os números (curtidas, comentários, compartilhamentos, views) e print do topo do perfil de quem postou. A IA lê na hora e preenche @, nome, seguidores, nicho e números. Só a primeira imagem fica guardada, como capa pequena.</p>
         <div class="files">${files.map((f, i) => `<div class="fprev"><img src="${esc(M.urls[i])}" alt="Print ${i + 1}"><button class="btn xs icon-btn" data-a="rm-print" data-i="${i}" aria-label="Remover print ${i + 1}">${ic('x', 'sm')}</button></div>`).join('')}
           ${files.length < 6 ? `<label class="fadd" for="v-prints">${ic('upload')}<span>${files.length ? 'Mais prints' : 'Subir prints'}</span></label>` : ''}<input type="file" id="v-prints" accept="image/png,image/jpeg,image/webp,image/gif" multiple hidden></div>
         ${files.length ? `<div class="toolbar" style="margin-top:10px"><button class="btn sm" data-a="ler-prints" ${podeLer && !M.lendo ? '' : 'disabled'}>${ic('spark', 'sm')} ${M.lendo ? 'Lendo os prints…' : 'Preencher números pelos prints'}</button>${ui.ai === 'on' && !ui.imgMax ? '<span class="faint" style="font-size:12.5px">Esta visualização não envia imagens pra IA.</span>' : ''}</div>` : ''}</section>
@@ -1544,7 +1550,7 @@
     if (!v) return sheetHead('Viral') + '<div class="sheet-b"><div class="empty">Esse viral não existe mais.</div></div>';
     const S = E.viralStats(v);
     const armed = M.delArm && Date.now() - M.delArm < 5000;
-    const nImgs = (viralFiles[v.id] || []).length;
+    const nImgs = (viralFiles[v.id] || []).length + (viralFrames[v.id] || []).length;
     return sheetHead(esc(v.titulo || 'Viral'), vStatus(v)) + `<div class="sheet-b">
       <div class="vhead">${vThumb(v, 'vthumb big')}<div style="min-width:0; flex:1">
         <div class="mono faint" style="font-size:12.5px">${esc(v.handle || 'perfil não informado')}${v.nicho ? ' · ' + esc(v.nicho) : ''}${v.postadoEm ? ' · ' + esc(v.postadoEm.split('-').reverse().join('/')) : ''}${S.dur ? ' · ' + S.dur + ' s' : ''}${v.audio ? ' · ' + esc(v.audio) : ''}</div>
@@ -1606,6 +1612,66 @@
     M.urls = (M.urls || []).slice(0, antes.length).concat(M.files.slice(antes.length).map(f => URL.createObjectURL(f)));
     if (!M.draft.thumb || M.thumbAuto) { M.draft.thumb = await thumbFrom(M.files[0]); M.thumbAuto = true; }
     if (ui.modal === M) renderModal();
+    if (ui.modal === M && ui.ai === 'on' && ui.imgMax > 0 && !M.lendo) lerPrints();
+  }
+  // "assistir" o Reel: tira quadros do vídeo (frame 0, 3 primeiros segundos e o resto) pra IA ler a edição
+  function extrairFrames(file, n) {
+    return new Promise((res, rej) => {
+      let url = '';
+      try { url = URL.createObjectURL(file); } catch (e) { rej(e); return; }
+      const vid = document.createElement('video');
+      vid.muted = true; vid.playsInline = true; vid.preload = 'auto'; vid.src = url;
+      const fim = (ok, val) => { try { URL.revokeObjectURL(url); } catch (e) { } ok ? res(val) : rej(val); };
+      vid.onerror = () => fim(false, new Error('video'));
+      vid.onloadedmetadata = async () => {
+        const dur = vid.duration;
+        if (!isFinite(dur) || dur <= 0) { fim(false, new Error('dur')); return; }
+        const fixos = [0.05, 1.5, 3].filter(t => t < dur - 0.1);
+        const resto = Math.max(0, n - fixos.length);
+        const ts = fixos.concat(Array.from({ length: resto }, (_, i) => Math.min(dur - 0.15, 4 + (dur - 4.2) * (i + 1) / resto))).filter(t => t >= 0).slice(0, n);
+        const H = 720, out = [];
+        try {
+          for (const t of ts) {
+            await new Promise((ok, no) => { const tm = setTimeout(() => no(new Error('seek')), 8000); vid.onseeked = () => { clearTimeout(tm); ok(); }; vid.currentTime = t; });
+            const r = Math.min(1, H / (vid.videoHeight || H));
+            const c = document.createElement('canvas'); c.width = Math.round((vid.videoWidth || 405) * r); c.height = Math.round((vid.videoHeight || 720) * r);
+            c.getContext('2d').drawImage(vid, 0, 0, c.width, c.height);
+            const blob = await new Promise(ok => c.toBlob(ok, 'image/jpeg', 0.8));
+            if (blob) out.push({ blob, t });
+          }
+          fim(true, { frames: out, dur });
+        } catch (e) { fim(false, e); }
+      };
+    });
+  }
+  async function addVideo(file) {
+    const M = ui.modal; if (!M || M.type !== 'viral-form' || !file) return;
+    if (!/^video\//.test(file.type)) { toast('Envie o arquivo de vídeo do Reel (MP4 ou MOV).', 'warn'); return; }
+    M.extraindo = true; renderModal();
+    try {
+      const n = Math.max(3, Math.min(8, ui.imgMax || 6));
+      const r = await extrairFrames(file, n);
+      if (!r.frames.length) throw new Error('vazio');
+      (M.frameUrls || []).forEach(u => { try { URL.revokeObjectURL(u); } catch (e) { } });
+      M.frames = r.frames; M.frameUrls = r.frames.map(f => URL.createObjectURL(f.blob)); M.videoDur = r.dur;
+      if (!String(M.draft.duracao || '').trim()) M.draft.duracao = String(Math.round(r.dur));
+      if (!M.draft.thumb || M.thumbAuto) { M.draft.thumb = await thumbFrom(r.frames[0].blob); M.thumbAuto = true; }
+      toast(`${r.frames.length} quadros tirados do vídeo. A IA vai usar na análise.`);
+    } catch (e) { toast('Não deu pra ler esse vídeo neste navegador. Tente outro arquivo (MP4) ou suba prints das cenas.', 'warn'); }
+    if (ui.modal === M) { M.extraindo = false; renderModal(); }
+  }
+  // imagens da análise: até 2 prints + quadros do vídeo, no limite da visualização; devolve também a legenda das imagens
+  function imagensDoViral(id) {
+    const lim = ui.imgLim; if (!lim) return { imgs: [], txt: '' };
+    const max = lim.maxCount || 1;
+    const fr = (viralFrames[id] || []).filter(f => !lim.maxInputBytes || f.blob.size <= lim.maxInputBytes);
+    const pr = filesParaIA(viralFiles[id] || []).slice(0, fr.length ? Math.min(2, Math.max(0, max - 1)) : max);
+    const frs = fr.slice(0, Math.max(0, max - pr.length));
+    const imgs = pr.concat(frs.map(f => f.blob));
+    const partes = [];
+    if (pr.length) partes.push(`imagens 1${pr.length > 1 ? '–' + pr.length : ''}: print${pr.length > 1 ? 's' : ''} do post ou do perfil`);
+    if (frs.length) partes.push(`imagens ${pr.length + 1}–${pr.length + frs.length}: quadros do próprio vídeo, em ordem, nos segundos ${frs.map(f => f.t.toFixed(1).replace('.', ',')).join(' · ')} (a primeira é o frame 0)`);
+    return { imgs, txt: partes.join('; ') };
   }
   function filesParaIA(files) {
     const lim = ui.imgLim;
@@ -1628,7 +1694,11 @@
       if (r && ok(r.handle) && !M.draft.handle) { const h = String(r.handle).trim(); M.draft.handle = h.startsWith('@') ? h : '@' + h; n++; }
       if (r && ok(r.legenda) && !M.draft.legenda) { M.draft.legenda = String(r.legenda); n++; }
       if (r && ok(r.textoTela) && !M.draft.textoTela) { M.draft.textoTela = String(r.textoTela); n++; }
-      toast(n ? `${n} campo${n > 1 ? 's' : ''} preenchido${n > 1 ? 's' : ''}. Confira antes de salvar.` : 'Nenhum número legível nos prints.', n ? 'good' : 'warn');
+      if (r && ok(r.nicho) && !M.draft.nicho) { M.draft.nicho = String(r.nicho).slice(0, 80); n++; }
+      if (r && ok(r.titulo) && !M.draft.titulo) { M.draft.titulo = String(r.titulo).slice(0, 90); n++; }
+      if (r && ok(r.postadoEm) && !M.draft.postadoEm && /^\d{4}-\d{2}-\d{2}$/.test(String(r.postadoEm).trim())) { M.draft.postadoEm = String(r.postadoEm).trim(); n++; }
+      if (r && ok(r.perfil)) M.perfilLido = String(r.perfil).slice(0, 300);
+      toast(n ? `${n} campo${n > 1 ? 's' : ''} preenchido${n > 1 ? 's' : ''} pelos prints${r && ok(r.handle) ? ' (' + String(r.handle).trim() + ')' : ''}. Confira antes de salvar.` : 'Nenhum número legível nos prints.', n ? 'good' : 'warn');
     } catch (e) { toast(sampleErr(e).msg, 'bad'); }
     if (ui.modal === M) { M.lendo = false; renderModal(); }
   }
@@ -1642,6 +1712,7 @@
     v.media = Object.assign({}, d.media);
     v.updatedAt = Date.now();
     if (M.files && M.files.length) viralFiles[v.id] = M.files.slice();
+    if (M.frames && M.frames.length) viralFrames[v.id] = M.frames.slice();
     Store.saveViral(v);
     ui.modal = { type: 'viral', id: v.id };
     if (ui.view === 'virais') $('#main').innerHTML = vVirais();
@@ -1654,12 +1725,12 @@
     if (!sampleFn || !v) return;
     const S = E.viralStats(v);
     if (!S.views || !S.seg) { toast('Informe seguidores e views.', 'warn'); return; }
-    const imgs = filesParaIA(viralFiles[v.id] || []);
+    const IM = imagensDoViral(v.id), imgs = IM.imgs;
     M.busy = true; M.err = ''; renderModal();
     try {
       const opts = { modelTier: ui.studio.tier === 'complex' ? 'complex' : 'default', cache: false };
       if (imgs.length) opts.images = imgs;
-      const r = await sampleFn.json(E.promptViral(st, v, S, imgs.length), opts);
+      const r = await sampleFn.json(E.promptViral(st, v, S, imgs.length, IM.txt), opts);
       if (!r || typeof r !== 'object') throw { code: 'invalid_json' };
       const arr = (x, n) => (Array.isArray(x) ? x : []).map(y => typeof y === 'string' ? y.trim() : '').filter(Boolean).slice(0, n || 8);
       const areaOk = a => Object.prototype.hasOwnProperty.call(AREA, a) ? a : 'roteiro';
@@ -2213,10 +2284,11 @@ Responda só com JSON: {"videos":[{"id":"...","referencia":"...","metricas":{"vi
   A.vf = el => { ui.vf = el.dataset.f; render(); };
   A['add-viral'] = () => { ui.modal = { type: 'viral-form', id: null, draft: viralDraft(null), files: [], urls: [] }; renderModal(); };
   A['abrir-viral'] = el => { if (!viralById(el.dataset.v)) return; ui.modal = { type: 'viral', id: el.dataset.v }; renderModal(); };
-  A['edit-viral'] = () => { const v = viralById(ui.modal.id); if (!v) return; const files = (viralFiles[v.id] || []).slice(); ui.modal = { type: 'viral-form', id: v.id, draft: viralDraft(v), files, urls: files.map(f => URL.createObjectURL(f)) }; renderModal(); };
+  A['edit-viral'] = () => { const v = viralById(ui.modal.id); if (!v) return; const files = (viralFiles[v.id] || []).slice(); const frames = (viralFrames[v.id] || []).slice(); ui.modal = { type: 'viral-form', id: v.id, draft: viralDraft(v), files, urls: files.map(f => URL.createObjectURL(f)), frames, frameUrls: frames.map(f => URL.createObjectURL(f.blob)) }; renderModal(); };
   A['salvar-viral'] = el => salvarViral(!!el.dataset.analisar);
   A['analisar-viral'] = () => analisarViral();
   A['ler-prints'] = () => lerPrints();
+  A['rm-video'] = () => { const M = ui.modal; (M.frameUrls || []).forEach(u => { try { URL.revokeObjectURL(u); } catch (e) { } }); M.frames = []; M.frameUrls = []; M.videoDur = 0; renderModal(); };
   A['rm-print'] = el => {
     const M = ui.modal, i = Number(el.dataset.i);
     try { URL.revokeObjectURL(M.urls[i]); } catch (e) { }
@@ -2636,6 +2708,7 @@ Responda só com JSON: {"videos":[{"id":"...","referencia":"...","metricas":{"vi
     if (typeof X.change === 'function') { try { if (X.change(e)) return; } catch (er) { console.error(er); } }
     const el = e.target.closest('[data-bind]');
     if (el && (el.type === 'checkbox' || el.tagName === 'SELECT' || el.type === 'date')) bind(el);
+    if (e.target.id === 'v-video') { const f = e.target.files && e.target.files[0]; if (f) addVideo(f); e.target.value = ''; return; }
     if (e.target.id === 'v-prints') { const fl = e.target.files; if (fl && fl.length) addPrints(fl); e.target.value = ''; return; }
     if (e.target.id === 'imp-file') {
       const f = e.target.files && e.target.files[0]; if (!f) return;
@@ -2665,7 +2738,7 @@ Responda só com JSON: {"videos":[{"id":"...","referencia":"...","metricas":{"vi
     get sample() { return sampleFn; }, get downloads() { return downloads; },
     $, esc, ic, clone, newId, pad2, grafemas, hl, toast, copy, sampleErr,
     render, renderChrome, renderModal, closeModal, go, sheetHead,
-    fmtName, catName, pilarColor, scoreTag, viralById, scriptById, vThumb, filesParaIA,
+    fmtName, catName, pilarColor, scoreTag, viralById, scriptById, vThumb, filesParaIA, imagensDoViral, viralFrames,
     renderSlate: () => renderSlate()
   };
 

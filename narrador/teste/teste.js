@@ -443,12 +443,12 @@ async function suite(browser, vp, tema) {
     const vid = await st(page, () => window.NDA.st.virais[0].id);
     await clicar(page, '[data-a="x-kg-viral-gancho"]');
     await page.waitForFunction(() => window.NDA.ui.view === 'kit' && window.NDX.state.kit.ativo === 'gancho');
-    ok(await vis(page, '#x-kit-tools-gancho-viralId').inputValue() === vid, 'Extrair o gancho abre o Kit com o viral escolhido');
+    ok(await page.locator(`.kg-vitem.on[data-id="${vid}"]`).count() === 1 && await page.evaluate(() => window.NDX.toolState('gancho').viralId) === vid, 'Extrair o gancho abre o Kit com o viral escolhido');
     ok(await page.evaluate(() => !window.NDA.ui.modal), 'modal fecha ao ir pro Kit');
     await nav(page, 'virais');
     await clicar(page, '[data-a="x-kg-gancho"]');
     await page.waitForFunction(() => window.NDA.ui.view === 'kit' && window.NDX.state.kit.ativo === 'gancho');
-    ok(await vis(page, '#x-kit-tools-gancho-viralId').inputValue() === '', 'botão da barra abre o Extrair com viral em branco');
+    ok(await page.evaluate(() => window.NDX.toolState('gancho').viralId) === '' && await page.locator('.kg-vitem.on[data-id=""]').count() === 1, 'botão da barra abre o Extrair com viral em branco');
     await nav(page, 'virais');
     await clicar(page, `[data-a="abrir-viral"][data-v="${vid}"]`);
     await clicar(page, '[data-a="x-kg-viral-car"]');

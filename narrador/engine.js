@@ -1209,7 +1209,7 @@ Responda só com JSON:
     return L.join('\n');
   }
 
-  E.promptViral = (st, v, S, nImgs) => {
+  E.promptViral = (st, v, S, nImgs, imgsTxt) => {
     const p = st.profile;
     const pf = E.agrupar(st, 'formato');
     const ranking = Object.entries(pf).filter(([, x]) => x.media != null).sort((a, b) => b[1].media - a[1].media).map(([k, x]) => `${E.formato(k).nome} (${x.media})`).join(', ');
@@ -1245,7 +1245,7 @@ ${(v.roteiro || '(não informado)').slice(0, 6000)}
 TEXTO NA TELA: ${(v.textoTela || '—').slice(0, 1200)}
 EDIÇÃO (descrita pelo criador): ${(v.edicao || '—').slice(0, 2000)}
 LEGENDA DO POST: ${(v.legenda || '—').slice(0, 2200)}
-${nImgs ? `IMAGENS: ${nImgs} print(s) do vídeo (frame 0, cenas ou tela de números). Use pra ler a edição: enquadramento, texto na tela, tarja, cortes, legenda animada, cores, expressão, cenário.` : ''}
+${nImgs ? `IMAGENS: ${nImgs} imagem(ns)${imgsTxt ? ' (' + imgsTxt + ')' : ' (frame 0, cenas ou tela de números)'}. Use pra "assistir" o vídeo: o que acontece no frame 0 e nos 3 primeiros segundos, enquadramento, texto na tela, tarja, ritmo de corte entre os quadros, legenda animada, cores, expressão, cenário, prova mostrada. Diga em "estrutura" e "edicao" o que você viu nos quadros, citando o segundo. Você não ouve o áudio: a fala vem só da transcrição.` : ''}
 
 ═══ COMO A MODELAGEM DEVE SAIR ═══
 O gancho do vídeo do criador é DELE: na modelagem você sugere uma ideia de gancho nova, escrita por você no estilo do criador, com a mesma função psicológica do gancho do viral (NUNCA a frase do viral). O criador vai editar. Tema do banco é opcional e não entra aqui.
@@ -1282,9 +1282,9 @@ Os fatores vão do mais forte pro mais fraco (peso de 1 a 5). Duas alternativas,
     return E.encolher(texto);
   };
 
-  E.promptLerPrints = n => `Estes ${n} prints são de um Reel do Instagram e/ou do perfil que postou. Leia SÓ os números e textos que aparecem nas imagens. Não estime, não complete, não invente: se algo não aparece, use null. Copie os números exatamente como aparecem (ex.: "12,3 mil", "1.204", "2,1 mi").
+  E.promptLerPrints = n => `Estes ${n} prints são de um Reel do Instagram e/ou do topo do perfil de quem postou. Podem ser: a tela do Reel (ícones de curtida, comentário, envio/avião, salvar, com os contadores ao lado; views no canto), a tela "Ver insights", ou o perfil (foto, @, nome, número de posts, seguidores, seguindo, bio, categoria). Leia SÓ os números e textos que aparecem. Não estime, não complete, não invente: se algo não aparece, use null. Copie os números exatamente como aparecem (ex.: "12,3 mil", "1.204", "2,1 mi"). No print do perfil, "seguidores" é o número acima da palavra seguidores (não confunda com seguindo nem com posts). Na tela do Reel, a ordem dos contadores é curtidas, comentários, envios (compartilhamentos) e, às vezes, salvamentos.
 Responda só com JSON:
-{"handle": "@perfil ou null", "seguidores": "número de seguidores do perfil ou null", "views": "visualizações/reproduções ou null", "curtidas": null, "comentarios": null, "compartilhamentos": null, "salvamentos": null, "duracao": "duração em segundos ou null", "legenda": "texto da legenda visível ou null", "textoTela": "texto sobreposto no vídeo, se visível, ou null"}`;
+{"handle": "@perfil ou null", "seguidores": "número de seguidores do perfil ou null", "views": "visualizações/reproduções ou null", "curtidas": null, "comentarios": null, "compartilhamentos": null, "salvamentos": null, "duracao": "duração em segundos ou null", "legenda": "texto da legenda visível ou null", "textoTela": "texto sobreposto no vídeo, se visível, ou null", "postadoEm": "data do post no formato AAAA-MM-DD só se aparecer a data completa, ou null", "titulo": "assunto do vídeo em até 8 palavras, tirado do texto visível, ou null", "nicho": "nicho do perfil deduzido da bio e da categoria (ex.: finanças pessoais), ou null", "perfil": "nome, categoria e bio do perfil numa linha, ou null"}`;
 
   E.blocoModelo = m => {
     const L = [];

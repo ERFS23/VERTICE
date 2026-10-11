@@ -221,8 +221,14 @@
         <h2>Extrair e recriar</h2>
         <p class="lead">Descubra por que o gancho de um viral faz a pessoa parar e receba 3 versões no seu nicho, com a mesma força e um ganho que você consegue entregar.</p>
         ${origemTag(S)}
-        ${X.h.campo({ path: p + '.viralId', label: 'Viral salvo', tipo: 'select', opcoes: opV, value: v ? v.id : '', help: virais.length ? 'Escolha um viral da tela Virais ou cole o texto abaixo.' : 'Você ainda não tem virais salvos. Cole o texto abaixo ou salve um na tela Virais.' })}
-        ${virais.length ? '' : `<div class="kit-row"><button type="button" class="btn xs" data-a="nav" data-v="virais">Abrir Virais</button></div>`}
+        <div class="field"><span>Viral de referência</span>
+          <div class="kg-vlist" role="listbox" aria-label="Virais salvos">
+            <button type="button" class="kg-vitem ${!v ? 'on' : ''}" data-a="x-kg-pick-viral" data-id="" aria-selected="${!v}"><span class="kg-vph">${ic('legenda', 'sm')}</span><span class="kg-vtx"><b>Colar texto</b><small>legenda, transcrição ou 1ª linha</small></span></button>
+            ${virais.map(x => `<button type="button" class="kg-vitem ${v && v.id === x.id ? 'on' : ''}" data-a="x-kg-pick-viral" data-id="${esc(x.id)}" aria-selected="${!!(v && v.id === x.id)}">${a.vThumb ? a.vThumb(x, 'kg-vth') : ''}<span class="kg-vtx"><b>${esc(x.titulo || 'Sem título')}</b><small>${esc([x.handle, x.views ? x.views + ' views' : '', x.analise ? 'analisado' : 'sem análise', ((a.viralFrames || {})[x.id] || []).length ? 'com vídeo' : ''].filter(Boolean).join(' · '))}</small></span></button>`).join('')}
+          </div>
+          <small>${virais.length ? 'Os virais que você adiciona na tela Virais aparecem aqui. Com análise e vídeo, a recriação fica mais precisa.' : 'Você ainda não tem virais salvos.'}</small>
+          <div class="kit-row"><button type="button" class="btn xs" data-a="add-viral">${ic('plus', 'sm')} Adicionar viral</button><button type="button" class="btn xs ghost" data-a="nav" data-v="virais">Abrir Virais</button></div>
+        </div>
         ${X.h.campo({ path: p + '.texto', label: v ? 'Texto extra (opcional)' : 'Texto do viral', tipo: 'textarea', rows: 5, placeholder: 'Cole a legenda, a transcrição, a primeira linha ou o que aparece escrito no primeiro frame.' })}
         <div class="field"><span>Onde vai usar</span>${X.h.seg(p + '.superficie', [['reel', 'Reel'], ['carrossel', 'Carrossel'], ['legenda', 'Legenda']])}</div>
         <button type="button" class="btn primary" data-a="x-kg-gancho-gerar" ${desab(S)}>${ic('anzol', 'sm')} Extrair e recriar</button>
@@ -238,6 +244,16 @@
   });
   // trocar o viral do select muda o rótulo do campo de texto: re-renderiza
   X.watch(path => { if (path === 'kit.tools.gancho.viralId') X.refresh(); });
+  X.action('x-kg-pick-viral', el => { const S = X.toolState('gancho'); S.viralId = el.dataset.id || ''; S.origem = S.viralId ? 'Virais' : ''; X.refresh(); });
+  X.css(`.kg-vlist{display:flex; flex-direction:column; gap:6px; max-height:340px; overflow:auto; padding:2px}
+.kg-vitem{display:flex; gap:10px; align-items:center; text-align:left; padding:8px; border:1px solid var(--line); border-radius:12px; background:var(--bg2); color:var(--ink); min-width:0}
+.kg-vitem:hover{border-color:var(--amber-line)}
+.kg-vitem.on{border-color:var(--amber-line); background:var(--amber-soft)}
+.kg-vth,.kg-vph{width:36px; aspect-ratio:9/16; border-radius:7px; object-fit:cover; flex-shrink:0; display:grid; place-items:center; background:var(--panel2); border:1px solid var(--line2); color:var(--ink3)}
+.kg-vth span{font-size:16px}
+.kg-vtx{display:flex; flex-direction:column; min-width:0}
+.kg-vtx b{font-size:13.5px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.kg-vtx small{font-size:11.5px; color:var(--ink3); overflow:hidden; text-overflow:ellipsis; white-space:nowrap}`);
   const CONF_NOME = { alta: 'confiança alta', media: 'confiança média', baixa: 'confiança baixa' };
   const frase = s => String(s || '').trim().replace(/[\s.;:]+$/, '');
   const junta = arr => arr.map(frase).filter(Boolean).join('. ');
@@ -337,11 +353,13 @@ Recrie no nicho do criador: mesma função psicológica, nunca a frase do origin
     const ft = corta([v ? baseViral(v) : '', txt].filter(Boolean).join('\n\n'), 3000);
     const fv = v ? v.id : '';
     const og = v ? 'Viral ' + (v.handle || X.str(v.titulo, 40) || '') : (S.origem || 'texto colado');
-    X.rodar(S, prompt, r => {
+    const IM = v && A().imagensDoViral ? A().imagensDoViral(v.id) : { imgs: [], txt: '' };
+    const promptF = IM.imgs.length ? prompt + `\n\nIMAGENS ANEXADAS: ${IM.txt}. Use pra ver o frame 0, o texto na tela e a montagem dos primeiros segundos do original.` : prompt;
+    X.rodar(S, promptF, r => {
       const o = parseGancho(r, sup);
       if (o) { S.fonteTxt = ft; S.fonteViral = fv; S.resOrigemG = og; S.salvoId = null; }
       return o;
-    }, { tier: 'complex' });
+    }, { tier: 'complex', images: IM.imgs });
   });
   const origemGancho = S => S.resOrigemG || (viral(S.fonteViral) ? 'Viral ' + (viral(S.fonteViral).handle || '') : (S.origem || 'texto colado'));
   const recriado = el => { const S = X.toolState('gancho'); const g = S.res && S.res.recriados[Number(el.dataset.i) || 0]; return g ? { S, g } : null; };
