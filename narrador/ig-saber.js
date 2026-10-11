@@ -183,7 +183,7 @@
   const linhaFormula = (f, alt, sup) => {
     const objs = f.objetivos.map(o => OBJ_CURTO[o]).join(' e ');
     const adapta = alt && sup && f.tambem.includes(sup) ? ` · adapta bem pra ${SUP_NOME[sup]}` : '';
-    return `[${f.id}] ${f.nome} (${f.cod}) · nasce em: ${SUP_NOME[f.superficie]} · ganha: ${objs}${adapta}\nMolde: ${f.molde.replace(/\n+/g, ' / ')}\nCuidado: ${f.cuidado}`;
+    return `[${f.id}] ${f.nome} (${f.cod}) · nasce em: ${SUP_NOME[f.superficie]} · ganha: ${objs}${adapta}\nMolde: ${f.molde.replace(/\n+/g, ' / ')}\nFecha com: ${f.fecho}\nCuidado: ${f.cuidado}`;
   };
   const blocoFormulas = superficie => {
     const sup = supNorm(superficie);
@@ -191,21 +191,36 @@
       'Cada superfície tem o seu gancho: legenda = os ~125 primeiros caracteres, antes do "mais"; carrossel = o slide 1, que decide o arraste em menos de um segundo; Reel = os 1 a 3 primeiros segundos (imagem + texto na tela + primeira fala). Escolha a fórmula pelo OBJETIVO do post, depois ajuste ao tema. Ao citar uma fórmula, use o id entre colchetes.'];
     if (sup) {
       const prim = FORMULAS.filter(f => f.superficie === sup || f.superficie === 'qualquer');
-      const alt = FORMULAS.filter(f => !prim.includes(f));
+      const adapta = FORMULAS.filter(f => !prim.includes(f) && f.tambem.includes(sup));
+      const alt = FORMULAS.filter(f => !prim.includes(f) && !adapta.includes(f));
       L.push(`Fórmulas de ${SUP_NOME[sup]}:`);
       prim.forEach(f => L.push(linhaFormula(f, false, sup)));
-      L.push(`Alternativas (nascem em outra superfície; use só se a ideia pedir e adapte o molde a ${SUP_NOME[sup]}):`);
-      alt.forEach(f => L.push(linhaFormula(f, true, sup)));
+      if (adapta.length) {
+        L.push(`Também funcionam bem em ${SUP_NOME[sup]} (nascem em outra superfície; adapte o molde):`);
+        adapta.forEach(f => L.push(linhaFormula(f, true, sup)));
+      }
+      if (alt.length) {
+        L.push(`Alternativas (use só se a ideia pedir e adapte o molde a ${SUP_NOME[sup]}):`);
+        alt.forEach(f => L.push(linhaFormula(f, true, sup)));
+      }
     } else {
       FORMULAS.forEach(f => L.push(linhaFormula(f, false, null)));
     }
-    L.push('Por objetivo: ' + Object.keys(OBJETIVOS).map(k => `${OBJ_CURTO[k]} → ${OBJETIVOS[k].formulas.join(', ')}`).join(' · ') + '.');
-    L.push('Regras do gancho: se sustenta sozinho (a legenda não pode precisar da 2ª linha); slide 1 é promessa com loop aberto, nunca título ("5 jeitos de X" vence "Dicas de X"); "como eu" vence "como fazer"; um número específico e real no gancho aumenta salvamento e envio ("47 minutos" vence "rápido"); o conteúdo paga a promessa. Nunca: isca de engajamento ("comenta SIM", "marca 3 amigos"), ideia de uma linha esticada em 10 slides, título sem promessa.');
+    L.push('Por objetivo (fórmulas e pedido-modelo do fim): ' + Object.keys(OBJETIVOS).map(k => `${OBJ_CURTO[k]} → ${OBJETIVOS[k].formulas.join(', ')}; pedido: "${OBJETIVOS[k].cta}"`).join(' · ') + '.');
+    L.push('Regras do gancho: se sustenta sozinho (a legenda não pode precisar da 2ª linha); slide 1 é promessa que deixa uma pergunta no ar, nunca título ("5 jeitos de X" vence "Dicas de X"); "como eu" vence "como fazer"; um número específico e real no gancho aumenta salvamento e envio (número exato e real vence "rápido"); o conteúdo paga a promessa. Nunca: isca de engajamento ("comenta SIM", "marca 3 amigos"), ideia de uma linha esticada em 10 slides, título sem promessa.');
+    L.push('Nos textos que o criador vai ler (porquê, avisos, explicações), fale como ele: "pergunta que fica no ar" em vez de loop, "aparecer na busca da hashtag" em vez de ranquear, "pedido final" em vez de CTA.');
     return L.join('\n\n');
   };
   const blocoObjetivos = () => ['═══ O QUE FAZ A PESSOA SALVAR, MANDAR, COMENTAR E SEGUIR ═══']
-    .concat(Object.keys(OBJETIVOS).map(k => { const o = OBJETIVOS[k]; return `${o.nome} (${o.sinal}): ${o.comoGanha}\nFórmulas: ${o.formulas.join(', ')}. CTA modelo: ${o.cta} Teste: ${o.teste}`; }))
+    .concat(Object.keys(OBJETIVOS).map(k => objetivoTexto(k, true)))
     .join('\n\n');
+  // texto completo de UM objetivo pro prompt (comoGanha + fórmulas + pedido-modelo + teste)
+  function objetivoTexto(x, semTitulo) {
+    const k = objetivoNorm(x); const o = k && OBJETIVOS[k];
+    if (!o) return '';
+    const corpo = `${o.nome} (${o.sinal}): ${o.comoGanha}\nFórmulas: ${o.formulas.join(', ')}.\nPedido-modelo do fim: ${o.cta}\nTeste antes de entregar: ${o.teste}`;
+    return semTitulo ? corpo : `═══ OBJETIVO PRINCIPAL: ${o.nome} ═══\n${corpo}`;
+  }
 
   /* ---------- blocos de texto pros prompts ---------- */
   const SINAIS = `═══ O QUE O INSTAGRAM MEDE EM 2026 ═══
@@ -221,6 +236,12 @@ Sinais, do mais forte pro mais fraco (relatado):
 - Negativos ("não tenho interesse", deixar de seguir, ocultar, denunciar): penalidade pesada. Uma denúncia pesa mais que muitas curtidas.
 Pergunta antes de postar: alguém mandaria isto pra UMA pessoa específica, ou salvaria pra usar depois? Se só ganha curtida, afie a entrega.
 
+Regras práticas:
+- Um objetivo principal por post (salvar, mandar, comentar ou seguir), nunca os quatro ao mesmo tempo.
+- Todo post precisa de mídia (foto, carrossel ou vídeo). Vertical 4:5 ocupa mais tela no feed.
+- Stories não trazem gente nova: aprofundam a relação com quem já segue. Enquete, caixinha e quiz rendem toques e mantêm o perfil na frente da fila.
+- Constância vence volume: 3 a 5 posts bons por semana, em ritmo fixo, rendem mais que um por dia feito às pressas.
+
 Primeiros 30 a 60 minutos: os primeiros envios, salvamentos e comentários decidem se o post sai pra quem não segue (Explorar e aba Reels). Poste quando der pra responder os primeiros comentários e directs na hora. Reel que segura os 3 primeiros segundos no teste inicial ganha empurrão maior.
 
 Derruba alcance:
@@ -229,7 +250,6 @@ Derruba alcance:
 - Parede de 20 a 30 hashtags: lê como spam e não ajuda.
 - Imagem fora da proporção 4:5 a 1,91:1 (o Instagram corta).
 - Muita gente ocultando, deixando de seguir ou denunciando.
-- Carrossel misturando foto e vídeo (a publicação pela API recusa).
 - Gancho que o conteúdo não paga: a pessoa sai rápido e o algoritmo lê como baixa qualidade.
 
 Aumenta alcance:
@@ -238,13 +258,7 @@ Aumenta alcance:
 - Reel com boa retenção é o formato mais empurrado pra quem não segue (relatado). Texto na tela (pega quem assiste sem som) e áudio original ajudam; gancho e retenção pesam mais que o áudio.
 - Carrossel tem segunda chance: pode reaparecer, a partir do slide 2, pra quem não arrastou.
 - Final de Reel que emenda no começo aumenta o rever.
-- Repostar o próprio post no story vale como envio e leva o post a quem não viu.
-
-Regras práticas:
-- Um objetivo principal por post (salvar, mandar, comentar ou seguir), nunca os quatro ao mesmo tempo.
-- Todo post precisa de mídia (foto, carrossel ou vídeo). Vertical 4:5 ocupa mais tela no feed.
-- Stories não trazem gente nova: aprofundam a relação com quem já segue. Enquete, caixinha e quiz rendem toques e mantêm o perfil na frente da fila.
-- Constância vence volume: 3 a 5 posts bons por semana, em ritmo fixo, rendem mais que um por dia feito às pressas.`;
+- Repostar o próprio post no story vale como envio e leva o post a quem não viu.`;
 
   const LEGENDA = `═══ LEGENDA DO INSTAGRAM ═══
 Se o prompt trouxer a "LEGENDA — estrutura fixa" do perfil, ela manda na ordem das partes e no CTA. Estas regras completam.
@@ -256,14 +270,14 @@ A dobra dos 125 caracteres:
 - O gancho se sustenta sozinho: entrega o ganho, a tensão ou o número sem precisar da linha seguinte.
 - Promessa, não título: "Dicas de organização" é título; "o jeito de fechar o mês em 20 minutos sem planilha" é promessa.
 - No Reel, o gancho da legenda é diferente da fala do vídeo.
-- Número específico no gancho quando existir um real ("47 minutos" vence "rápido"). Sem o dado: [PREENCHER: número e de onde vem]. Nunca invente.
+- Número específico no gancho quando existir um real (número exato e real vence "rápido"). Sem o dado: [PREENCHER: número e de onde vem]. Nunca invente.
 
 Corpo:
 - Uma ideia por legenda. Duas ideias = dois posts.
 - Linhas curtas e linha em branco entre os blocos. Parede de texto é ignorada.
 - Entrega o que o gancho prometeu.
 - Reel: legenda curta que complementa, nunca resume. Traz o que não coube na fala (a lei, o termo técnico, o detalhe, o passo escrito).
-- Carrossel: pode ser curta, os slides carregam. Repete a promessa do slide 1 pra dobra, 1 linha de contexto, o CTA e as hashtags.
+- Carrossel: pode ser curta (os slides carregam), mas mantém a assinatura na 1ª linha, a pergunta aberta, o disclaimer (se regulado) e o MESMO pedido do último slide.
 - Imagem única: a legenda carrega mais. A maioria das boas fica entre 150 e 1.500 caracteres; longa só se ensinar ou contar uma história que valha a rolagem.
 - Escreva as palavras que o público digitaria na busca (o nome do problema do jeito que ele fala): a busca do Instagram lê a legenda.
 
@@ -271,7 +285,7 @@ Fechamento, nesta ordem:
 1. Primeiro passo de graça, em uma linha, quando o post ensina.
 2. Uma pergunta aberta e específica, de uma linha, que a pessoa responde com a experiência dela. Ela puxa comentário e não conta como segundo pedido. Proibido: "o que vocês acham?", "concorda?", "comenta aí".
 3. Disclaimer do perfil, se o conteúdo for regulado (direito, tributo, saúde, finanças).
-4. UM CTA, com motivo: seguir amarrado ao próximo conteúdo ("segue: na parte 2 eu mostro..."), ou a palavra-chave no direct só se o perfil usa esse modo e entrega no mesmo dia. Pedido de salvar ou mandar também vale se diz quando ou pra quem ("salva pra quando for fechar o mês", "manda pro seu sócio"). Nunca dois pedidos ("segue, salva e compartilha").
+4. UM CTA, com motivo: seguir amarrado ao próximo conteúdo ("segue: na parte 2 eu mostro..."), ou a palavra-chave no direct só se o perfil usa esse modo e entrega no mesmo dia. Pedido de salvar ou mandar também vale se diz quando ou pra quem ("salva pra quando for fechar o mês", "manda pro seu sócio"). Nunca dois pedidos ("segue, salva e compartilha"). Se o pedido for salvar ou mandar, a linha anterior diz o assunto do próximo post: isso é informação, não segundo pedido.
 5. Hashtags: 3 a 5, no fim (ou no 1º comentário), em minúsculas, específicas do assunto, nunca no meio da frase.
 
 Estilo:
@@ -283,13 +297,15 @@ Estilo:
 Lembre o criador de anexar a mídia: o Instagram não publica legenda sem foto ou vídeo.`;
 
   const CARROSSEL = `═══ CARROSSEL: SLIDE A SLIDE ═══
-Limites: de 2 a 10 itens pela API (o app do Instagram aceita até 20; aqui, planeje até 10). Só fotos ou só vídeos, nunca misturado. Vertical 4:5 (1080 × 1350) ocupa mais tela. Vídeo em carrossel: até 60 s por clipe.
+Limites: no app do Instagram, até 20 itens e pode misturar foto e vídeo; agendadores que publicam pela API aceitam só de 2 a 10 e não misturam. Aqui, planeje até 10. Vertical 4:5 (1080 × 1350) ocupa mais tela. Vídeo em carrossel: até 60 s por clipe.
 
 A espinha:
-- Slide 1 (gancho): promessa + loop aberto ("a maioria erra a 4"). Uma ideia, 6 a 12 palavras, letra grande, número se couber. É o funil inteiro: se não ganha o arraste, o resto não existe. Nunca só um título ("Dicas de X").
-- Slides 2 e 3: o valor mais forte. O arraste cai a cada slide, então o melhor ponto vem cedo, nunca no último.
+- Slide 1 (gancho): promessa + uma pergunta que fica no ar ("a maioria erra a 4"). Uma ideia, 6 a 12 palavras, letra grande, número se couber. Decide tudo: se não ganha o arraste, o resto não existe. Nunca só um título ("Dicas de X").
+- Slides 2 e 3: o valor mais forte. O arraste cai a cada slide, então o melhor ponto vem cedo, nunca no último. O slide 2 ou 3 deixa claro o antes → depois: o que a pessoa fazia e o que passa a fazer.
+- Pelo menos um slide entrega algo pronto pra usar hoje: a frase pra copiar, o checklist de até 3 itens, a conta com o valor em reais ou o critério de decisão. Slide que só diz "organize-se" ou "seja consistente" sai.
 - Slides 4 a N-1: um ponto por slide, que se sustenta sozinho e se lê em 2 segundos.
-- Último slide: o resumo inteiro num slide só (o que a pessoa salva e printa) + UM pedido (salvar, mandar ou seguir, conforme o objetivo). Se o perfil trabalha em série, diga o assunto do próximo post.
+- Último slide: o resumo inteiro num slide só (o que a pessoa salva e printa) + o MESMO pedido que fecha a legenda (um só no post todo). Se o perfil fixa o pedido de seguir, o slide pede seguir amarrado ao próximo post ("segue: no próximo eu mostro {assunto}"), e o salvar aparece como motivo, sem virar segundo pedido.
+- Sempre uma linha que diz o assunto do próximo post (o próximo ganho de quem segue), mesmo quando o pedido é salvar ou mandar.
 
 Quantos slides:
 - Lista curta ou método: 6 a 8. Conjunto mais rico ou transformação: 8 a 10.
@@ -299,7 +315,7 @@ Quantos slides:
 Texto na imagem:
 - Uma ideia por slide; se tem duas, divida.
 - Outdoor, não parágrafo: poucas palavras, letra grande. O detalhe vai pra legenda.
-- Em lista, numere os itens (1., 2., 3.) pra o loop "a maioria erra a 4" se pagar.
+- Em lista, numere os itens (1., 2., 3.) pra promessa "a maioria erra a 4" se cumprir.
 - Mesma fonte, mesma margem e mesma cor de destaque em todos: tem que parecer um conjunto.
 - No máximo 1 travessão por slide, e só se fizer trabalho de verdade.
 
@@ -309,16 +325,18 @@ Espinhas por fórmula:
 - mito (envios): 1 "{N} mitos sobre {tema} que estão te custando {perda}" · 2 a N-1 "Mito: {crença}" e "Verdade: {o que funciona}" · último: a virada em uma linha + "manda pra quem ainda acredita no 1º".
 - framework (salvamentos): 1 "o método {nome} que eu uso pra {resultado}" · 2 a N-1 uma parte por slide, com o porquê · último: o método inteiro num slide, autossuficiente, + motivo pra salvar.
 
-Legenda do carrossel: curta. Repete a promessa do slide 1 pra dobra, 1 linha de contexto, o CTA e 3 a 5 hashtags.
+Legenda do carrossel: curta, mas segue a estrutura fixa do perfil: assinatura na 1ª linha, a promessa do slide 1 reescrita pra dobra (assinatura + gancho dentro dos 125 caracteres), 1 linha de contexto, a pergunta aberta, o disclaimer se o conteúdo for regulado, o pedido (o mesmo do último slide) e até 5 hashtags.
 
-Proibido: slide 1 sem promessa; o melhor ponto no fim; três pedidos no último slide; parede de texto; slide de enchimento; mistura de foto e vídeo; "O resultado?" e frases curtas em fila pra dar ritmo; palavra de IA.
+Conteúdo regulado (direito, tributo, saúde, finanças): cada "Verdade" ou passo técnico com fato conferido ou [CONFERIR]; o último slide não decide pela pessoa (o passo é pergunta pro profissional ou verificação), e o disclaimer vai na legenda.
+
+Proibido: slide 1 sem promessa; o melhor ponto no fim; três pedidos no último slide; parede de texto; slide de enchimento; "O resultado?" e frases curtas em fila pra dar ritmo; palavra de IA.
 Lembre o criador: as imagens sobem na ordem dos slides.`;
 
   const HASHTAGS = `═══ HASHTAGS: TAMANHO, NÃO QUANTIDADE ═══
-3 a 5 hashtags bem escolhidas rendem mais que 30 aleatórias. Hoje a hashtag funciona como etiqueta de assunto, que ajuda o Instagram a classificar o post; o alcance vem de envios, salvamentos e da recomendação. Este app usa no máximo 5 (o Instagram anunciou em dez/2025 o limite de 5 por post).
+3 a 5 hashtags bem escolhidas rendem mais que 30 aleatórias. Hoje a hashtag funciona como etiqueta de assunto, que ajuda o Instagram a classificar o post; o alcance vem de envios, salvamentos e da recomendação. Este app usa no máximo 5 hashtags por post (a recomendação atual é de 3 a 5; criadores relatam que o Instagram passou a limitar o número em 2025, confira no app).
 
 Tamanho = total de publicações da hashtag:
-- Nicho: menos de 50 mil. Onde perfil pequeno ou médio consegue ranquear e ficar visível por horas. Use 2 a 3.
+- Nicho: menos de 50 mil. Onde perfil pequeno ou médio consegue aparecer entre os primeiros da busca da hashtag e ficar visível por horas. Use 2 a 3.
 - Médio: de 50 mil a 500 mil. Público morno, concorrência vencível. Use 1 a 2.
 - Amplo: mais de 500 mil. Etiqueta de categoria; o post fica no topo por minutos. Use 0 ou 1, só se encaixar.
 Receita: 2 a 3 nicho + 1 a 2 médio + 0 a 1 amplo = 3 a 5 no total. Sem amplo que sirva, fique com 4.
@@ -347,7 +365,7 @@ Evite:
 - Tags de troca de curtida e seguidor (#follow4follow, #like4like, #sdv, #seguidores, #curtidas) e as que o Instagram costuma marcar como spam.
 - Pacote "viral" genérico (#viral, #explore, #reels, #instagood): fila impossível de vencer.
 - 20 a 30 tags, ou tags escondidas atrás de pontinhos "pra ficar limpo": continua spam.
-- Conjunto só de amplas, que perfil pequeno não ranqueia.
+- Conjunto só de amplas, onde perfil pequeno não aparece.
 
 Saída: cada tag com o tamanho estimado (nicho, médio ou amplo), marcado como estimativa a conferir, e um porquê de uma linha.`;
 
@@ -361,22 +379,25 @@ Papéis (cada post tem um pilar de tema do perfil E um destes papéis). Divisão
 - Oferta, 10%: o produto, o serviço, o próximo passo. Ganha seguidores e cliente. Fórmulas: antesdepois (resultado que mostra o produto funcionando), numero (dado próprio). No máximo 1 a 2 por semana: oferta demais enterra o alcance.
 Nenhum papel e nenhum pilar passa de 50% dos posts da semana.
 
-Cadência e mix:
-- 3 a 5 posts de qualidade no feed por semana valem mais que um por dia feito às pressas. Não encha pra bater número.
-- Pelo menos 2 Reels (alcance) e 2 carrosséis (salvamento); imagem única quando a ideia cabe numa frase.
-- Reel pode sair mais vezes que carrossel sem cansar a base: cada um chega a gente nova.
+Cadência:
+- O número de posts que o criador escolheu manda; nunca passe dele nem fique abaixo. Como referência, 4 a 5 bons por semana com stories todo dia rendem mais que 7 feitos às pressas; se ele pediu 6 ou 7, mantenha a qualidade e use Reels pros extras (cansam menos a base: cada um chega a gente nova).
 - Uma fórmula por post, variando: nenhuma mais de 2 vezes na semana.
 
-Meta da semana: salvamentos + envios somados é o número principal, não curtida. Meta: passar a soma da semana anterior (sem histórico, a primeira semana vira a base). Pra isso:
-- pelo menos 3 posts de salvamento (numero, lista, antesdepois, framework, comoeu) e 2 de envio (contraria, mito, quebra);
-- pelo menos 1 de comentário (cena, confissao) e 1 de seguidor (confissao, antesdepois, framework);
-- pelo menos 1 história real em 1ª pessoa; um objetivo principal por post.
+Mix conforme o número de posts escolhido (só use formato que o criador marcou; imagem única quando a ideia cabe numa frase):
+- 3 posts: 1 Reel, 1 carrossel e o terceiro no formato que a ideia pedir; 2 de salvamento ou envio e 1 de seguidor ou comentário (confissao vale pelos dois).
+- 4 a 5 posts: pelo menos 2 Reels e 2 carrosséis (se os dois formatos foram escolhidos); 2 a 3 de salvamento, 1 a 2 de envio e 1 de seguidor ou comentário.
+- 6 a 7 posts: 3 de salvamento, 2 de envio, 1 de comentário e 1 de seguidor.
+Um objetivo principal por post. O comentário também vem da pergunta da legenda e da caixinha nos stories, sem ocupar um post. Se a meta não couber no número de posts, diga em "avisos" o que ficou de fora.
+
+Meta da semana: salvamentos + envios somados é o número principal, não curtida. Meta: passar a soma da semana anterior (sem histórico, a primeira semana vira a base). Fórmulas de salvamento: numero, lista, antesdepois, framework, comoeu. De envio: contraria, mito, quebra. De comentário: cena, confissao. De seguidor: confissao, antesdepois, framework.
+
+Dado real primeiro: fórmula que depende de resultado ou história real (numero, confissao, antesdepois, comoeu) só entra se o perfil, os fatos conferidos ou o desempenho trouxerem o dado. Sem ele, troque por lista, framework, mito ou contraria. Se mesmo assim a história for essencial, deixe UM [PREENCHER: o quê] no gancho e diga em "avisos" o que o criador precisa trazer antes de gravar.
 
 Stories todo dia, 2 a 4 telas: bastidor, uma enquete ou caixinha, e pelo menos 1 repost de post recente do feed (vale como envio e leva o post a quem perdeu). No dia de pergunta e no dia da oferta, mais figurinhas.
 
-Horários (horário de Brasília): ponto de partida adaptado das janelas que criadores relatam, não regra oficial. Confira no Painel profissional, nos dados do público, em "Horários mais ativos", e ajuste em 2 a 3 semanas.
+Horários (Brasília): ponto de partida tirado de janelas relatadas por criadores dos EUA, sem dado brasileiro conferido. Confira em Painel profissional > Público > Horários mais ativos e ajuste em 2 a 3 semanas.
 - Dias úteis: 11h às 13h (almoço) e 19h às 21h (depois do trabalho). Domingo: 18h às 21h.
-- Donos de negócio e B2B: terça a quinta, 9h às 11h e no almoço.
+- Se o público é dono de negócio: de terça a quinta, das 9h às 11h e no almoço.
 - Público grande em outro fuso (Manaus 1h a menos, Acre 2h a menos)? Ajuste.
 - Escolha um horário em que você consegue responder os comentários na primeira hora.
 
@@ -386,6 +407,10 @@ Fio condutor (o que faz a pessoa querer acompanhar a semana):
 - A série tem um nome curto que aparece na capa ou na tarja de todos os posts.
 - Educativo e história vêm antes; a oferta, se houver, depois que a semana já entregou valor.
 - O último post fecha com o resumo da semana (framework ou lista) e abre o tema da semana seguinte.
+
+Perfil regulado (direito, tributo, saúde, finanças): o ângulo nunca promete resultado; a "entrega" é uma pergunta pra fazer ao profissional, uma verificação ou um documento pra separar, nunca uma decisão técnica; todo dado técnico sem fonte conferida sai com [CONFERIR].
+
+Nos textos que o criador vai ler (ângulo, porquê, avisos), fale como ele: "pedido final" em vez de CTA, "pergunta que fica no ar" em vez de loop, "aparecer na busca" em vez de ranquear.
 
 Saída por dia: formato, pilar e papel, fórmula (id), ângulo em 1 linha, objetivo, horário e o gancho do próximo capítulo. No fim: meta de salvamentos + envios, rotina de stories e a checagem de equilíbrio com o que falta.`;
 
@@ -422,6 +447,7 @@ Passos:
    - Uma afirmação ou um número: legenda de imagem única.
    - Ensino, lista ou construção: carrossel, um ponto por slide, do gancho ao resumo.
    - Vídeo longo: carrossel com o que o vídeo descobriu (não resumo cena a cena), ou Reel curto com o melhor trecho, gancho novo e um passo.
+   - Texto (LinkedIn, blog, X) pra Reel: a afirmação central vira o texto do primeiro frame e a primeira fala (até 3 segundos); o corpo vira no máximo 3 passos com rótulo na tela; o detalhe que não cabe na fala vai pra legenda. Depois, leve pro Estúdio pra virar roteiro completo.
 3. Gancho novo pra dobra: o gancho da fonte quase nunca sobrevive. Escreva outro com uma das fórmulas, escolhida pelo objetivo, que se sustente nos 125 primeiros caracteres (ou no slide 1, ou nos 3 primeiros segundos).
 4. Ajuste o formato: legenda escaneável, linhas curtas; carrossel com uma ideia por slide. Corte o tecido de ligação da fonte: o Instagram premia o ganho logo de cara.
 5. Limpe as marcas da outra rede: "link na bio" herdado, "se inscreve no canal", "ativa o sininho", "leia mais abaixo", @ que só existe no X, numeração de fio (1/7), "como eu postei no LinkedIn". O post não admite que é reaproveitado.
@@ -485,6 +511,14 @@ ${FORMULAS.map(f => `- [${f.id}] ${f.nome}: ${f.reconhece}`).join('\n')}
 - Ação: fazer mais do formato que vence, perfis pra acompanhar, e qual ferramenta usa isso (gancho, carrossel, legenda).
 - Nunca invente post, número ou padrão. Amostra fina? Diga e sugira olhar uma hashtag vizinha ou perfis conhecidos.`;
 
+  // extra: recriar um viral no perfil do criador (ig-hook-extractor + ig-audience-insights + hook-formulas)
+  const RECRIAR = `═══ RECRIAR UM VIRAL NO PERFIL DO CRIADOR ═══
+1. Antes de chamar de vencedor: compare as views com os seguidores e com a média do perfil de origem. View alta em conta grande não é prova de post bom.
+2. Separe o que transfere (fórmula do gancho, estrutura, ritmo, tipo de promessa, recipiente) do que não transfere (frase, história, número, tema alheio, a fama do autor).
+3. Recipiente primeiro: um resultado, número ou momento → imagem + legenda (numero, cena, confissao); lista que ensina → carrossel lista; transformação com passos → carrossel antesdepois; crença a corrigir → carrossel mito; método repetível → carrossel framework; demonstração ou fala pra câmera → Reel (quebra, comoeu).
+4. Supere o original: mais aplicável hoje, mais específico do público do criador, com o próximo post já anunciado.
+5. Nunca use frase, número ou história do original como se fosse do criador; o que depender dele vira [PREENCHER: ...].`;
+
   /* ---------- vícios de IA em português (complementam VICIOS_BASE do ig-base.js) ----------
      Todas com flags 'gi'. \b só funciona com letra sem acento nas pontas; onde a palavra
      começa com acento, uso (?<![letra]) como borda. Construídas com try/catch: se o navegador
@@ -535,8 +569,8 @@ ${FORMULAS.map(f => `- [${f.id}] ${f.nome}: ${f.reconhece}`).join('\n')}
     },
     {
       nome: 'Frase de enchimento ("neste post", "você sabia que")',
-      re: RE(String.raw`\b(?:nes[st]e (?:post|conte[úu]do|carrossel|v[íi]deo|reel|artigo)|voc[êe] vai (?:aprender|descobrir|entender) (?:como|o que|por que|tudo)|vem comigo|fica at[ée] o final|at[ée] o final (?:desse|deste) (?:post|v[íi]deo|carrossel)|voc[êe] sabia que|voc[êe] j[áa] (?:se perguntou|parou (?:pra|para) pensar)|j[áa] parou (?:pra|para) pensar|muita gente n[ãa]o sabe|poucas pessoas sabem|imagine (?:s[óo] )?(?:a seguinte situa[çc][ãa]o|um mundo))\b(?<=\S[\s\S]*\n[\s\S]*)`),
-      dica: 'Fala sobre o post em vez de entregar. Corte e vá direto ao ponto (a 1ª linha o app já confere à parte).'
+      re: RE(String.raw`\bnes[st]e post\b(?<=\S[\s\S]*\n[\s\S]*)|\b(?:nes[st]e (?:conte[úu]do|carrossel|v[íi]deo|reel|artigo)|voc[êe] vai (?:aprender|descobrir|entender) (?:como|o que|por que|tudo)|vem comigo|fica at[ée] o final|at[ée] o final (?:desse|deste) (?:post|v[íi]deo|carrossel)|voc[êe] sabia que|voc[êe] j[áa] (?:se perguntou|parou (?:pra|para) pensar)|j[áa] parou (?:pra|para) pensar|muita gente n[ãa]o sabe|poucas pessoas sabem|imagine (?:s[óo] )?(?:a seguinte situa[çc][ãa]o|um mundo))\b`),
+      dica: 'Fala sobre o post em vez de entregar. Corte e vá direto ao ponto. ("Neste post" na 1ª linha o app já marca como abertura fraca.)'
     },
     {
       nome: 'Ponte de revelação ("O resultado?")',
@@ -550,7 +584,7 @@ ${FORMULAS.map(f => `- [${f.id}] ${f.nome}: ${f.reconhece}`).join('\n')}
     },
     {
       nome: 'Frases curtas em fila ("Sem X. Sem Y. Só Z.")',
-      re: RE(String.raw`\b(?:sem|nada de|zero|nem) [^\s.!?,]+(?: [^\s.!?,]+)?[.,]\s+(?:sem|nada de|zero|nem) [^\s.!?,]+(?: [^\s.!?,]+)?[.,]\s+(?:s[óo]|apenas|somente|e sim)\s|` + INI + String.raw`(?:[^\s.!?]+(?: [^\s.!?]+)?[.!]\s+){2}[^\s.!?]+(?: [^\s.!?]+)?[.!](?=\s|$)|(?:^|(?<=\n))[ \t]*(?:pronto|exato|exatamente|ponto final|ponto|fim|acabou|s[óo] isso|simples assim)[.!][ \t]*(?=\n|$)`),
+      re: RE(String.raw`\b(?:sem|nada de|zero|nem) [^\s.!?,]+(?: [^\s.!?,]+)?[.,]\s+(?:sem|nada de|zero|nem) [^\s.!?,]+(?: [^\s.!?,]+)?[.,]\s+(?:s[óo]|apenas|somente|e sim)\s|` + INI + String.raw`(?:[^\s.!?\d][^\s.!?]*(?: [^\s.!?]+)?[.!][ \t]+){2}[^\s.!?\d][^\s.!?]*(?: [^\s.!?]+)?[.!](?=\s|$)|(?<=\S[^\n]*\n\s*)[ \t]*(?:pronto|exato|exatamente|ponto final|ponto|fim|acabou|s[óo] isso|simples assim)[.!][ \t]*(?=\n|$)`),
       dica: 'Junte numa frase completa, com uma oração que trabalhe ("sem promessa e sem mágica: o que funciona é o método"). No máximo 2 fragmentos soltos por legenda.'
     },
     {
@@ -603,6 +637,8 @@ ${FORMULAS.map(f => `- [${f.id}] ${f.nome}: ${f.reconhece}`).join('\n')}
     reaproveitar: REAPROVEITAR,
     humanizarRegras: HUMANIZAR,
     extrair: EXTRAIR,
+    recriar: RECRIAR,
+    objetivoTexto,
     nicho: NICHO,
     humanizar: Object.assign({}, humAnt, {
       vicios: viciosAnt.filter(v => v && !nomesNovos.includes(v.nome)).concat(VICIOS)

@@ -167,7 +167,7 @@
   const VICIOS_BASE = [
     { nome: 'Abertura de "revelação"', re: /\b(a verdade é que|o segredo é|e o melhor\??|sabe o que é mais|a real é que|spoiler:)/gi, dica: 'Diga direto o que você ia revelar.' },
     { nome: 'Fórmula "não é X, é Y"', re: /\bn[ãa]o [ée] (s[óo] |apenas |sobre )?[^.!?\n]{2,40}[,;]\s*[ée] /gi, dica: 'Afirme o que é, sem montar o contraste falso.' },
-    { nome: 'Palavra de IA', re: /\b(potencializ\w*|alavanc\w*|jornada|desbloque\w*|mergulh\w*|crucial|fundamental(mente)?|robust[oa]s?|transformador(a|es)?|incr[íi]ve(l|is)|revolucion\w*|no cen[áa]rio atual|em um mundo onde|vale ressaltar|[ée] importante ressaltar|sem sombra de d[úu]vidas?|n[ãa]o [ée] exagero dizer)\b/gi, dica: 'Troque pela palavra que você usaria numa conversa.' },
+    { nome: 'Palavra de IA', re: /\b(potencializ\w*|alavanc\w*|jornada|desbloque\w*|mergulh\w*|crucial|fundamental(mente)?|robust[oa]s?|transformador(a|es)?|incr[íi]ve(l|is)|revolucion\w*|no cen[áa]rio atual|em um mundo onde|vale ressaltar|sem sombra de d[úu]vidas?|n[ãa]o [ée] exagero dizer)\b/gi, dica: 'Troque pela palavra que você usaria numa conversa.' },
     { nome: 'Pedido de engajamento', re: /\b(comenta (sim|eu quero|a[íi])|marca (3|tr[êe]s|um) amig\w*|d[áa] (um |aquele )?like|deixa (seu|o) like|curte se)\b/gi, dica: 'O Instagram derruba isca de engajamento. Troque por uma pergunta de verdade ou por um único CTA.' },
     { nome: 'Fechamento genérico', re: /\b(e a[íi],? o que voc[êe] acha\??|concorda\?|bora\?!?|vamos juntos)\s*$/gim, dica: 'Feche com uma pergunta específica ou com o próximo passo.' }
   ];
@@ -182,13 +182,16 @@
     if (opt && opt.rapido) return out;
     const add = (nivel, txt, dica) => out.itens.push({ nivel, txt, dica: dica || '' });
     const prim = t.slice(0, X.corte125(t)).trim();
-    const primLinha = (linhas.find(l => l.trim()) || '').trim();
+    // a 1ª linha da legenda costuma ser a assinatura do perfil: a abertura que conta é a seguinte
+    const cheias = linhas.map(l => l.trim()).filter(Boolean);
+    const sigP = (() => { try { const A = api(); return String((A && A.st.profile.assinatura) || '').trim(); } catch (e) { return ''; } })();
+    const primLinha = cheias[0] && (cheias[0].startsWith('@') || (sigP && cheias[0] === sigP)) ? (cheias[1] || '') : (cheias[0] || '');
     add(prim.length >= 40 ? 'good' : 'warn', prim.length >= 40 ? 'Os primeiros 125 caracteres têm conteúdo' : 'Os primeiros 125 caracteres estão vazios ou curtos demais', 'É o que aparece antes do "mais": o gancho precisa estar inteiro aqui.');
     if (out.chars > 2200) add('bad', `${out.chars} caracteres: passa do limite de 2.200 do Instagram`, 'Corte o corpo ou leve parte pro primeiro comentário.');
     add(hashtags <= 5 ? 'good' : 'bad', `${hashtags} hashtag${hashtags === 1 ? '' : 's'} (máximo 5)`, 'Fique com 3 a 5, específicas do assunto, no fim.');
     add(emojis <= 3 ? 'good' : 'warn', `${emojis} emoji${emojis === 1 ? '' : 's'}`, 'De 0 a 3, com intenção. Fileira de emoji soa como IA.');
     const limTrav = Math.max(1, Math.floor(palavras / 100));
-    add(travessoes <= limTrav ? 'good' : 'warn', `${travessoes} travessão${travessoes === 1 ? '' : 'ões'}`, 'No máximo um a cada 100 palavras. Troque por vírgula, ponto ou dois-pontos.');
+    add(travessoes <= limTrav ? 'good' : 'warn', `${travessoes} travess${travessoes === 1 ? 'ão' : 'ões'}`, 'No máximo um a cada 100 palavras. Troque por vírgula, ponto ou dois-pontos.');
     const vicios = VICIOS_BASE.concat(((X.K.humanizar || {}).vicios || []));
     vicios.forEach(v => {
       let re; try { re = v.re instanceof RegExp ? new RegExp(v.re.source, v.re.flags.includes('g') ? v.re.flags : v.re.flags + 'g') : new RegExp(v.re, 'gi'); } catch (e) { return; }
@@ -330,7 +333,9 @@
   X.paraEstudio = o => {
     const A = api(); const sd = A.ui.studio, E = A.E;
     const fid = o.formatoId && E.formato(o.formatoId) ? o.formatoId : (sd.formatoId || 'lista');
-    const obj = o.objetivo && E.objetivo(o.objetivo) ? o.objetivo : sd.objetivo;
+    // o CONTRATO usa plural ('salvamentos'); o Estúdio usa o id singular de N.OBJETIVOS ('salvamento')
+    const objIn = o.objetivo && !E.objetivo(o.objetivo) && typeof X.K.objetivoApp === 'function' ? X.K.objetivoApp(o.objetivo) : o.objetivo;
+    const obj = objIn && E.objetivo(objIn) ? objIn : sd.objetivo;
     Object.assign(sd, {
       mode: 'criar', temaId: o.temaId && E.tema(o.temaId) ? o.temaId : null, formatoId: fid, objetivo: obj,
       assunto: X.str(o.assunto, 600), ganchoModo: 'meu', ganchoId: null, ganchoTexto: X.str(o.gancho, 300), ganchoTravado: false,
@@ -360,7 +365,8 @@
     K.ativo = id;
     try { localStorage.setItem('ndi:kit', id); } catch (e) { }
     const S = X.toolState(id);
-    if (preset) { Object.assign(S, preset); S.res = preset.res || null; S.err = ''; }
+    // preset = tarefa nova: volta ao estado inicial antes de aplicar (nada de base, auditoria ou salvoId herdados)
+    if (preset) { const t = X.tools.find(x => x.id === id); Object.assign(S, t && typeof t.init === 'function' ? t.init() : {}, preset); S.res = preset.res || null; S.err = ''; }
     A.ui.modal = null;
     if (A.ui.view === 'kit') { A.render(); window.scrollTo(0, 0); } else A.go('kit');
   };

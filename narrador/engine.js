@@ -399,7 +399,7 @@ Ato 3 — Solução de valor real (~22 a ~38 s):
 - Recurso opcional: pergunta e resposta, como professor e aluno ("E se eu já recebi no CPF? Declara.").
 - O que sobra é o que precisa de profissional, e é isso que abre conversa.
 Ato 4 — CTA (~38 a 45 s): ${ctaRegra(p)}
-- O CTA vende o PRÓXIMO GANHO, não o perfil: em uma frase, o que a pessoa passa a receber seguindo (a próxima entrega concreta, com assunto definido, e o tipo de problema que este perfil resolve toda semana${p.promessa ? `, em linha com a promessa "${p.promessa}"` : ''}). Nunca "me segue pra mais conteúdo" nem "ativa o sininho".
+${p.ctaModo === 'palavra' && p.ctaPalavra ? '- O CTA diz em uma frase o que a pessoa recebe ao mandar a palavra e qual é o próximo vídeo da série.' : `- O CTA vende o PRÓXIMO GANHO, não o perfil: em uma frase, o que a pessoa passa a receber seguindo (a próxima entrega concreta, com assunto definido, e o tipo de problema que este perfil resolve toda semana${p.promessa ? `, em linha com a promessa "${p.promessa}"` : ''}). Nunca "me segue pra mais conteúdo" nem "ativa o sininho".`}
 Proibido vídeo só pra ensinar. Se não resolve uma dor e não dá um motivo concreto pra seguir, ele não sai.
 
 ═══ REGRA ZERO — linguagem de gente ═══
@@ -421,7 +421,7 @@ Quem não para nos 3 primeiros segundos nunca vê o resto. Metade das pessoas pu
 0 a 3 s — O GANCHO, falado rápido e seco, do jeito do criador. Pode vir colado a um GATILHO de até 4 palavras antes dele, que não muda o gancho: um número ("Seis por cento."), uma ordem ("Para tudo."), um alerta ("Cuidado com isso.") ou a cena do problema ("Pix no CPF?"). Use o gatilho só quando ele aumentar o choque.
 3 a 7 s — A FRASE DE IDENTIFICAÇÃO: uma cena concreta do dia a dia de quem assiste, com detalhe real (o valor, o momento, o objeto, a mensagem do cliente, a notificação) + o que a pessoa perde se ignorar. A pessoa tem que pensar "isso é comigo". Nada genérico: proibido "muita gente", "você sabia", "hoje eu vou falar", "nesse vídeo", "vem comigo", "fica até o final".
 Dê nota de 0 a 10 pra abertura escolhida em PARAR O SCROLL, IDENTIFICAÇÃO e CURIOSIDADE. Se qualquer nota ficar abaixo de 8, reescreva o gatilho, o visual e a frase de identificação (nunca o gancho) até passar.
-FÓRMULAS QUE MAIS PARAM O SCROLL (use pra refinar o gancho do criador quando precisar e pra escrever as 2 versões de @@ALTERNATIVOS, cada uma com uma fórmula diferente): número primeiro, com precisão ímpar e real ("47 minutos", "R$ 873"), nunca inventado · verdade contrária que você defende nos comentários ("o conselho que todo mundo repete está errado") · cena identificável específica (o momento exato que o público vive, com detalhe) · confissão com custo real (o erro e o preço, só se for verdade) · antes → depois (mostra o resultado e volta pro começo) · mito × verdade (a crença que está custando caro) · "como eu..." com resultado concreto (primeira pessoa carrega prova e vence "como fazer") · quebra de padrão visual com loop aberto no texto da tela. O gancho promete um GANHO ou evita uma PERDA que o vídeo realmente entrega.
+FÓRMULAS QUE MAIS PARAM O SCROLL (use nas 2 versões de @@ALTERNATIVOS quando o gancho é do criador, cada uma com uma fórmula diferente; com gancho do banco, só escolha os números; no gancho principal, só o ajuste mínimo): número primeiro, só com número dos FATOS CONFERIDOS ou informado pelo criador, nunca inventado · verdade contrária que você defende nos comentários ("o conselho que todo mundo repete está errado") · cena identificável específica (o momento exato que o público vive, com detalhe) · confissão com custo real (o erro e o preço, só se for verdade) · antes → depois (mostra o resultado e volta pro começo) · mito × verdade (a crença que está custando caro) · "como eu..." com resultado concreto (primeira pessoa carrega prova e vence "como fazer") · quebra de padrão visual com loop aberto no texto da tela. O gancho promete um GANHO ou evita uma PERDA que o vídeo realmente entrega.
 7 a 10 s — A PROMESSA: logo depois da frase de identificação, uma linha curta que nomeia o que a pessoa ganha se ficar até o fim (o resultado concreto, não o assunto). Sem "nesse vídeo", "hoje eu vou falar", "vem comigo" ou "fica até o final" — a promessa é sobre o GANHO, não um convite pra continuar assistindo. Exemplos de estrutura: "Até o fim disso aqui, você sabe exatamente quanto dá pra economizar." / "No fim, você vai saber qual das três serve pra você." Essa linha é a primeira fala do Ato 2, logo antes do problema.
 
 ═══ MANUAL DO VIRAL (conhecimento aplicado) ═══
@@ -509,7 +509,7 @@ Ajuste os tempos das linhas @@ATO à duração real. As falas: só o que é dito
 - [PREENCHER]: evite. Se faltar dado pessoal, reescreva a frase sem depender dele (use uma situação do público em vez da história do criador). Só use [PREENCHER] se o gancho exigir fato do criador e ele não foi dado.
 - Gancho do banco alterado, gancho do criador reescrito sem necessidade (se ele já prende, fica igual), tarja com mais de 7 palavras, mais de 5 hashtags, sem frase-chiclete marcada com ★, legenda sem a assinatura na primeira linha.
 - Abertura fraca: saudação, "nesse vídeo", "hoje eu vou", "você sabia", explicação antes da dor.
-- Valor raso: sem @@VALOR, nota abaixo de 8 em @@VALOR, solução genérica ("seja consistente", "procure um profissional" sozinho) ou CTA que não diz o que a pessoa ganha seguindo.`;
+- Valor raso: sem @@VALOR, nota abaixo de 8 em @@VALOR, solução genérica ("seja consistente", "procure um profissional" sozinho) ou CTA que não diz o próximo ganho (de seguir ou da palavra-chave, conforme o perfil).`;
 
   const CHECKLIST = `${REPROVA}
 
@@ -642,12 +642,13 @@ No cabeçalho escreva "Tema livre · Gancho do criador". Em @@ALTERNATIVOS escre
     while (E.bytes(texto) > 60000) {
       const j = texto.indexOf('═══ O QUE ESTE PERFIL JÁ APRENDEU');
       if (j < 0) break;
-      const fim = texto.indexOf('═══', j + 10);
-      const bloco = texto.slice(j, fim);
-      const linhas = bloco.split('\n');
-      if (linhas.length < 6) break;
-      linhas.splice(Math.max(2, linhas.length - 4), 3);
-      texto = texto.slice(0, j) + linhas.join('\n') + '\n\n' + texto.slice(fim);
+      const ini = texto.indexOf('\n', j) + 1;
+      const fim = texto.indexOf('\n═══', ini);
+      if (ini <= 0 || fim < 0) break;
+      const linhas = texto.slice(ini, fim).split('\n');
+      if (linhas.length < 3) break;
+      linhas.splice(Math.max(1, linhas.length - 4), 3);
+      texto = texto.slice(0, ini) + linhas.join('\n') + texto.slice(fim);
     }
     return texto;
   };
@@ -907,14 +908,22 @@ Responda só com JSON:
     const txt = P && P.VALOR;
     if (txt == null) return null;
     const campos = [], notas = [];
+    const SO_NUM = /^(\d{1,2}(?:[.,]\d)?)\s*(?:(?:\/|de)\s*10)?$/i;
+    const lerNotas = str => str.split(/\s*[·|;]\s*|,(?!\d)/).forEach(x => {
+      const n = x.trim().match(/^(.*?)[\s:=-]*(\d{1,2}(?:[.,]\d)?)\s*(?:(?:\/|de)\s*10)?\s*$/i);
+      if (n && n[1].trim()) notas.push({ k: n[1].replace(/[\s:=-]+$/, '').trim(), v: Math.max(0, Math.min(10, Number(n[2].replace(',', '.')))) });
+    });
+    let emNotas = false;
     E.linhas(txt).forEach(l => {
-      const t = l.replace(/^[-•*]\s*/, '');
-      if (/^\(/.test(t)) return;
-      const m = t.match(/^([^:]{2,40}):\s*(.+)$/);
-      if (!m) return;
-      if (/^nota/i.test(m[1].trim())) {
-        m[2].split(/[·|;,]/).forEach(x => { const n = x.trim().match(/^(.*?)\s*(\d{1,2})(?:\s*\/\s*10)?$/); if (n && n[1]) notas.push({ k: n[1].trim(), v: Math.min(10, Number(n[2])) }); });
-      } else campos.push({ k: m[1].trim(), v: m[2].trim() });
+      const t = l.replace(/^[-•*\s]+/, '').replace(/\*\*/g, '').trim();
+      if (!t || /^\(/.test(t)) return;
+      const m = t.match(/^([^:]{2,40}):\s*(.*)$/);
+      if (m && /^notas?$/i.test(m[1].trim())) { emNotas = !m[2].trim(); if (m[2].trim()) lerNotas(m[2]); return; }
+      if (emNotas && (!m || SO_NUM.test(m[2].trim()))) { lerNotas(m ? m[1] + ' ' + m[2] : t); return; }
+      emNotas = false;
+      if (!m || !m[2].trim()) return;
+      if (SO_NUM.test(m[2].trim())) lerNotas(m[1] + ' ' + m[2]);
+      else campos.push({ k: m[1].trim(), v: m[2].trim() });
     });
     const min = notas.length ? Math.min(...notas.map(n => n.v)) : null;
     return { campos, notas, min };
@@ -985,7 +994,8 @@ Responda só com JSON:
     }
     else add(dur <= 14, `Texto na tela ≈ ${dur} s de leitura (Trend: 5–8 s)`, dur <= 14 ? 'ok' : 'warn', 'Deixe só a frase de impacto e "leia a legenda" na tela; o resto vai pra legenda.');
     const V = E.valor(P);
-    if (!V || !V.campos.length) add(false, 'Falta o contrato de valor (@@VALOR)', 'warn',
+    if (P.VALOR == null && !P.ABERTURA) { /* roteiro antigo, de antes do contrato de valor: sem cobrança */ }
+    else if (!V || !V.campos.length) add(false, P.VALOR == null ? 'Falta o contrato de valor (@@VALOR)' : 'Contrato de valor fora do formato', 'warn',
       'Corrija com IA: o roteiro precisa dizer pra quem é, o antes → depois, o que a pessoa leva pronto, o ganho, pra quem ela mandaria e por que seguir.',
       'Acrescente a seção @@VALOR logo depois de @@PILARES (pra quem, antes → depois, leva pronto, ganho, mandaria pra, por que seguir e a nota de 0 a 10 de cada prova) e ajuste o roteiro pra cumprir o que ela promete.');
     else {
@@ -1006,7 +1016,7 @@ Responda só com JSON:
     const tags = (leg.match(/(^|\s)#[\p{L}\p{N}_]+/gu) || []).length;
     add(tags <= 5, `${tags} hashtag${tags === 1 ? '' : 's'} (máximo 5)`, null, `Tire ${tags - 5}: fique com as 5 mais específicas do assunto.`);
     const semPergunta = leg.split('\n').filter(l => !/👇/.test(l)).join('\n');
-    const CTAS = [['seguir', /\bsegue\b|\bsiga\b|\bme segue\b/i], ['salvar', /\bsalv[ae]\b/i], ['compartilhar', /\bcompartilh[ae]\b|\bmanda pr[ao]\b|\benvia pr[ao]\b/i], ['comentar', /\bcomenta\b|\bcomente\b/i]];
+    const CTAS = [['seguir', /\bsegue\b|\bsiga\b|\bme segue\b/i], ['salvar', /\bsalv[ae]\b/i], ['compartilhar', /\bcompartilh[ae]\b|\b(manda|envia) (isso|esse (v[ií]deo|post)|pra quem) /i], ['comentar', /\bcomenta\b|\bcomente\b/i]];
     const achados = CTAS.filter(([, r]) => r.test(semPergunta)).map(([n]) => n);
     const principal = p.ctaModo === 'palavra' ? 'comentar' : 'seguir';
     const extras = achados.filter(n => n !== principal);

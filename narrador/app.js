@@ -342,8 +342,9 @@
   function render() {
     renderChrome();
     const m = $('#main');
-    const xv = X.views[ui.view] && viewOk(ui.view) ? X.views[ui.view] : null;
-    const fn = { estudio: vEstudio, virais: vVirais, ganchos: vGanchos, temas: vTemas, formatos: vFormatos, biblioteca: vBiblioteca, perfil: vPerfil }[ui.view] || (xv ? () => xv.render() : vEstudio);
+    const NATIVAS = { estudio: vEstudio, virais: vVirais, ganchos: vGanchos, temas: vTemas, formatos: vFormatos, biblioteca: vBiblioteca, perfil: vPerfil };
+    const xv = !NATIVAS[ui.view] && X.views[ui.view] && viewOk(ui.view) ? X.views[ui.view] : null;
+    const fn = NATIVAS[ui.view] || (xv ? () => { try { return xv.render(); } catch (e) { console.error(e); return '<div class="empty">Esta tela deu erro ao abrir. Volte ao Estúdio e tente de novo.</div>'; } } : vEstudio);
     m.innerHTML = fn();
     if (ui.view === 'estudio') renderOut();
     if (xv && typeof xv.mount === 'function') { try { xv.mount(m); } catch (e) { console.error(e); } }
@@ -992,6 +993,8 @@
       turns = base ? [{ role: 'user', content: base }, { role: 'assistant', content: s.raw }] : [{ role: 'user', content: 'Roteiro revisado anteriormente pelo Narrador de Impacto (siga as mesmas regras e o mesmo formato de seções @@).' }, { role: 'assistant', content: s.raw }];
     }
     const input = turns.concat([{ role: 'user', content: E.promptAjuste(nota) }]);
+    // cabe no limite de 64 KiB: corta pares antigos (ajuste + resposta) mantendo a base e o roteiro atual
+    while (E.bytes(input.map(t => t.content).join('')) > 58000 && input.length > 3) input.splice(1, 2);
     if (lembrar) { st.memory.prefs.unshift({ id: newId('p'), texto: nota, ativa: true, data: E.hoje() }); Store.saveEstado(); }
     const ctx = Object.assign({}, G.ctx);
     run(input, ctx, 'ajuste', text => {
@@ -1671,8 +1674,8 @@
       const analise = {
         veredito: String(r.veredito || ''),
         fatores: (Array.isArray(r.fatores) ? r.fatores : []).filter(f => f && typeof f === 'object').slice(0, 8).map(f => ({ area: areaOk(String(f.area || '').toLowerCase()), peso: Math.max(1, Math.min(5, Math.round(Number(f.peso) || 1))), porque: String(f.porque || ''), evidencia: String(f.evidencia || '') })).filter(f => f.porque).sort((a, b) => b.peso - a.peso),
-        gancho: r.gancho && typeof r.gancho === 'object' ? { texto: String(r.gancho.texto || ''), categoria: E.cat(Number(r.gancho.categoria)) ? Number(r.gancho.categoria) : null, formula: String(r.gancho.formula || '').toLowerCase().replace(/[^a-z]/g, '').slice(0, 20), pilares: arr(r.gancho.pilares, 4), porque: String(r.gancho.porque || '') } : null,
-        entrega: r.entrega && typeof r.entrega === 'object' ? { transformacao: String(r.entrega.transformacao || ''), levaPronto: String(r.entrega.levaPronto || ''), porQueSeguir: String(r.entrega.porQueSeguir || ''), comoSuperar: String(r.entrega.comoSuperar || '') } : null,
+        gancho: r.gancho && typeof r.gancho === 'object' ? { texto: String(r.gancho.texto || ''), categoria: E.cat(Number(r.gancho.categoria)) ? Number(r.gancho.categoria) : null, formula: String(r.gancho.formula || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z]/g, '').slice(0, 20), pilares: arr(r.gancho.pilares, 4), porque: String(r.gancho.porque || '') } : null,
+        entrega: r.entrega && typeof r.entrega === 'object' ? { transformacao: String(r.entrega.transformacao || '').slice(0, 400), levaPronto: String(r.entrega.levaPronto || '').slice(0, 400), porQueSeguir: String(r.entrega.porQueSeguir || '').slice(0, 400), comoSuperar: String(r.entrega.comoSuperar || '').slice(0, 500) } : null,
         estrutura: (Array.isArray(r.estrutura) ? r.estrutura : []).filter(e => e && typeof e === 'object').slice(0, 8).map(e => ({ parte: String(e.parte || ''), tempo: String(e.tempo || ''), oque: String(e.oque || '') })).filter(e => e.parte || e.oque),
         edicao: arr(r.edicao), formato: E.formato(fmt) ? fmt : null, numeros: arr(r.numeros), naoTransfere: arr(r.naoTransfere, 5),
         modelar: arr(r.modelar), naoCopiar: arr(r.naoCopiar),
