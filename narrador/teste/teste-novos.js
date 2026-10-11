@@ -50,6 +50,28 @@ const ok = (c, m) => { console.log((c ? 'ok   ' : 'FALHA') + ' ' + m); if (!c) p
     await page.waitForFunction(t => window.NDX.toolState(t).res, tool);
     ok(true, 'ferramenta ' + tool + ' gera e mostra');
   }
+  // carrossel viral
+  await page.evaluate(() => { window.NDA.go('virais'); });
+  await page.click('[data-a="add-viral"]');
+  await page.click('[data-a="vf-tipo"][data-t="carrossel"]');
+  ok(await page.locator('#v-slides').count() === 1 && await page.locator('#v-video').count() === 0, 'carrossel troca vídeo por slides');
+  await page.setInputFiles('#v-slides', ['slide1.png', 'slide2.png', 'slide3.png'].map(f => path.join(__dirname, f)));
+  await page.waitForFunction(() => (window.NDA.ui.modal.frames || []).length === 3);
+  await page.fill('#vf-titulo', 'Mitos do MEI'); await page.fill('#vf-seguidores', '20 mil'); await page.fill('#vf-curtidas', '15 mil');
+  await page.evaluate(() => window.__respostas.push({ json: { veredito: 'Mito x verdade', fatores: [{ area: 'gancho', peso: 5, porque: 'x' }], estrutura: [{ parte: 'Slide 1', oque: 'capa' }, { parte: 'Slide 2', oque: 'mito 1' }, { parte: 'Slide 3', oque: 'cta' }], modelagem: { gancho: 'g', formato: 'lista', angulo: 'a' } } }));
+  await page.click('[data-a="salvar-viral"][data-analisar="1"]');
+  await page.waitForFunction(() => window.NDA.st.virais[0].tipo === 'carrossel' && window.NDA.st.virais[0].analise);
+  const p3 = await page.evaluate(() => window.__prompts[window.__prompts.length - 1]);
+  ok(/CARROSSEL, não um Reel/.test(p3.input) && /slides do carrossel/.test(p3.input) && p3.imgs === 3, 'análise do carrossel com os slides');
+  ok(await page.locator('[data-a="x-kg-viral-car"]').textContent().then(t => /Replicar carrossel/.test(t)), 'botão Replicar carrossel');
+  await page.click('[data-a="x-kg-viral-car"]');
+  await page.waitForFunction(() => window.NDX.state.kit.ativo === 'carrossel');
+  ok(await page.evaluate(() => /Slide 2: mito 1/.test(window.NDX.toolState('carrossel').base)), 'carrossel abre com a sequência dos slides');
+  // Reel → carrossel no Estúdio
+  await page.evaluate(() => window.NDA.go('estudio'));
+  await page.click('[data-a="virar-carrossel"]');
+  await page.waitForFunction(() => window.NDA.ui.view === 'kit' && window.NDX.state.kit.ativo === 'carrossel');
+  ok(await page.evaluate(() => /ROTEIRO/.test(window.NDX.toolState('carrossel').base)), 'Estúdio: Virar carrossel leva o roteiro');
   await page.setViewportSize({ width: 390, height: 844 });
   ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), 'sem rolagem horizontal em 390px');
   await page.screenshot({ path: path.join(__dirname, 'shots/novos-390.png') });

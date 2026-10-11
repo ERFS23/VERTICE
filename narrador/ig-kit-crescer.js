@@ -244,7 +244,7 @@
   });
   // trocar o viral do select muda o rótulo do campo de texto: re-renderiza
   X.watch(path => { if (path === 'kit.tools.gancho.viralId') X.refresh(); });
-  X.action('x-kg-pick-viral', el => { const S = X.toolState('gancho'); S.viralId = el.dataset.id || ''; S.origem = S.viralId ? 'Virais' : ''; X.refresh(); });
+  X.action('x-kg-pick-viral', el => { const S = X.toolState('gancho'); S.viralId = el.dataset.id || ''; S.origem = S.viralId ? 'Virais' : ''; const v = viral(S.viralId); if (v && v.tipo === 'carrossel') S.superficie = 'carrossel'; X.refresh(); });
   X.css(`.kg-vlist{display:flex; flex-direction:column; gap:6px; max-height:340px; overflow:auto; padding:2px}
 .kg-vitem{display:flex; gap:10px; align-items:center; text-align:left; padding:8px; border:1px solid var(--line); border-radius:12px; background:var(--bg2); color:var(--ink); min-width:0}
 .kg-vitem:hover{border-color:var(--amber-line)}
@@ -652,10 +652,10 @@ Regras:
     const sup = An && An.entrega && An.entrega.comoSuperar;
     const reel = An && An.modelagem ? `<button type="button" class="btn sm primary" data-a="modelar" data-i="-1">${ic('estudio', 'sm')} Roteiro de Reel</button>` : `<button type="button" class="btn sm primary" data-a="x-kg-viral-reel">${ic('estudio', 'sm')} Roteiro de Reel</button>`;
     return `<div class="blk kg-viral"><div class="blk-h"><h3>Recriar este viral</h3></div>
-      <p>Modelar é copiar a estrutura e entregar mais valor no seu nicho.</p>
+      <p>Modelar é copiar a estrutura e entregar mais valor no seu nicho.${v.tipo === 'carrossel' ? ' Replique como carrossel ou transforme em Reel.' : ' Recrie como Reel ou transforme em carrossel.'}</p>
       ${sup ? `<p class="kg-sup"><b>Como superar:</b> ${esc(sup)}</p>` : ''}
-      <div class="kit-row">${reel}
-        <button type="button" class="btn sm" data-a="x-kg-viral-car">${ic('carrossel', 'sm')} Carrossel</button>
+      <div class="kit-row">${v.tipo === 'carrossel' ? `<button type="button" class="btn sm primary" data-a="x-kg-viral-car">${ic('carrossel', 'sm')} Replicar carrossel</button>${reel.replace('btn sm primary', 'btn sm').replace('Roteiro de Reel', 'Virar Reel')}` : `${reel}
+        <button type="button" class="btn sm" data-a="x-kg-viral-car">${ic('carrossel', 'sm')} Virar carrossel</button>`}
         <button type="button" class="btn sm" data-a="x-kg-viral-leg">${ic('legenda', 'sm')} Legenda</button>
         <button type="button" class="btn sm ghost" data-a="x-kg-viral-gancho">${ic('anzol', 'sm')} Extrair o gancho</button></div>
     </div>`;
@@ -669,12 +669,18 @@ Regras:
   };
   X.action('x-kg-viral-reel', () => {
     const v = viralModal(); if (!v) return;
-    X.paraEstudio({ assunto: X.str(v.titulo, 300) || corta(X.str(v.roteiro), 400), gancho: '', why: `Recriando o viral de ${v.handle || 'outro perfil'}: mesma estrutura, mais valor, no seu nicho.`, obs: v.roteiro ? 'Roteiro do viral de referência (modele a estrutura, não copie frases):\n' + corta(v.roteiro, 900) : '' });
+    const car = v.tipo === 'carrossel';
+    const est = (v.analise && v.analise.estrutura) || [];
+    const slides = car ? [est.length ? est.map(e => `${e.parte}: ${e.oque}`).join('\n') : '', X.str(v.roteiro)].filter(Boolean).join('\n') : '';
+    X.paraEstudio({ assunto: X.str(v.titulo, 300) || corta(X.str(v.roteiro), 400), gancho: '', formatoId: car ? 'lista' : undefined, why: car ? `Transformando o carrossel viral de ${v.handle || 'outro perfil'} em Reel: cada slide vira um bloco de fala, a capa vira o gancho.` : `Recriando o viral de ${v.handle || 'outro perfil'}: mesma estrutura, mais valor, no seu nicho.`, obs: car ? 'Carrossel viral de referência. Transforme a sequência em Reel (capa = gancho falado e na tela, um slide = um bloco curto, resumo = frase-chiclete). Modele a estrutura, não copie frases:\n' + corta(slides, 1500) : v.roteiro ? 'Roteiro do viral de referência (modele a estrutura, não copie frases):\n' + corta(v.roteiro, 900) : '' });
   });
   X.action('x-kg-viral-car', () => {
     const v = viralModal(); if (!v) return;
     const mo = (v.analise && v.analise.modelagem) || {};
-    X.abrirFerramenta('carrossel', { tema: mo.angulo || v.titulo || '', gancho: typeof mo.gancho === 'string' ? mo.gancho : '', base: baseViral(v), objetivo: objViral(v), formula: 'auto', origem: 'Viral ' + (v.handle || '') });
+    const est = (v.analise && v.analise.estrutura) || [];
+    const base = v.tipo === 'carrossel' && est.length ? corta('Slides do carrossel viral (modele a sequência, não copie frases):\n' + est.map(e => `${e.parte}: ${e.oque}`).join('\n') + '\n\n' + baseViral(v), 3000) : baseViral(v);
+    const nSl = v.tipo === 'carrossel' && est.length ? Math.max(5, Math.min(10, est.length)) : 7;
+    X.abrirFerramenta('carrossel', { tema: mo.angulo || v.titulo || '', gancho: typeof mo.gancho === 'string' ? mo.gancho : '', base, objetivo: objViral(v), formula: 'auto', slides: nSl, origem: (v.tipo === 'carrossel' ? 'Carrossel viral ' : 'Viral ') + (v.handle || '') });
   });
   X.action('x-kg-viral-leg', () => {
     const v = viralModal(); if (!v) return;

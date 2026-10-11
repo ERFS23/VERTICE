@@ -720,6 +720,7 @@
       <button class="btn sm" data-a="prompter">${ic('scroll', 'sm')} Teleprompter</button>
       <button class="btn sm" data-a="copiar-fala">${ic('copy', 'sm')} Fala</button>
       <button class="btn sm" data-a="copiar-tudo">${ic('copy', 'sm')} Tudo</button>
+      ${typeof X.abrirFerramenta === 'function' ? `<button class="btn sm" data-a="virar-carrossel">${ic('carrossel', 'sm')} Virar carrossel</button>` : ''}
       ${!G.exemplo && G.kind !== 'ideia' && ui.ai === 'on' ? `<button class="btn sm" data-a="abrir-ajuste">${ic('spark', 'sm')} Ajustar com IA</button>` : ''}`;
   }
 
@@ -1407,7 +1408,7 @@
       return `<button class="vcard" data-a="abrir-viral" data-v="${esc(v.id)}">
         ${vThumb(v)}
         <div class="vbody">
-          <div class="top">${vStatus(v)}${v.analise && v.analise.formato && E.formato(v.analise.formato) ? `<span class="tag">${esc(fmtName(v.analise.formato))}</span>` : ''}</div>
+          <div class="top">${vStatus(v)}${v.tipo === 'carrossel' ? '<span class="tag amber">Carrossel</span>' : ''}${v.analise && v.analise.formato && E.formato(v.analise.formato) ? `<span class="tag">${esc(fmtName(v.analise.formato))}</span>` : ''}</div>
           <div class="mono faint" style="font-size:12px">${esc(v.handle || 'perfil não informado')}${S.seg != null ? ' · ' + E.fmtK(S.seg) + ' seguidores' : ''}</div>
           <h4>${esc(v.titulo || 'Sem título')}</h4>
           ${v.analise && v.analise.veredito ? `<p class="vver">${esc(v.analise.veredito)}</p>` : ''}
@@ -1435,19 +1436,26 @@
     const minp = (k, label) => { const L = E.parseLista(md[k]); return `<label class="field"><span>${label}</span><input type="text" inputmode="decimal" id="vm-${k}" data-bind="vm.${k}" value="${esc(md[k] || '')}" placeholder="12 mil; 8.500; 9,9 mil"><small id="vm-${k}-s">${L.n > 1 ? `Média de ${L.n} Reels: ${E.fmtK(L.media)}` : L.n === 1 ? E.fmtK(L.media) : '&nbsp;'}</small></label>`; };
     const files = M.files || [];
     const podeLer = files.length && ui.imgMax > 0 && ui.ai === 'on';
+    const car = d.tipo === 'carrossel';
     return sheetHead(M.id ? 'Editar viral' : 'Adicionar viral') + `<div class="sheet-b vform">
-      <section><div class="eyebrow">O vídeo</div>
+      <section><div class="eyebrow">Tipo de post</div>
+        <div class="seg" role="group" style="align-self:flex-start"><button type="button" data-a="vf-tipo" data-t="reel" aria-pressed="${!car}">Reel</button><button type="button" data-a="vf-tipo" data-t="carrossel" aria-pressed="${car}">Carrossel</button></div></section>
+      <section><div class="eyebrow">${car ? 'O carrossel' : 'O vídeo'}</div>
         <div class="g2">
-          <label class="field"><span>Link do Reel</span><input type="text" id="vf-link" data-bind="v.link" value="${esc(d.link || '')}" placeholder="https://www.instagram.com/reel/..." data-autofocus></label>
+          <label class="field"><span>${car ? 'Link do post' : 'Link do Reel'}</span><input type="text" id="vf-link" data-bind="v.link" value="${esc(d.link || '')}" placeholder="https://www.instagram.com/reel/..." data-autofocus></label>
           <label class="field"><span>@ do perfil</span><input type="text" id="vf-handle" data-bind="v.handle" value="${esc(d.handle || '')}" placeholder="@perfil"></label>
           <label class="field"><span>Assunto / título</span><input type="text" id="vf-titulo" data-bind="v.titulo" value="${esc(d.titulo || '')}" placeholder="Ex.: 3 erros de quem vende pelo direct"></label>
           <label class="field"><span>Nicho do perfil de origem</span><input type="text" id="vf-nicho" data-bind="v.nicho" value="${esc(d.nicho || '')}" placeholder="Ex.: finanças pessoais"></label>
         </div></section>
-      <section><div class="eyebrow">Vídeo do Reel (opcional, recomendado)</div>
+      ${car ? `<section><div class="eyebrow">Slides do carrossel (recomendado)</div>
+        <p class="faint" style="margin:6px 0 10px; font-size:13.5px">Suba os prints de cada slide, na ordem (o primeiro é a capa). A IA lê o texto, o design e a sequência de cada slide. Valem nesta sessão; a capa fica salva.</p>
+        <div class="files">${(M.frames || []).map((f, i) => `<div class="fprev"><img src="${esc(M.frameUrls[i])}" alt="Slide ${i + 1}"><span class="tag mono" style="position:absolute; left:4px; bottom:4px; height:18px; font-size:10px">${i + 1}</span></div>`).join('')}
+          ${(M.frames || []).length < 20 ? `<label class="fadd" for="v-slides">${ic('upload')}<span>${(M.frames || []).length ? 'Mais slides' : 'Subir slides'}</span></label>` : ''}<input type="file" id="v-slides" accept="image/png,image/jpeg,image/webp" multiple hidden></div>
+        ${(M.frames || []).length ? `<div class="toolbar" style="margin-top:8px"><span class="tag good">${M.frames.length} slides</span><button class="btn xs ghost" data-a="rm-video">${ic('x', 'sm')} Tirar slides</button></div>` : ''}</section>` : `<section><div class="eyebrow">Vídeo do Reel (opcional, recomendado)</div>
         <p class="faint" style="margin:6px 0 10px; font-size:13.5px">Baixe o Reel e suba o arquivo aqui. O app tira quadros do vídeo ao longo do tempo (o primeiro frame, os 3 primeiros segundos e o resto) e a IA "assiste" por eles: enquadramento, texto na tela, cortes, ritmo e prova. O app não ouve o áudio: cole a fala em "Transcrição" (a legenda automática do Instagram ajuda). O vídeo não fica salvo; os quadros valem nesta sessão.</p>
         <div class="files">${(M.frames || []).map((f, i) => `<div class="fprev"><img src="${esc(M.frameUrls[i])}" alt="Quadro aos ${f.t.toFixed(1)} s"><span class="tag mono" style="position:absolute; left:4px; bottom:4px; height:18px; font-size:10px">${f.t.toFixed(1)}s</span></div>`).join('')}
           <label class="fadd" for="v-video">${ic('upload')}<span>${M.extraindo ? 'Lendo o vídeo…' : (M.frames || []).length ? 'Trocar vídeo' : 'Subir vídeo'}</span></label><input type="file" id="v-video" accept="video/*" hidden></div>
-        ${(M.frames || []).length ? `<div class="toolbar" style="margin-top:8px"><span class="tag good">${M.frames.length} quadros${M.videoDur ? ' · ' + Math.round(M.videoDur) + ' s' : ''}</span><button class="btn xs ghost" data-a="rm-video">${ic('x', 'sm')} Tirar vídeo</button></div>` : ''}</section>
+        ${(M.frames || []).length ? `<div class="toolbar" style="margin-top:8px"><span class="tag good">${M.frames.length} quadros${M.videoDur ? ' · ' + Math.round(M.videoDur) + ' s' : ''}</span><button class="btn xs ghost" data-a="rm-video">${ic('x', 'sm')} Tirar vídeo</button></div>` : ''}</section>`}
       <section><div class="eyebrow">Prints do post e do perfil (opcional)</div>
         <p class="faint" style="margin:6px 0 10px; font-size:13.5px">Print do Reel com os números (curtidas, comentários, compartilhamentos, views) e print do topo do perfil de quem postou. A IA lê na hora e preenche @, nome, seguidores, nicho e números. Só a primeira imagem fica guardada, como capa pequena.</p>
         <div class="files">${files.map((f, i) => `<div class="fprev"><img src="${esc(M.urls[i])}" alt="Print ${i + 1}"><button class="btn xs icon-btn" data-a="rm-print" data-i="${i}" aria-label="Remover print ${i + 1}">${ic('x', 'sm')}</button></div>`).join('')}
@@ -1456,23 +1464,23 @@
       <section><div class="eyebrow">Números do viral</div>
         <div class="g3">
           ${inp('seguidores', 'Seguidores do perfil *', '48,2 mil')}
-          ${inp('views', 'Views *', '1,2 mi')}
+          ${inp('views', car ? 'Views (se aparecer)' : 'Views *', '1,2 mi')}
           ${inp('curtidas', 'Curtidas', '85 mil')}
           ${inp('comentarios', 'Comentários', '1.204')}
           ${inp('compartilhamentos', 'Compartilhamentos', '32 mil', 'Contador do ícone de avião, quando aparece.')}
           ${inp('salvamentos', 'Salvamentos', 'se souber', 'Em geral só o dono vê. Pode deixar em branco.')}
-          ${inp('duracao', 'Duração (s)', '38')}
+          ${car ? '' : inp('duracao', 'Duração (s)', '38')}
           <label class="field"><span>Postado em</span><input type="date" id="vf-postado" data-bind="v.postadoEm" value="${esc(d.postadoEm || '')}"></label>
-          <label class="field"><span>Áudio</span><select id="vf-audio" data-bind="v.audio"><option value="">—</option>${['Voz original', 'Áudio em alta (trend)', 'Narração + música', 'Música sem voz'].map(o => `<option ${d.audio === o ? 'selected' : ''}>${o}</option>`).join('')}</select></label>
+          ${car ? '' : `<label class="field"><span>Áudio</span><select id="vf-audio" data-bind="v.audio"><option value="">—</option>${['Voz original', 'Áudio em alta (trend)', 'Narração + música', 'Música sem voz'].map(o => `<option ${d.audio === o ? 'selected' : ''}>${o}</option>`).join('')}</select></label>`}
         </div></section>
       <section><div class="eyebrow">Média do perfil de origem</div>
         <p class="faint" style="margin:6px 0 10px; font-size:13.5px">Pegue os últimos 6 a 12 Reels normais do perfil (sem o viral). Pode colar a lista separada por ponto e vírgula que o app tira a média. É isso que diz se o vídeo é um outlier ou se o perfil sempre vai bem assim.</p>
         <div class="g3">${minp('views', 'Views por Reel')}${minp('curtidas', 'Curtidas por Reel')}${minp('comentarios', 'Comentários por Reel')}${minp('compartilhamentos', 'Compartilhamentos por Reel')}${minp('salvamentos', 'Salvamentos por Reel')}</div></section>
-      <section><div class="eyebrow">Roteiro e edição</div>
+      <section><div class="eyebrow">${car ? 'Texto e design dos slides' : 'Roteiro e edição'}</div>
         <div style="display:flex; flex-direction:column; gap:12px; margin-top:8px">
-          <label class="field"><span>Transcrição da fala</span><textarea id="vf-roteiro" data-bind="v.roteiro" rows="6" placeholder="Cole a fala do vídeo, do primeiro ao último segundo. A legenda automática do Instagram ajuda.">${esc(d.roteiro || '')}</textarea></label>
-          <label class="field"><span>Texto na tela</span><textarea id="vf-texto" data-bind="v.textoTela" rows="2" placeholder="Tarja, títulos, números que aparecem">${esc(d.textoTela || '')}</textarea></label>
-          <label class="field"><span>Como é a edição</span><textarea id="vf-edicao" data-bind="v.edicao" rows="3" placeholder="Ex.: abre andando pra câmera, corte a cada 1,5 s, legenda amarela palavra a palavra, zoom no número, b-roll de tela do celular, música some no final">${esc(d.edicao || '')}</textarea></label>
+          <label class="field"><span>${car ? 'Texto de cada slide' : 'Transcrição da fala'}</span><textarea id="vf-roteiro" data-bind="v.roteiro" rows="6" placeholder="${car ? 'Slide 1: ...&#10;Slide 2: ...&#10;(se subiu os prints, pode deixar em branco: a IA lê)' : 'Cole a fala do vídeo, do primeiro ao último segundo. A legenda automática do Instagram ajuda.'}">${esc(d.roteiro || '')}</textarea></label>
+          ${car ? '' : `<label class="field"><span>Texto na tela</span><textarea id="vf-texto" data-bind="v.textoTela" rows="2" placeholder="Tarja, títulos, números que aparecem">${esc(d.textoTela || '')}</textarea></label>`}
+          <label class="field"><span>${car ? 'Como é o design' : 'Como é a edição'}</span><textarea id="vf-edicao" data-bind="v.edicao" rows="3" placeholder="Ex.: abre andando pra câmera, corte a cada 1,5 s, legenda amarela palavra a palavra, zoom no número, b-roll de tela do celular, música some no final">${esc(d.edicao || '')}</textarea></label>
           <label class="field"><span>Legenda do post</span><textarea id="vf-legenda" data-bind="v.legenda" rows="3">${esc(d.legenda || '')}</textarea></label>
         </div></section>
       <div class="toolbar vform-foot">
@@ -1545,6 +1553,7 @@
     </div>`;
   }
 
+  const podeAnalisar = (v, S) => !!(S.seg && (S.views || (v.tipo === 'carrossel' && E.parseNum(v.curtidas))));
   function viralHTML(M) {
     const v = viralById(M.id);
     if (!v) return sheetHead('Viral') + '<div class="sheet-b"><div class="empty">Esse viral não existe mais.</div></div>';
@@ -1553,15 +1562,15 @@
     const nImgs = (viralFiles[v.id] || []).length + (viralFrames[v.id] || []).length;
     return sheetHead(esc(v.titulo || 'Viral'), vStatus(v)) + `<div class="sheet-b">
       <div class="vhead">${vThumb(v, 'vthumb big')}<div style="min-width:0; flex:1">
-        <div class="mono faint" style="font-size:12.5px">${esc(v.handle || 'perfil não informado')}${v.nicho ? ' · ' + esc(v.nicho) : ''}${v.postadoEm ? ' · ' + esc(v.postadoEm.split('-').reverse().join('/')) : ''}${S.dur ? ' · ' + S.dur + ' s' : ''}${v.audio ? ' · ' + esc(v.audio) : ''}</div>
+        <div class="mono faint" style="font-size:12.5px">${esc(v.handle || 'perfil não informado')}${v.nicho ? ' · ' + esc(v.nicho) : ''}${v.postadoEm ? ' · ' + esc(v.postadoEm.split('-').reverse().join('/')) : ''}${v.tipo === 'carrossel' ? ' · carrossel' : S.dur ? ' · ' + S.dur + ' s' : ''}${v.audio && v.tipo !== 'carrossel' ? ' · ' + esc(v.audio) : ''}</div>
         <div class="toolbar" style="margin-top:12px">
           ${v.link && /^https:\/\//i.test(v.link) ? `<a class="btn sm" href="${esc(v.link)}" target="_blank" rel="noopener">${ic('arrow', 'sm')} Abrir no Instagram</a>` : ''}
           <button class="btn sm" data-a="edit-viral">${ic('edit', 'sm')} Editar dados</button>
-          <button class="btn sm ${v.analise ? '' : 'primary'}" data-a="analisar-viral" ${M.busy || ui.ai !== 'on' || !(S.views && S.seg) ? 'disabled' : ''}>${ic('spark', 'sm')} ${M.busy ? 'Analisando…' : v.analise ? 'Refazer análise' : 'Analisar com IA'}</button>
+          <button class="btn sm ${v.analise ? '' : 'primary'}" data-a="analisar-viral" ${M.busy || ui.ai !== 'on' || !podeAnalisar(v, S) ? 'disabled' : ''}>${ic('spark', 'sm')} ${M.busy ? 'Analisando…' : v.analise ? 'Refazer análise' : 'Analisar com IA'}</button>
           <span style="flex:1"></span>
           <button class="btn sm ${armed ? 'primary' : 'ghost danger'}" data-a="del-viral">${ic('trash', 'sm')} ${armed ? 'Confirmar exclusão' : 'Excluir'}</button>
         </div>
-        ${!(S.views && S.seg) ? '<p class="gate-err" style="margin-top:10px">' + ic('alert', 'sm') + '<span>Informe seguidores e views pra liberar a comparação e a análise.</span></p>' : ''}
+        ${!podeAnalisar(v, S) ? '<p class="gate-err" style="margin-top:10px">' + ic('alert', 'sm') + `<span>Informe seguidores e ${v.tipo === 'carrossel' ? 'views ou curtidas' : 'views'} pra liberar a comparação e a análise.</span></p>` : ''}
         ${ui.ai !== 'on' ? '<p class="faint" style="font-size:12.5px; margin-top:10px">A análise com IA só roda com o app aberto no Claude.</p>' : ''}
         ${nImgs ? `<p class="faint" style="font-size:12.5px; margin-top:10px">${nImgs} print${nImgs > 1 ? 's' : ''} desta sessão vão junto na análise.</p>` : ''}
       </div></div>
@@ -1576,7 +1585,7 @@
   }
 
   /* ---------- ações dos virais ---------- */
-  const VKEYS = ['link', 'handle', 'titulo', 'nicho', 'seguidores', 'views', 'curtidas', 'comentarios', 'compartilhamentos', 'salvamentos', 'duracao', 'postadoEm', 'audio', 'roteiro', 'textoTela', 'edicao', 'legenda', 'thumb'];
+  const VKEYS = ['tipo', 'link', 'handle', 'titulo', 'nicho', 'seguidores', 'views', 'curtidas', 'comentarios', 'compartilhamentos', 'salvamentos', 'duracao', 'postadoEm', 'audio', 'roteiro', 'textoTela', 'edicao', 'legenda', 'thumb'];
   function viralDraft(v) {
     const d = {};
     VKEYS.forEach(k => { d[k] = v && v[k] != null ? v[k] : ''; });
@@ -1644,6 +1653,17 @@
       };
     });
   }
+  async function addSlides(fileList) {
+    const M = ui.modal; if (!M || M.type !== 'viral-form') return;
+    const novos = [...fileList].filter(f => /^image\//.test(f.type));
+    if (!novos.length) { toast('Envie as imagens dos slides (PNG, JPG, WebP).', 'warn'); return; }
+    M.frames = (M.frames || []).concat(novos.map(f => ({ blob: f, t: 0, slide: true }))).slice(0, 20);
+    M.frames.forEach((f, i) => { f.t = i + 1; });
+    (M.frameUrls || []).forEach(u => { try { URL.revokeObjectURL(u); } catch (e) { } });
+    M.frameUrls = M.frames.map(f => URL.createObjectURL(f.blob));
+    if (!M.draft.thumb || M.thumbAuto) { M.draft.thumb = await thumbFrom(M.frames[0].blob); M.thumbAuto = true; }
+    if (ui.modal === M) renderModal();
+  }
   async function addVideo(file) {
     const M = ui.modal; if (!M || M.type !== 'viral-form' || !file) return;
     if (!/^video\//.test(file.type)) { toast('Envie o arquivo de vídeo do Reel (MP4 ou MOV).', 'warn'); return; }
@@ -1670,7 +1690,8 @@
     const imgs = pr.concat(frs.map(f => f.blob));
     const partes = [];
     if (pr.length) partes.push(`imagens 1${pr.length > 1 ? '–' + pr.length : ''}: print${pr.length > 1 ? 's' : ''} do post ou do perfil`);
-    if (frs.length) partes.push(`imagens ${pr.length + 1}–${pr.length + frs.length}: quadros do próprio vídeo, em ordem, nos segundos ${frs.map(f => f.t.toFixed(1).replace('.', ',')).join(' · ')} (a primeira é o frame 0)`);
+    if (frs.length && frs[0].slide) partes.push(`imagens ${pr.length + 1}–${pr.length + frs.length}: os slides do carrossel, em ordem (a primeira é a capa, slide 1)${fr.length > frs.length ? `; o carrossel tem ${fr.length} slides, só os ${frs.length} primeiros vieram` : ''}`);
+    else if (frs.length) partes.push(`imagens ${pr.length + 1}–${pr.length + frs.length}: quadros do próprio vídeo, em ordem, nos segundos ${frs.map(f => f.t.toFixed(1).replace('.', ',')).join(' · ')} (a primeira é o frame 0)`);
     return { imgs, txt: partes.join('; ') };
   }
   function filesParaIA(files) {
@@ -1724,7 +1745,7 @@
     const M = ui.modal; const v = M && viralById(M.id);
     if (!sampleFn || !v) return;
     const S = E.viralStats(v);
-    if (!S.views || !S.seg) { toast('Informe seguidores e views.', 'warn'); return; }
+    if (!podeAnalisar(v, S)) { toast(v.tipo === 'carrossel' ? 'Informe seguidores e views ou curtidas.' : 'Informe seguidores e views.', 'warn'); return; }
     const IM = imagensDoViral(v.id), imgs = IM.imgs;
     M.busy = true; M.err = ''; renderModal();
     try {
@@ -2288,6 +2309,15 @@ Responda só com JSON: {"videos":[{"id":"...","referencia":"...","metricas":{"vi
   A['salvar-viral'] = el => salvarViral(!!el.dataset.analisar);
   A['analisar-viral'] = () => analisarViral();
   A['ler-prints'] = () => lerPrints();
+  // Reel → carrossel: leva o roteiro pro Kit (carrossel), que modela a estrutura em slides
+  A['virar-carrossel'] = () => {
+    const raw = ui.gen.raw; if (!raw || typeof X.abrirFerramenta !== 'function') return;
+    const P = E.parse(raw);
+    const g = E.linhas(P.ATO1).map(l => E.fala(l).texto)[0] || '';
+    const s = ui.gen.scriptId ? scriptById(ui.gen.scriptId) : null;
+    X.abrirFerramenta('carrossel', { tema: (s && s.titulo) || (P.TARJA || '').trim() || 'Roteiro do Estúdio', gancho: g, base: toPlain(raw).slice(0, 3000), objetivo: 'salvamentos', formula: 'auto', slides: 7, origem: 'Roteiro do Estúdio (Reel → carrossel)' });
+  };
+  A['vf-tipo'] = el => { const M = ui.modal; if (!M || !M.draft) return; if (M.draft.tipo !== el.dataset.t) { (M.frameUrls || []).forEach(u => { try { URL.revokeObjectURL(u); } catch (e) { } }); M.frames = []; M.frameUrls = []; M.videoDur = 0; } M.draft.tipo = el.dataset.t === 'carrossel' ? 'carrossel' : 'reel'; renderModal(); };
   A['rm-video'] = () => { const M = ui.modal; (M.frameUrls || []).forEach(u => { try { URL.revokeObjectURL(u); } catch (e) { } }); M.frames = []; M.frameUrls = []; M.videoDur = 0; renderModal(); };
   A['rm-print'] = el => {
     const M = ui.modal, i = Number(el.dataset.i);
@@ -2708,6 +2738,7 @@ Responda só com JSON: {"videos":[{"id":"...","referencia":"...","metricas":{"vi
     if (typeof X.change === 'function') { try { if (X.change(e)) return; } catch (er) { console.error(er); } }
     const el = e.target.closest('[data-bind]');
     if (el && (el.type === 'checkbox' || el.tagName === 'SELECT' || el.type === 'date')) bind(el);
+    if (e.target.id === 'v-slides') { const fl = e.target.files; if (fl && fl.length) addSlides(fl); e.target.value = ''; return; }
     if (e.target.id === 'v-video') { const f = e.target.files && e.target.files[0]; if (f) addVideo(f); e.target.value = ''; return; }
     if (e.target.id === 'v-prints') { const fl = e.target.files; if (fl && fl.length) addPrints(fl); e.target.value = ''; return; }
     if (e.target.id === 'imp-file') {
