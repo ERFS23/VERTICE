@@ -1241,7 +1241,7 @@ ${B().nota ? `Atenção: ${B().nota}` : ''}
 ${contexto ? `\nOUTROS DADOS DE MERCADO:\n${contexto}` : ''}
 ${sinais ? `\nO QUE O PRÓPRIO INSTAGRAM DIZ QUE PESA NO ALCANCE:\n${sinais}` : ''}
 
-ROTEIRO / TRANSCRIÇÃO:
+${v.assistido ? `O VÍDEO ASSISTIDO CENA A CENA (feito por uma ferramenta que assistiu o post; use como fonte principal da edição, da fala e do que aparece na tela):\n"""\n${String(v.assistido).slice(0, 9000)}\n"""\n` : ''}ROTEIRO / TRANSCRIÇÃO:
 """
 ${(v.roteiro || '(não informado)').slice(0, 6000)}
 """

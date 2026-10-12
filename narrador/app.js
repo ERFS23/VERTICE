@@ -1446,7 +1446,7 @@
           <label class="field"><span>@ do perfil</span><input type="text" id="vf-handle" data-bind="v.handle" value="${esc(d.handle || '')}" placeholder="@perfil"></label>
           <label class="field"><span>Assunto / título</span><input type="text" id="vf-titulo" data-bind="v.titulo" value="${esc(d.titulo || '')}" placeholder="Ex.: 3 erros de quem vende pelo direct"></label>
           <label class="field"><span>Nicho do perfil de origem</span><input type="text" id="vf-nicho" data-bind="v.nicho" value="${esc(d.nicho || '')}" placeholder="Ex.: finanças pessoais"></label>
-        </div></section>
+        </div>${typeof X.viralFormLink === 'function' ? X.viralFormLink(M) : ''}</section>
       ${car ? `<section><div class="eyebrow">Slides do carrossel (recomendado)</div>
         <p class="faint" style="margin:6px 0 10px; font-size:13.5px">Suba os prints de cada slide, na ordem (o primeiro é a capa). A IA lê o texto, o design e a sequência de cada slide. Valem nesta sessão; a capa fica salva.</p>
         <div class="files">${(M.frames || []).map((f, i) => `<div class="fprev"><img src="${esc(M.frameUrls[i])}" alt="Slide ${i + 1}"><span class="tag mono" style="position:absolute; left:4px; bottom:4px; height:18px; font-size:10px">${i + 1}</span></div>`).join('')}
@@ -1585,7 +1585,7 @@
   }
 
   /* ---------- ações dos virais ---------- */
-  const VKEYS = ['tipo', 'link', 'handle', 'titulo', 'nicho', 'seguidores', 'views', 'curtidas', 'comentarios', 'compartilhamentos', 'salvamentos', 'duracao', 'postadoEm', 'audio', 'roteiro', 'textoTela', 'edicao', 'legenda', 'thumb'];
+  const VKEYS = ['tipo', 'assistido', 'link', 'handle', 'titulo', 'nicho', 'seguidores', 'views', 'curtidas', 'comentarios', 'compartilhamentos', 'salvamentos', 'duracao', 'postadoEm', 'audio', 'roteiro', 'textoTela', 'edicao', 'legenda', 'thumb'];
   function viralDraft(v) {
     const d = {};
     VKEYS.forEach(k => { d[k] = v && v[k] != null ? v[k] : ''; });
@@ -2770,7 +2770,7 @@ Responda só com JSON: {"videos":[{"id":"...","referencia":"...","metricas":{"vi
     $, esc, ic, clone, newId, pad2, grafemas, hl, toast, copy, sampleErr,
     render, renderChrome, renderModal, closeModal, go, sheetHead,
     fmtName, catName, pilarColor, scoreTag, viralById, scriptById, vThumb, filesParaIA, imagensDoViral, viralFrames,
-    renderSlate: () => renderSlate()
+    renderSlate: () => renderSlate(), thumbFrom
   };
 
   /* ---------- boot ---------- */

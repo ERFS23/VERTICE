@@ -7,7 +7,16 @@ const INIT = () => {
   const sample = async (i, o) => { const r = prox(i, o); return { text: JSON.stringify(r && r.json), truncated: false }; };
   sample.json = async (i, o) => { const r = prox(i, o); if (!r) throw { code: 'invalid_json' }; return r.json; };
   sample.limits = async () => ({ maxPromptBytes: 65536, images: { maxCount: 6, maxInputBytes: 20000000, mediaTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/gif'] } });
-  window.claude = { use: async n => (n === 'sample' ? sample : null) };
+  const REELS = '## @fulano — 3 reels\n\n### ABC123 — 1.2M plays, 85K likes, 1,204 comments, 38s, posted 2026-10-01\nhttps://www.instagram.com/reel/ABC123/\n> "Pare de guardar dinheiro na poupança"\n\n### OUT1 — 40K plays, 2K likes, 30 comments, 30s, posted 2026-09-20\nhttps://www.instagram.com/reel/OUT1/\n\n### OUT2 — 60K plays, 3K likes, 50 comments, 31s, posted 2026-09-10\nhttps://www.instagram.com/reel/OUT2/\n';
+  let polls = 0;
+  window.__mcp = [];
+  const mcp = { callTool: async (srv, tool, input) => { window.__mcp.push(tool);
+    if (tool === 'vidiq_ig_profile') return { content: [{ type: 'text', text: '## @fulano — Fulano Finanças\n48.2K followers | 10 following | 300 posts\n> "Finanças pessoais sem enrolação"' }], payload: '## @fulano — Fulano Finanças\n48.2K followers | 10 following | 300 posts\n> "Finanças pessoais sem enrolação"' };
+    if (tool === 'vidiq_ig_profile_reels') return { content: [{ type: 'text', text: REELS }], payload: REELS };
+    if (tool === 'vidiq_watch_shortform_content') return { payload: { mcpJobId: 'job_1', status: 'inprogress' } };
+    if (tool === 'vidiq_job_poll') return { payload: polls++ < 1 ? { status: 'inprogress' } : { status: 'completed', result: '0:00 Frame 0: homem joga a carteira na mesa. Fala: "Pare de guardar dinheiro na poupança."' } };
+  } };
+  window.claude = { use: async n => (n === 'sample' ? sample : n === 'mcp' ? mcp : null) };
 };
 const ok = (c, m) => { console.log((c ? 'ok   ' : 'FALHA') + ' ' + m); if (!c) process.exitCode = 1; };
 (async () => {
@@ -16,6 +25,19 @@ const ok = (c, m) => { console.log((c ? 'ok   ' : 'FALHA') + ' ' + m); if (!c) p
   await page.addInitScript(INIT);
   await page.goto('file://' + path.resolve(__dirname, '../index.html'));
   await page.waitForFunction(() => window.NDA && window.NDA.ui.ai === 'on');
+  // puxar pelo link (vidIQ simulado)
+  await page.evaluate(() => { window.NDA.go('virais'); });
+  await page.click('[data-a="add-viral"]');
+  await page.fill('#vf-link', 'https://www.instagram.com/reel/ABC123/?igsh=xx');
+  await page.fill('#vf-handle', '@fulano');
+  await page.evaluate(() => { window.__respostas.push({ json: { titulo: 'Poupança não rende', nicho: 'finanças pessoais', transcricao: 'Pare de guardar dinheiro na poupança.', textoTela: 'PARE', edicao: 'joga a carteira', audio: 'Voz original' } }); window.__respostas.push({ json: { veredito: 'Inversão', fatores: [{ area: 'gancho', peso: 5, porque: 'x' }] } }); });
+  await page.click('[data-a="x-link-puxar"]');
+  await page.waitForFunction(() => window.NDA.st.virais[0] && window.NDA.st.virais[0].analise, null, { timeout: 30000 });
+  const vl = await page.evaluate(() => { const v = window.NDA.st.virais[0]; return { s: v.seguidores, v: v.views, c: v.curtidas, d: v.duracao, t: v.titulo, r: v.roteiro, a: !!v.assistido, m: v.media.views, n: v.nicho }; });
+  ok(vl.s === '48.200' && vl.v === '1.200.000' && vl.c === '85.000' && vl.d === '38' && vl.a && vl.r && vl.m, 'link puxa perfil, números, média e vídeo assistido ' + JSON.stringify(vl));
+  const pa = await page.evaluate(() => window.__prompts[window.__prompts.length - 1].input);
+  ok(/VÍDEO ASSISTIDO CENA A CENA/.test(pa), 'análise usa o vídeo assistido');
+  await page.evaluate(() => { window.NDA.ui.modal = null; window.NDA.renderModal(); });
   // viral com vídeo
   await page.evaluate(() => { window.NDA.go('virais'); });
   await page.click('[data-a="add-viral"]');
@@ -32,7 +54,7 @@ const ok = (c, m) => { console.log((c ? 'ok   ' : 'FALHA') + ' ' + m); if (!c) p
   ok(await page.evaluate(() => window.NDA.st.virais[0].analise.gancho.formula === 'contraria'), 'fórmula com acento normalizada');
   // Extrair e recriar escolhendo o viral
   await page.evaluate(() => { window.NDA.ui.modal = null; window.NDX.abrirFerramenta('gancho', {}); });
-  await page.click('[data-a="x-kg-pick-viral"][data-id]:not([data-id=""])');
+  await page.evaluate(() => { const v = window.NDA.st.virais.find(x => (window.NDA.viralFrames[x.id] || []).length); document.querySelector('[data-a="x-kg-pick-viral"][data-id="' + v.id + '"]').click(); });
   ok(await page.evaluate(() => !!window.NDX.toolState('gancho').viralId), 'viral escolhido pelo cartão');
   await page.evaluate(() => window.__respostas.push({ json: { gancho: 'Pare', formula: 'contraria', objetivo: 'compartilhamentos', porque: 'x', recriados: [1, 2, 3].map(i => ({ texto: 'Gancho ' + i, superficie: 'reel', formula: 'contraria', objetivo: 'salvamentos', angulo: 'a' })) } }));
   await page.click('[data-a="x-kg-gancho-gerar"]');
