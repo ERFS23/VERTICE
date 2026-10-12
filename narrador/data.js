@@ -82,6 +82,7 @@
     { id: 'desafio', nome: 'Desafio Interativo', dur: [30, 60], oque: 'Você propõe um teste que a pessoa faz junto (cronômetro, quiz, "marque quantos você faz") e pede o resultado nos comentários.', porque: 'A pessoa fica até o fim pra saber o próprio resultado, e comentar vira a conclusão natural.', serve: 'Quiz de direitos, teste de conhecimento, autodiagnóstico do negócio.', regra: 'Instrução clara em uma frase. O CTA é pedir o resultado pessoal nos comentários, sem palavra-chave.' },
     { id: 'experimento', nome: 'Experimento ao Vivo', dur: [30, 45], oque: 'Você mostra um teste A/B real (dois ganchos, dois enquadramentos, dois preços) e promete o resultado em 72 horas.', porque: 'Gera curiosidade e um motivo concreto pra seguir e voltar: vira série.', serve: 'Testes de conteúdo, de oferta, de abordagem.', regra: 'Mude uma variável só. Mostre as duas versões lado a lado e marque a data da resposta.' },
     { id: 'curadoria', nome: 'Curadoria Regressiva com Prova', dur: [45, 75], oque: 'Título na tela, gancho e uma lista de 5 itens em contagem regressiva (o mais forte ou inesperado por último). Cada item mostra o formato, o print do vídeo original com as views visíveis, quem fez (@ na tela), um corte curto do original, por que funciona e como adaptar.', porque: 'Prova social em cada item: a pessoa vê o número real, não só ouve a opinião. É o formato que fez 140 mil views na série Reviralização.', serve: 'Curadoria de virais por tema (CTAs, storytelling, polêmicas, ângulos de câmera, collabs).', regra: 'De 7 a 12 s por item. Nenhum número sem fonte: sem print real, o item fica marcado [DADO REAL + FONTE] e não é gravado.' },
+    { id: 'produto', nome: 'Apresentação de Produto', dur: [15, 45], oque: 'O produto na mão (ou na tela, se for digital) desde o frame 0: você abre, usa, testa, compara ou responde uma dúvida sobre ele, mostrando o resultado de verdade. Serve pra produto físico ou digital (curso, mentoria, app, serviço, planilha).', porque: 'Mostrar o produto funcionando é prova; a pessoa se imagina usando, salva pra decidir a compra e manda pra quem também precisa.', serve: 'Unboxing, primeira impressão, jeito certo de usar, erro comum, segredos, teste real, comparativo, barato x caro, com x sem, função escondida, rotina, dúvida, resposta a comentário, vale a pena, depois de 7 dias, reação de outra pessoa, motivos pra comprar.', regra: 'Produto visível no frame 0 e prova na tela (o app, o resultado, o antes e depois real). Uma ideia por vídeo. Nada de resultado inventado nem promessa que o produto não cumpre; preço e especificação conferidos.' },
     { id: 'performatico', nome: 'Bastidor Performático', dur: [20, 45], oque: 'Você aparece trabalhando e resolvendo um problema real, ao vivo, em vez de explicar a teoria.', porque: 'A pessoa quer entender o método que você está usando: gera autoridade sem se gabar.', serve: 'Analisar um contrato, montar um roteiro, responder uma dúvida do direct.', regra: 'Mostre o processo, não a conquista. Uma situação real acontecendo desde o frame 0.' }
   ];
 
@@ -375,7 +376,29 @@
       'Você faz [X] errado e culpa [Y].',
       '[Mito em forma de pergunta]? A resposta incomoda.',
       'O que você já pagou de [custo recorrente], [comprava ou resolvia algo maior].'
-    ], { formatos: ['comparativo', 'lista', 'niveis'], nota: 'Crença comum → reversão, ou consequência tardia que ninguém vê. Gera desconforto específico da dor do público. Troque a descrição técnica por benefício ou perda vivida, concreta e visual.' })
+    ], { formatos: ['comparativo', 'lista', 'niveis'], nota: 'Crença comum → reversão, ou consequência tardia que ninguém vê. Gera desconforto específico da dor do público. Troque a descrição técnica por benefício ou perda vivida, concreta e visual.' }),
+    C('Apresentação de Produto', [
+      'Comprei [um produto] que [faz muito mais do que parece].',
+      'Primeira vez usando [o produto], vamos ver se presta.',
+      '[O resultado de sempre] quase não mudou, mas [o produto] me mostrou que [o que realmente mudou].',
+      'Se você [faz do jeito comum], pode estar [errando o que importa].',
+      'Como usar [o produto] do jeito certo.',
+      'Nunca [use o produto] desse jeito aqui.',
+      'Três motivos para usar [o produto] em vez de [o jeito comum].',
+      'Três coisas que ninguém te conta sobre [o produto].',
+      'Vou [usar o produto] agora e mostrar tudo que ele faz pra vocês.',
+      '[Opção comum] ou [o produto]: qual é a melhor?',
+      'Precisa gastar uma fortuna em [um produto desses], ou esse aqui já serve?',
+      'Antes eu só [fazia do jeito comum], agora eu [faço tudo isso aqui com o produto].',
+      '[O produto] faz uma coisa que eu nem sabia que dava pra [fazer em casa / sozinho].',
+      'É assim que eu [uso o produto] toda semana.',
+      '[O produto] realmente [faz o que promete]? Funciona mesmo?',
+      'Isso aí não é só [um produto comum]? Não, não, não.',
+      'Vale a pena comprar [o produto] pra [usar no dia a dia]?',
+      'Depois de [sete dias] usando [o produto], eu percebi uma coisa.',
+      'Coloquei outra pessoa pra testar [o produto] e eu não esperava esse resultado.',
+      'Três motivos pra ter [o produto] [na sua casa / na sua rotina].'
+    ], { formatos: ['produto', 'comparativo', 'lista'], nota: 'Extraídos de um Reel viral de apresentação de produto (balança de bioimpedância). Troque [produto] pelo seu produto, físico ou digital (curso, mentoria, app, serviço, planilha). Os ganchos de experiência (antes e depois, depois de 7 dias, reação) só valem com uso real. Formato que combina: Apresentação de Produto.' })
   ];
 
   // notas e travas por gancho (do banco oficial)
@@ -396,7 +419,17 @@
     195: { nota: 'Pessoal: só se for verdade.' },
     215: { gate: 'fato', nota: 'Autoridade: só com a análise real (quantos casos, de quê).' },
     219: { nota: '' },
-    233: { nota: 'Experiência: só com a sua trajetória real.' }
+    233: { nota: 'Experiência: só com a sua trajetória real.' },
+    244: { nota: 'Só se você comprou ou usa o produto de verdade.' },
+    245: { nota: 'Primeira impressão real: grave o uso de verdade.' },
+    246: { gate: 'fato', nota: 'Antes e depois: só com resultado real seu, mostrado no app ou na tela.' },
+    252: { nota: 'Teste real: mostre o uso na hora, sem corte que esconda.' },
+    253: { nota: 'Comparativo: mostre as duas opções lado a lado, sem inventar preço.' },
+    254: { nota: 'Preço real e conferido; nada de "fortuna" que não seja verdade.' },
+    255: { gate: 'fato', nota: 'Com x sem produto: só com a sua rotina real.' },
+    259: { nota: 'Responder comentário real (print do comentário).' },
+    261: { gate: 'fato', nota: 'Só depois de usar de verdade pelo tempo dito.' },
+    262: { gate: 'fato', nota: 'Reação real de outra pessoa, com autorização.' }
   };
 
   const CATS = [];
@@ -431,7 +464,8 @@
     ['Sentença de contraste', 'Talking head seco com Lista'],
     ['Curiosidade curta (open loop)', 'Trend com Texto, Lista ou Contagem Revelada'],
     ['Moldes de gancho [complete]', 'Lista ou Contagem Revelada'],
-    ['Crença invertida (não é X, é Y)', 'Comparativo, Lista ou Ruim, Bom e Perfeito']
+    ['Crença invertida (não é X, é Y)', 'Comparativo, Lista ou Ruim, Bom e Perfeito'],
+    ['Apresentação de produto', 'Apresentação de Produto, Comparativo ou Lista']
   ];
 
   /* ---------- Manual do viral: regras e conhecimentos (estudo de 20 Reels, set/2026) ---------- */

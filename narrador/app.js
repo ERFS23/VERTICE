@@ -1316,7 +1316,7 @@
     conversa: '<i class="m m1"></i><i class="m m2"></i><i class="m m3"></i><i class="m m4"></i><i class="m m5"></i><i class="sim">SIMULAÇÃO</i>',
     lista: '<i class="n">1</i><i class="r1"></i><i class="r2"></i><i class="r3"></i>'
   };
-  const FVBASE = { contagem: 'lista', cascata: 'conversa', niveis: 'comparativo', manchete: 'trend', relato: 'narrado', desafio: 'trend', experimento: 'comparativo', performatico: 'react' };
+  const FVBASE = { contagem: 'lista', cascata: 'conversa', niveis: 'comparativo', manchete: 'trend', relato: 'narrado', desafio: 'trend', experimento: 'comparativo', performatico: 'react', produto: 'react' };
   const fvHTML = id => { const b = FV[id] ? id : (FVBASE[id] || 'lista'); return `<div class="fv fv-${b}" aria-hidden="true">${FV[b]}</div>`; };
   function manualHTML() {
     const M = N.MANUAL || [];
