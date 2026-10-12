@@ -78,9 +78,12 @@ const ok = (c, m) => { console.log((c ? 'ok   ' : 'FALHA') + ' ' + m); if (!c) p
   await page.click('[data-a="vf-tipo"][data-t="carrossel"]');
   ok(await page.locator('#v-slides').count() === 1 && await page.locator('#v-video').count() === 0, 'carrossel troca vídeo por slides');
   await page.setInputFiles('#v-slides', ['slide1.png', 'slide2.png', 'slide3.png'].map(f => path.join(__dirname, f)));
+  await page.evaluate(() => window.__respostas.push({ json: { slides: [{ n: 1, texto: 'Anúncio fraco', visual: 'fundo vermelho' }, { n: 2, texto: 'Anúncio ok' }, { n: 3, texto: 'Anúncio forte' }], descricao: 'Comparativo em 3 níveis de anúncio', titulo: 'Anúncio fraco vs forte', curtidas: '15 mil', comentarios: '300' } }));
   await page.waitForFunction(() => (window.NDA.ui.modal.frames || []).length === 3);
-  await page.fill('#vf-titulo', 'Mitos do MEI'); await page.fill('#vf-seguidores', '20 mil'); await page.fill('#vf-curtidas', '15 mil');
-  await page.evaluate(() => window.__respostas.push({ json: { veredito: 'Mito x verdade', fatores: [{ area: 'gancho', peso: 5, porque: 'x' }], estrutura: [{ parte: 'Slide 1', oque: 'capa' }, { parte: 'Slide 2', oque: 'mito 1' }, { parte: 'Slide 3', oque: 'cta' }], modelagem: { gancho: 'g', formato: 'lista', angulo: 'a' } } }));
+  await page.waitForFunction(() => /Slide 1: Anúncio fraco/.test(window.NDA.ui.modal.draft.roteiro || '') && /O QUE ERA O CARROSSEL/.test(window.NDA.ui.modal.draft.assistido || ''));
+  ok(true, 'slides lidos pela IA: texto, descrição e números');
+  await page.fill('#vf-seguidores', '20 mil');
+  await page.evaluate(() => window.__respostas.push({ json: { veredito: 'Mito x verdade', fatores: [{ area: 'gancho', peso: 5, porque: 'x' }], conteudo: 'Era um comparativo', estrutura: [{ parte: 'Slide 1', oque: 'capa' }, { parte: 'Slide 2', oque: 'mito 1' }, { parte: 'Slide 3', oque: 'cta' }], modelagem: { gancho: 'g', formato: 'lista', angulo: 'a' } } }));
   await page.click('[data-a="salvar-viral"][data-analisar="1"]');
   await page.waitForFunction(() => window.NDA.st.virais[0].tipo === 'carrossel' && window.NDA.st.virais[0].analise);
   const p3 = await page.evaluate(() => window.__prompts[window.__prompts.length - 1]);

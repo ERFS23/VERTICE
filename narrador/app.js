@@ -1451,7 +1451,7 @@
         <p class="faint" style="margin:6px 0 10px; font-size:13.5px">Suba os prints de cada slide, na ordem (o primeiro é a capa). A IA lê o texto, o design e a sequência de cada slide. Valem nesta sessão; a capa fica salva.</p>
         <div class="files">${(M.frames || []).map((f, i) => `<div class="fprev"><img src="${esc(M.frameUrls[i])}" alt="Slide ${i + 1}"><span class="tag mono" style="position:absolute; left:4px; bottom:4px; height:18px; font-size:10px">${i + 1}</span></div>`).join('')}
           ${(M.frames || []).length < 20 ? `<label class="fadd" for="v-slides">${ic('upload')}<span>${(M.frames || []).length ? 'Mais slides' : 'Subir slides'}</span></label>` : ''}<input type="file" id="v-slides" accept="image/png,image/jpeg,image/webp" multiple hidden></div>
-        ${(M.frames || []).length ? `<div class="toolbar" style="margin-top:8px"><span class="tag good">${M.frames.length} slides</span><button class="btn xs ghost" data-a="rm-video">${ic('x', 'sm')} Tirar slides</button></div>` : ''}</section>` : `<section><div class="eyebrow">Vídeo do Reel (opcional, recomendado)</div>
+        ${(M.frames || []).length ? `<div class="toolbar" style="margin-top:8px"><span class="tag good">${M.frames.length} slides</span>${M.lendoSlides ? '<span class="tag amber">Lendo os slides…</span>' : M.draft.assistido ? '<span class="tag good">Slides lidos</span>' : ''}<button class="btn xs ghost" data-a="rm-video">${ic('x', 'sm')} Tirar slides</button></div>` : ''}</section>` : `<section><div class="eyebrow">Vídeo do Reel (opcional, recomendado)</div>
         <p class="faint" style="margin:6px 0 10px; font-size:13.5px">Baixe o Reel e suba o arquivo aqui. O app tira quadros do vídeo ao longo do tempo (o primeiro frame, os 3 primeiros segundos e o resto) e a IA "assiste" por eles: enquadramento, texto na tela, cortes, ritmo e prova. O app não ouve o áudio: cole a fala em "Transcrição" (a legenda automática do Instagram ajuda). O vídeo não fica salvo; os quadros valem nesta sessão.</p>
         <div class="files">${(M.frames || []).map((f, i) => `<div class="fprev"><img src="${esc(M.frameUrls[i])}" alt="Quadro aos ${f.t.toFixed(1)} s"><span class="tag mono" style="position:absolute; left:4px; bottom:4px; height:18px; font-size:10px">${f.t.toFixed(1)}s</span></div>`).join('')}
           <label class="fadd" for="v-video">${ic('upload')}<span>${M.extraindo ? 'Lendo o vídeo…' : (M.frames || []).length ? 'Trocar vídeo' : 'Subir vídeo'}</span></label><input type="file" id="v-video" accept="video/*" hidden></div>
@@ -1535,6 +1535,7 @@
     const gc = A.gancho || {};
     const list = (arr, cls) => (arr || []).length ? `<ul class="list ${cls || ''}">${arr.map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : '<p class="faint" style="margin:0">—</p>';
     return `<div class="analysis vanalysis">
+      ${A.conteudo ? `<div><h5>O que era o ${v.tipo === 'carrossel' ? 'carrossel' : 'post'}</h5><p style="margin:0; font-size:15px; line-height:1.55">${esc(A.conteudo)}</p></div>` : ''}
       <div class="decision"><b>Por que viralizou</b>${esc(A.veredito || '')}</div>
       ${(A.fatores || []).length ? `<div><h5>Fatores, do mais forte ao mais fraco</h5><div class="fatores">${A.fatores.map(f => `<div class="fator"><span class="tag">${esc(AREA[f.area] || f.area)}</span><span class="peso" role="img" aria-label="peso ${f.peso} de 5">${[1, 2, 3, 4, 5].map(i => `<i class="${i <= f.peso ? 'on' : ''}"></i>`).join('')}</span><div><p>${esc(f.porque)}</p>${f.evidencia ? `<small>${esc(f.evidencia)}</small>` : ''}</div></div>`).join('')}</div></div>` : ''}
       ${gc.texto ? `<div><h5>O gancho do viral</h5><div class="nextcard" style="flex-direction:column; align-items:flex-start; gap:8px"><q class="mq" style="margin:0">${esc(gc.texto)}</q>
@@ -1663,6 +1664,32 @@
     M.frameUrls = M.frames.map(f => URL.createObjectURL(f.blob));
     if (!M.draft.thumb || M.thumbAuto) { M.draft.thumb = await thumbFrom(M.frames[0].blob); M.thumbAuto = true; }
     if (ui.modal === M) renderModal();
+    if (ui.modal === M && ui.ai === 'on' && ui.imgMax > 0) lerSlides();
+  }
+  // lê os slides com a IA: texto de cada slide, design, do que trata o post e os números se aparecerem
+  async function lerSlides() {
+    const M = ui.modal; if (!M || !sampleFn || M.lendoSlides) return;
+    const lim = ui.imgLim || {};
+    const fr = (M.frames || []).filter(f => !lim.maxInputBytes || f.blob.size <= lim.maxInputBytes);
+    const pr = filesParaIA(M.files || []).slice(0, 1);
+    const imgs = fr.slice(0, Math.max(1, (lim.maxCount || 1) - pr.length)).map(f => f.blob).concat(pr);
+    if (!imgs.length) return;
+    M.lendoSlides = true; renderModal();
+    try {
+      const r = await sampleFn.json(`As ${imgs.length} imagens são ${pr.length ? `os slides de um carrossel do Instagram, em ordem (a primeira é a capa), e a última é um print do post com os contadores` : 'os slides de um carrossel do Instagram, em ordem (a primeira é a capa)'}${fr.length > imgs.length - pr.length ? `; o carrossel tem ${fr.length} slides e só vieram os primeiros` : ''}. Leia SÓ o que aparece, sem inventar. Português do Brasil.
+Responda só com JSON:
+{"slides": [{"n": 1, "texto": "o texto do slide, completo", "visual": "o que aparece: foto, print, gráfico, tipografia, cores"}], "descricao": "o que era o post: do que trata, como aborda o tema, em que formato (lista, antes e depois, comparativo, passo a passo, mito × verdade...) e como a sequência conduz até o final, em 3 a 5 frases", "titulo": "assunto em até 8 palavras", "design": "o padrão visual entre os slides em 1 ou 2 frases", "handle": "@ se aparecer, ou null", "curtidas": "se algum contador aparecer, ou null", "comentarios": null, "compartilhamentos": null, "salvamentos": null}`, { images: imgs, modelTier: 'default', cache: false });
+      const d = M.draft, ok = x => x != null && String(x).trim() && String(x).trim().toLowerCase() !== 'null';
+      const sl = (Array.isArray(r && r.slides) ? r.slides : []).filter(s => s && ok(s.texto)).slice(0, 20);
+      if (sl.length && !String(d.roteiro || '').trim()) d.roteiro = sl.map((s, i) => `Slide ${s.n || i + 1}: ${String(s.texto).trim()}${ok(s.visual) ? ` [visual: ${String(s.visual).trim()}]` : ''}`).join('\n').slice(0, 6000);
+      if (r && ok(r.descricao)) d.assistido = ('O QUE ERA O CARROSSEL: ' + String(r.descricao).trim() + (sl.length ? '\n\nSLIDE A SLIDE:\n' + sl.map((s, i) => `${s.n || i + 1}. ${String(s.texto).trim()}${ok(s.visual) ? ' (' + String(s.visual).trim() + ')' : ''}`).join('\n') : '')).slice(0, 12000);
+      if (r && ok(r.titulo) && !String(d.titulo || '').trim()) d.titulo = String(r.titulo).slice(0, 90);
+      if (r && ok(r.design) && !String(d.edicao || '').trim()) d.edicao = String(r.design).slice(0, 1000);
+      if (r && ok(r.handle) && !String(d.handle || '').trim()) d.handle = String(r.handle).startsWith('@') ? String(r.handle) : '@' + r.handle;
+      ['curtidas', 'comentarios', 'compartilhamentos', 'salvamentos'].forEach(k => { if (r && ok(r[k]) && E.parseNum(r[k]) != null && !String(d[k] || '').trim()) d[k] = String(r[k]).trim(); });
+      toast(sl.length ? `${sl.length} slides lidos. A descrição do carrossel vai junto na análise.` : 'Não deu pra ler o texto dos slides.', sl.length ? 'good' : 'warn');
+    } catch (e) { toast(sampleErr(e).msg, 'bad'); }
+    if (ui.modal === M) { M.lendoSlides = false; renderModal(); }
   }
   async function addVideo(file) {
     const M = ui.modal; if (!M || M.type !== 'viral-form' || !file) return;
@@ -1765,6 +1792,7 @@
       const fmt = String(r.formato || '').toLowerCase().trim();
       const analise = {
         veredito: String(r.veredito || ''),
+        conteudo: String(r.conteudo || '').slice(0, 2000),
         fatores: (Array.isArray(r.fatores) ? r.fatores : []).filter(f => f && typeof f === 'object').slice(0, 8).map(f => ({ area: areaOk(String(f.area || '').toLowerCase()), peso: Math.max(1, Math.min(5, Math.round(Number(f.peso) || 1))), porque: String(f.porque || ''), evidencia: String(f.evidencia || '') })).filter(f => f.porque).sort((a, b) => b.peso - a.peso),
         gancho: r.gancho && typeof r.gancho === 'object' ? { texto: String(r.gancho.texto || ''), categoria: E.cat(Number(r.gancho.categoria)) ? Number(r.gancho.categoria) : null, formula: String(r.gancho.formula || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z]/g, '').slice(0, 20), pilares: arr(r.gancho.pilares, 4), porque: String(r.gancho.porque || '') } : null,
         entrega: r.entrega && typeof r.entrega === 'object' ? { transformacao: String(r.entrega.transformacao || '').slice(0, 400), levaPronto: String(r.entrega.levaPronto || '').slice(0, 400), porQueSeguir: String(r.entrega.porQueSeguir || '').slice(0, 400), comoSuperar: String(r.entrega.comoSuperar || '').slice(0, 500) } : null,

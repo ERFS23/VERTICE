@@ -1268,7 +1268,8 @@ FORMATOS (id): ${N.FORMATOS.map(f => f.id + ' = ' + f.nome + ' (' + f.dur[0] + '
 9. Fórmula do gancho, escolha a mais próxima: numero (número primeiro com resultado), contraria (verdade contrária), cena (cena identificável), confissao (história com custo real), lista (lista numerada), antesdepois (transformação), mito (mito × verdade), framework (método com nome), quebra (quebra de padrão com loop aberto), comoeu ("como eu" com resultado).
 
 Responda só com JSON, sem nada antes ou depois:
-{"veredito": "uma frase: por que viralizou",
+{"conteudo": "o que era o post, em 3 a 5 frases: do que trata, como aborda o tema, em que formato e como a sequência (os slides ou as cenas) conduz até o final",
+ "veredito": "uma frase: por que viralizou",
  "fatores": [{"area": "gancho|roteiro|edicao|formato|tema|audio|legenda|numeros|perfil", "peso": 5, "porque": "uma frase", "evidencia": "o dado, a fala ou o detalhe que prova"}],
  "gancho": {"texto": "o gancho do viral, transcrito", "categoria": 3, "formula": "contraria", "pilares": ["surpresa", "dor universal"], "porque": "uma frase"},
  "entrega": {"transformacao": "antes → depois que o viral provoca em quem assiste", "levaPronto": "o que a pessoa leva pra usar (ou 'nada concreto')", "porQueSeguir": "por que alguém seguiria o perfil depois (ou por que não seguiria)", "comoSuperar": "como a versão do criador entrega mais valor que o original, em 1 ou 2 frases"},

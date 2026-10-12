@@ -80,6 +80,7 @@
     const passos = (L.passos || []).map(p => `<li class="${p.ok === false ? 'bad' : ''}"><b>${esc(p.t)}</b>${p.d ? `<span>${esc(p.d)}</span>` : ''}</li>`).join('');
     return `<div class="kl-box">
       <div class="kit-row"><b class="grow">Puxar tudo pelo link</b><button type="button" class="btn sm primary" data-a="x-link-puxar" ${L.busy || !pronto ? 'disabled' : ''}>${ic('spark', 'sm')} ${L.busy ? 'Puxando…' : 'Puxar dados e assistir'}</button></div>
+      ${(M.draft || {}).tipo === 'carrossel' ? `<p class="kit-hint"><b>Carrossel:</b> o vidIQ traz só o perfil e a média de curtidas e comentários. O conteúdo vem dos prints: suba abaixo os prints dos slides, na ordem, e um print do post mostrando curtidas e comentários. A IA lê cada slide, descreve o carrossel inteiro e preenche os números sozinha.</p>` : ''}
       <p class="kit-hint">Cole o link do Reel e o @ de quem postou. O app usa o seu vidIQ (conector do claude.ai) pra trazer seguidores, views, curtidas, comentários, duração, data, legenda, capa e a média do perfil, e pra assistir o vídeo cena a cena. Depois salva e analisa sozinho. Gasta cerca de 20 créditos do vidIQ por viral. Compartilhamentos e salvamentos o Instagram não mostra pra quem não é o dono.</p>
       ${passos ? `<ul class="fixlist kl-passos">${passos}</ul>` : ''}
       ${L.err ? `<p class="gate-err">${ic('alert', 'sm')}<span>${esc(L.err)}</span></p>` : ''}
@@ -128,7 +129,7 @@
       if (!handle) {
         passo(M, 'Falta o @ do perfil', 'O link do Reel não diz quem postou. Vou tentar descobrir assistindo o vídeo; se puder, preencha o @ e clique de novo pra trazer seguidores e números.', false);
       } else {
-        const [rp, rr] = await Promise.all([call(T.perfil, { handle }).catch(e => ({ __err: e })), cod.tipo === 'reel' ? call(T.reels, { handle }).catch(e => ({ __err: e })) : Promise.resolve(null)]);
+        const [rp, rr] = await Promise.all([call(T.perfil, { handle }).catch(e => ({ __err: e })), call(T.reels, { handle }).catch(e => ({ __err: e }))]);
         if (rp && rp.__err) passo(M, 'Perfil não lido', msgErro(rp.__err), false);
         else {
           const P = lerPerfil(rp);
@@ -148,10 +149,11 @@
               try { const blob = b64Blob(este.capa.data, este.capa.mime); const th = await a.thumbFrom(blob); if (th) { d.thumb = th; M.thumbAuto = false; } M.capaBlob = blob; } catch (e) { }
             }
             passo(M, 'Números do Reel', [este.views && este.views + ' views', este.curtidas && este.curtidas + ' curtidas', este.comentarios && este.comentarios + ' comentários', este.duracao && este.duracao + ' s'].filter(Boolean).join(' · '));
-          } else passo(M, 'Este Reel não está entre os 12 mais recentes do perfil', 'Os números dele não vieram: suba um print da tela do Reel pra completar.', false);
+          } else if (cod.tipo === 'post') passo(M, 'Carrossel: o vidIQ não lê posts de carrossel', 'Suba os prints dos slides (e um print do post com as curtidas e comentários). A IA lê o texto de cada slide, descreve o carrossel e preenche os números.', false);
+          else passo(M, 'Este Reel não está entre os 12 mais recentes do perfil', 'Os números dele não vieram: suba um print da tela do Reel pra completar.', false);
           if (outros.length) {
-            d.media = Object.assign({}, d.media || {}, { views: media(outros.map(r => r.views)), curtidas: media(outros.map(r => r.curtidas)), comentarios: media(outros.map(r => r.comentarios)) });
-            passo(M, 'Média do perfil', `${outros.length} Reels recentes usados pra comparar.`);
+            d.media = Object.assign({}, d.media || {}, cod.tipo === 'post' ? {} : { views: media(outros.map(r => r.views)) }, { curtidas: media(outros.map(r => r.curtidas)), comentarios: media(outros.map(r => r.comentarios)) });
+            passo(M, 'Média do perfil', `${outros.length} Reels recentes usados pra comparar${cod.tipo === 'post' ? ' (curtidas e comentários; carrossel não tem média própria no vidIQ)' : ''}.`);
           }
         }
       }

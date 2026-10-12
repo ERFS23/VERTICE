@@ -114,7 +114,7 @@
     "[1280-light virais] botão x-kg-viral-leg",
     "[1280-light virais] botão x-kg-viral-gancho",
     "[1280-light virais] botão Roteiro de Reel modela (há modelagem)",
-    "[1280-light virais] prompt do viral < 60000 bytes (13084)",
+    "[1280-light virais] prompt do viral < 60000 bytes (13266)",
     "[1280-light virais] modal do viral sem rolagem horizontal",
     "[1280-light virais] Extrair o gancho abre o Kit com o viral escolhido",
     "[1280-light virais] modal fecha ao ir pro Kit",
@@ -168,11 +168,11 @@
     "[1280-light respostas ruins] reaproveitar: {\"json\":{\"ideiaCentral\":\"x\",\"ganchos\":[],\"pontos\": → erro amigável",
     "[1280-light respostas ruins] reaproveitar: {\"json\":\"lixo\"} → erro amigável",
     "[1280-light respostas ruins] perfil: {\"json\":{\"nota\":\"abc\"}} → erro amigável",
-    "[1280-light respostas ruins] perfil: {\"json\":{\"nota\":50,\"itens\":[{\"area\":\"zzz\"}],\"bios\" → erro amigável",
-    "[1280-light respostas ruins] viral: análise vazia vira erro amigável",
-    "[1280-light respostas ruins] sem erro de console com respostas ruins: "
+    "[1280-light respostas ruins] perfil: {\"json\":{\"nota\":50,\"itens\":[{\"area\":\"zzz\"}],\"bios\" → erro amigável"
   ],
-  "falhou": [],
+  "falhou": [
+    "[1280-light respostas ruins] exceção: page.waitForFunction: Timeout 8000ms exceeded. @ at suiteRuins (/home/user/VERTICE/narrador/teste/teste.js:571:16)"
+  ],
   "shots": [
     "/home/user/VERTICE/narrador/teste/shots/1280-light-estudio-exemplo.png",
     "/home/user/VERTICE/narrador/teste/shots/1280-light-estudio-gerado.png",
