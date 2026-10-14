@@ -253,8 +253,11 @@ Fala do original resumida (é uma referência de terceiro, não é para copiar).
 split-reel/
   ESTILO.md  ESTILO-2.md  DOSSIE.md  README.md
   package.json  tsconfig.json  .gitignore
+  LEIA-ME-AGENTE.md  CONHECIMENTO-COMPLETO.md (gerado)  scripts/make-kit.py
   scripts/
-    render.mjs             junta palavras + cenas e renderiza (escolhe a composição sozinho)
+    sfx.py                 SFX sintetizados + cues automáticos + mixagem (Parte I)
+    audio/                 visual-events.py  audio-vs-visual.py  sfx-check.py  (análise e validação de áudio)
+    render.mjs             junta palavras + cenas e renderiza (escolhe a composição sozinho; --sfx liga o som)
     chunks-to-words.mjs    legenda por bloco {t,s,e} -> palavras com tempo interpolado
     srt-to-captions.mjs    .srt (CapCut) -> captions.json
     transcribe.py          Whisper com tempo por palavra (rodar na sua máquina)
@@ -320,7 +323,7 @@ Para trocar a identidade: editar `remotion/theme.ts` (estilo 1) e `remotion/talk
 
 Honestidade sobre o que **não** está neste dossiê ou ficou incerto:
 
-1. **Áudio: analisado na Parte H.** Resultado resumido: não encontrei SFX sincronizado às animações em nenhum dos dois vídeos. O motor ainda não gera som; mantém só o áudio original do vídeo cru.
+1. **Áudio: analisado na Parte H** (as referências não têm SFX detectável) e **camada de SFX própria criada na Parte I** (sintetizada, calibrada por medição, nunca ouvida por mim).
 2. **Nenhuma transcrição das falas.** O modelo de transcrição não pôde ser baixado nesta sessão (rede bloqueada). As frases citadas vêm das legendas lidas nos quadros do estilo 1; no estilo 2 não li o roteiro.
 3. **Amostragem visual:** estilo 1 em 2 quadros por segundo; estilo 2 em 1 quadro a cada 2 s, mais alguns quadros em resolução cheia. **Transições rápidas (menos de 0,5 s) e microanimações podem ter passado.** Tempos de capítulo são aproximados.
 4. **Estilo 2: só os 2 primeiros minutos** dos 9,9 minutos do vídeo.
@@ -376,3 +379,88 @@ Leitura: áudio **muito comprimido e limitado** (LRA de 3 LU, pico perto de 0 dB
 - A voz mascara SFX baixos. Um SFX 20 dB abaixo da fala não seria detectado.
 - O arquivo do estilo 1 é um download de rede social; se a música original foi mixada pela plataforma, pode não estar no arquivo.
 - Estilo 2: só os primeiros 120 s dos 591 s.
+
+
+---
+
+## Parte I — Camada de SFX do motor (`scripts/sfx.py`)
+
+**Decisão de design.** As referências não têm SFX detectável (Parte H), então esta camada **não copia nada**: segue a convenção de mercado e foi calibrada por medição. Todos os sons são **sintetizados do zero** (senoides, ruído filtrado, envelopes), sem amostra de terceiros, e disparados **automaticamente** pelos tempos do `scenes.json`.
+
+### I.1 Uso
+```bash
+node scripts/render.mjs <projeto> --sfx            # perfil "discreto" (padrão)
+node scripts/render.mjs <projeto> --sfx=marcado    # perfil mais presente
+python3 scripts/sfx.py <projeto> --profile discreto --video out/<projeto>.mp4   # só a etapa de som
+python3 scripts/sfx.py <projeto> --cues-only       # só lista os cues (out/<projeto>.cues.json)
+python3 -I scripts/audio/sfx-check.py <projeto>    # valida níveis e loudness
+```
+Saídas: `out/<projeto>-sfx.wav` (trilha de SFX isolada, estéreo 44,1 kHz), `out/<projeto>.cues.json` (lista `[tempo, som, ganho_dB]`), `out/<projeto>-sfx.mp4` (vídeo final com voz + SFX). Requer `numpy` e `ffmpeg`.
+
+### I.2 Os 7 sons (receitas exatas)
+| Som | Receita | Duração | Para quê |
+|---|---|---|---|
+| `pop` | Seno que cai de ~620 Hz (`f·e^(−18t)+0,35f`) com decaimento `e^(−34t)` + 2 ms de estalo de ruído | 140 ms | Entrada de elemento (cartão, chip, tag, palavra) |
+| `tick` | Seno de 2,6 kHz com janela de Hann² e decaimento `e^(−90t)` | 30 ms | Digitação, cascatas, contadores, tiles |
+| `click` | Dois ticks (1,9 kHz e 2,5 kHz, o segundo 55 ms depois a 70%) + corpo de 170 Hz | 90 ms | Clique do cursor |
+| `ding` | Seno em f + quinta (1,5f) + parcial (2,01f), decaimento `e^(−7t)`, ataque 3 ms; f padrão 1320 Hz | 500 ms | Check, sucesso, "inscrito", fim de digitação |
+| `thud` | Seno que cai de ~133 para 38 Hz (`95·e^(−7t)+38`), decaimento `e^(−11t)` + ruído curto | 350 ms | Selo estampado, explosão de letras |
+| `whoosh` | Ruído branco no filtro ressonante (variável de estado, q = 0,22) varrendo **350 → 5200 Hz** em escala geométrica; envelope sobe até 70% e cai suave | 300–1200 ms | Troca de cena/layout, movimento, linha tracejada |
+| `fall` | Mesmo filtro, varredura **4200 → 260 Hz**, pico aos 15% | 700 ms | "Queda" das letras que desmontam |
+
+Cada disparo recebe **variação aleatória de ±1 dB** (semente fixa, reprodutível). Alturas de `tick`/`pop` sobem em escada nas cascatas (ex.: tiles a 1800 + 140·i Hz) para dar sensação de preenchimento.
+
+### I.3 Mapa de cues — estilo 1 (`chapters`)
+| Gatilho | Som (ganho relativo) |
+|---|---|
+| Início de cada capítulo (menos o 1º), 60 ms antes | `whoosh` 450 ms (−2 dB) |
+| Cada palavra do título do capítulo (`titleAt` + i·0,09 s) | `tick` (−12) |
+| `moveTo` de qualquer elemento | `whoosh` 300 ms (−9) |
+| `kinetic` | `tick` por letra (−13); com `explodeAt`: `thud` (−1) + `fall` 700 ms a +50 ms (−6) |
+| `phone` | `pop` (−2); `tick` em escada por tile em `tilesAt` + i·0,06 (−11); `click` em `highlightAt` (−3); `swap`: `whoosh` 350 ms (−8) + 9 `tick` a cada 50 ms (−12) |
+| `card` | `pop` a 520 Hz (−3) |
+| `badge` | `thud` 250 ms (−6) + `ding` a 1568 Hz 40 ms depois (−4) |
+| `counter` | `tick` (−14), no máximo um a cada ~60 ms, desacelerando |
+| `robot` / `robots` | `pop` (−4 / −7), uma por robô a cada `stagger`; `tick` por rótulo (−15) |
+| `terminal` | `tick` por caractere (no máx. 1 a cada 35 ms, −13) + `ding` a 1760 Hz no fim (−9) |
+| `checklist` | `pop` (−8) + `ding` 150 ms depois, subindo 110 Hz por item (−5) |
+| `chip`, `iconTile`, `panel`, `text` | `pop` (−5) |
+| `cursor` com `click: true` | `click` (−3) |
+
+### I.4 Mapa de cues — estilo 2 (`scenes`)
+| Gatilho | Som |
+|---|---|
+| Início de cada cena (menos a 1ª) | `whoosh` 400 ms (−2) — é a troca de layout |
+| Palavras do `head` | `tick` (−12) |
+| `tag`, `eyebrow` | `pop` (−6); `big` → `pop` (−4) |
+| `panel` | `whoosh` 300 ms (−8) + `pop` (−6) |
+| `wave` | `whoosh` com a duração da linha (−3) |
+| `odometer` | `pop` (−6) + `tick` rápido (−14) |
+| `appwindow` | `tick` em escada (−11) + `click` no destaque (−3) |
+| `blocks` | `tick` em escada, 1 a cada 100 ms (−12) |
+| `btn` | `pop` (−7) + `click` em `clickAt` (−2) + `ding` 60 ms depois (−5) |
+| `moveTo` | `whoosh` 300 ms (−9) |
+
+### I.5 Perfis de nível e mixagem
+- **Nível-base do cue 0 dB:** `discreto` = **−10 dBFS**, `marcado` = **−3 dBFS** (pico, antes da mixagem). O ganho individual da tabela soma a esse valor.
+- **Cadeia:** `amix` (voz + SFX, `normalize=0`) → `loudnorm` **I = −14 LUFS, TP = −1,5 dBTP, LRA = 7** (o padrão que medi nas referências, Parte H.2) → AAC 192 kbps. O vídeo é copiado sem recodificar.
+- **Calibração por medição no demo de 13 s** (nível do SFX contra a voz na janela de 150 ms de cada cue):
+  | Perfil | Mediana | Cues a menos de 12 dB da voz | Cues que passam da voz (mascaram) | Loudness final |
+  |---|---|---|---|---|
+  | −28 dBFS (1ª tentativa) | −35 dB (RMS global) | 0% | 0% | inaudível, descartado |
+  | **discreto (−10)** | **−14 a −15 dB** | 31–35% | 0–6% | −14,7 LUFS |
+  | **marcado (−3)** | **−8 dB** | 72% | 8% | −14,7 LUFS |
+- **Lição de calibração:** a 1ª tentativa ficou inaudível (35 dB abaixo da voz). Tempos de cue e níveis precisam ser **medidos**, não adivinhados. O teste de "sincronia por correlação" que usei nas referências **não serve** para trilhas densas, porque os instantes aleatórios também caem em SFX. Para validar a mixagem própria use `sfx-check.py` (nível relativo à voz).
+
+### I.6 Como personalizar
+- **Trocar o caráter de um som:** edite a função em `sfx.py` (`pop`, `tick`…). Cada uma é curta e comentada.
+- **Mudar quais elementos fazem som:** edite `_el_split` (estilo 1) ou `cues_talk` (estilo 2). Cada linha é `(tempo, nome_do_som, ganho_dB, parâmetros)`.
+- **Novo elemento visual:** adicione o `type` no mapa de cues na mesma mudança em que o criar em `Library.tsx` / `TalkReel.tsx`.
+- **Mais ou menos densidade:** a maior parte do "barulho" vem dos `tick` em cascata. Reduza-os (ou o ganho) para um som mais limpo.
+
+### I.7 Limites honestos
+- **Eu não ouvi o resultado.** Só medi (níveis, loudness, espectro). Antes de publicar, **escute com fone**. Se algo irritar, reduza o ganho do som correspondente.
+- A calibração de níveis foi feita em **um vídeo de 13 s** com voz contínua. Em vídeos com pausas, o mesmo ganho soará mais alto.
+- Sem **trilha/ambiência musical**: as referências sugerem uma cama baixa (Parte H.3), mas não a geramos.
+- Sem **ducking** (abaixar o SFX quando a voz é forte). O `loudnorm` único também é de uma passada, então o loudness final pode variar ±0,7 LU.
+- Os sons são sintéticos e podem soar "digitais" comparados a samples gravados. Se quiser samples próprios, basta trocar a saída de `synth()` por arquivos `.wav` licenciados.

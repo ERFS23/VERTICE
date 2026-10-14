@@ -1,5 +1,5 @@
 // Junta palavras + cenas em props.json e renderiza o reel.
-// Uso: node scripts/render.mjs <projeto> [--still=SEG]
+// Uso: node scripts/render.mjs <projeto> [--still=SEG] [--sfx[=discreto|marcado]]
 //   public/projects/<projeto>/words.json    (ou captions.json com blocos {t,s,e})
 //   public/projects/<projeto>/scenes.json   (capítulos + elementos)
 import fs from 'node:fs';
@@ -25,4 +25,10 @@ if (still) {
   execFileSync('npx', ['remotion', 'still', ...common, `out/${name}-${sec}s.png`, `--frame=${Math.round(sec * 30)}`], {stdio: 'inherit'});
 } else {
   execFileSync('npx', ['remotion', 'render', ...common, `out/${name}.mp4`, '--codec=h264', '--crf=18'], {stdio: 'inherit'});
+  // --sfx[=discreto|marcado]: gera SFX sintetizados pelos tempos das cenas e mixa no áudio (scripts/sfx.py)
+  const sfx = process.argv.find((a) => a.startsWith('--sfx'));
+  if (sfx) {
+    const profile = sfx.includes('=') ? sfx.split('=')[1] : 'discreto';
+    execFileSync('python3', ['scripts/sfx.py', name, `--profile=${profile}`, '--video', `out/${name}.mp4`], {stdio: 'inherit'});
+  }
 }

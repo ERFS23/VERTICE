@@ -24,6 +24,7 @@ Projeto: `split-reel/` (Remotion). Antes de criar cenas, leia `split-reel/ESTILO
 4. **Escreva `scenes.json`** (formato abaixo). Tempos são absolutos, em segundos, e alinhados ao início da palavra-chave em `words.json`.
 5. **Confira em quadros parados:** `cd split-reel && node scripts/render.mjs <nome> --still=SEG` em 3–5 momentos-chave. Olhe os PNGs e procure sobreposição, texto cortado ou elemento cobrindo a legenda.
 6. **Render final:** `node scripts/render.mjs <nome>` gera `out/<nome>.mp4` (1080x1920, H.264, áudio do vídeo cru).
+7. **SFX (opcional, recomendado):** `node scripts/render.mjs <nome> --sfx` (ou `--sfx=marcado`) gera sons sintetizados pelos tempos das cenas e mixa em `out/<nome>-sfx.mp4`. Valide com `python3 -I scripts/audio/sfx-check.py <nome>` e **peça ao usuário para ouvir com fone** (você só mede, não ouve). Receitas e mapa de cues: `DOSSIE.md`, Parte I.
 
 ## Regras do estilo (não negociáveis)
 
@@ -84,3 +85,12 @@ Cada cena: `{start, end, layout, head?: {text, accent, at}, items[]}`. Layouts: 
 Itens: `tag{icon,text,solid}`, `eyebrow{text}`, `big{text,size,green,ghost}`, `odometer{from,to,label,sub}`, `panel{w,h,tilt,title,lines}`, `wave{y,amp,duration}`, `appwindow{title,apps[{icon,label}],highlight,highlightAt}`, `blocks{total,on}`, `btn{text,doneText,icon,clickAt}`, `head{text,accent}`. Todos aceitam `at`, `out`, `x`, `y`, `scale`, `moveTo`.
 
 Regras: troque de layout a cada 2–4 s; abra com `full` + uma palavra gigante; use `stage` para anunciar tema, `canvas` para definir conceitos, `light` para explicações com números e feche com `btn` de Gostei/Inscrever-se. Sempre confira 4–5 quadros parados antes do render final.
+
+
+## SFX (os dois estilos)
+
+`scripts/sfx.py` lê `props.json` e dispara 7 sons sintetizados (`pop`, `tick`, `click`, `ding`, `thud`, `whoosh`, `fall`) a partir dos tempos de capítulos/cenas e elementos. Regras:
+- Troca de capítulo/layout = `whoosh`; entrada de elemento = `pop`; digitação/cascata = `tick` em escada; clique do cursor = `click`; check/sucesso = `ding`; selo/explosão = `thud`.
+- Perfis: `discreto` (padrão, SFX ~15 dB abaixo da voz) e `marcado` (~8 dB abaixo). Final em −14 LUFS / −1,5 dBTP.
+- Novo elemento visual ⇒ adicionar também o cue em `sfx.py` (`_el_split` ou `cues_talk`).
+- As referências estudadas **não têm SFX detectável** (só ambiência baixa); esta camada é decisão de design da Vértice, não cópia. Nunca use samples de terceiros.
