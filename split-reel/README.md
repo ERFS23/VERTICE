@@ -2,7 +2,7 @@
 
 Gerador de Reels no estilo **tela dividida**: motion graphics neon em cima, vídeo cru embaixo e legenda karaokê na divisória. Feito com [Remotion](https://remotion.dev).
 
-- Decupagem do estilo: [`ESTILO.md`](ESTILO.md)
+- Estilo 1 (9:16 tela dividida): [`ESTILO.md`](ESTILO.md). Estilo 2 (16:9 talking head verde): [`ESTILO-2.md`](ESTILO-2.md)
 - Como o Claude usa: skill [`/.claude/skills/reel-tela-dividida`](../.claude/skills/reel-tela-dividida/SKILL.md)
 
 ```bash

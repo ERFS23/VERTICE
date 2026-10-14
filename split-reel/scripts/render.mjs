@@ -17,7 +17,8 @@ fs.writeFileSync(path.join(dir, 'props.json'), JSON.stringify(props, null, 1));
 
 const browser = process.env.REMOTION_BROWSER ?? (fs.existsSync('/opt/pw-browsers/chromium_headless_shell-1194/chrome-linux/headless_shell') ? '/opt/pw-browsers/chromium_headless_shell-1194/chrome-linux/headless_shell' : null);
 const still = process.argv.find((a) => a.startsWith('--still='));
-const common = ['remotion/index.ts', 'SplitReel', `--props=${path.join(dir, 'props.json')}`, ...(browser ? [`--browser-executable=${browser}`] : [])];
+const comp = props.scenes ? 'TalkReel' : 'SplitReel';
+const common = ['remotion/index.ts', comp, `--props=${path.join(dir, 'props.json')}`, ...(browser ? [`--browser-executable=${browser}`] : [])];
 fs.mkdirSync('out', {recursive: true});
 if (still) {
   const sec = parseFloat(still.split('=')[1]);

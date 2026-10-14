@@ -1,9 +1,14 @@
 ---
 name: reel-tela-dividida
-description: Edita um vídeo cru de rosto no estilo "tela dividida", com motion graphics neon sincronizados à fala em cima, vídeo original embaixo e legenda karaokê na divisória. Use quando o usuário mandar um vídeo para editar "naquele estilo", "tela dividida", "split screen" ou "com motion em cima".
+description: Edita um vídeo cru de rosto em dois estilos com motion graphics sincronizados à fala. Estilo 1 (9:16), tela dividida rosa/roxo com a animação em cima e o vídeo cru embaixo. Estilo 2 (16:9), talking head verde-limão que alterna 5 layouts (tela cheia, palco, canvas, claro, gravação de tela). Use quando o usuário mandar um vídeo para editar "naquele estilo", "tela dividida", "split screen", "com motion" ou para YouTube horizontal.
 ---
 
-# Reel tela dividida (estilo Vértice)
+# Reels com motion (estilo Vértice)
+
+**Escolha o estilo antes de começar:**
+- 9:16 (Reels/TikTok/Shorts): **estilo 1**, `ESTILO.md`, composição `SplitReel`, `scenes.json` com `chapters`.
+- 16:9 (YouTube): **estilo 2**, `ESTILO-2.md`, composição `TalkReel`, `scenes.json` com `scenes` (veja a seção "Estilo 2" no fim). O `render.mjs` escolhe a composição sozinho.
+
 
 Projeto: `split-reel/` (Remotion). Antes de criar cenas, leia `split-reel/ESTILO.md`, que é a decupagem do reel de referência e as regras do estilo.
 
@@ -68,3 +73,14 @@ Campos comuns a todo elemento: `type`, `at` (entra), `out` (sai; padrão = fim d
 Exemplo completo: `split-reel/public/projects/demo/scenes.json`.
 
 Para criar um elemento novo, adicione o componente em `remotion/elements/Library.tsx`, registre-o em `REGISTRY` e documente-o nesta tabela. Cores e fontes ficam em `remotion/theme.ts`: troque lá para mudar a identidade inteira.
+
+
+## Estilo 2 (16:9, `TalkReel`)
+
+Leia `split-reel/ESTILO-2.md`. Exemplo: `public/projects/talk-demo/scenes.json`. Coordenadas em 1920x1080; `x,y` é o centro do item (use `"center": false` para ancorar pelo canto superior esquerdo).
+
+Cada cena: `{start, end, layout, head?: {text, accent, at}, items[]}`. Layouts: `full`, `stage` (rosto vira cartão com painéis inclinados), `canvas` (sem rosto, grade no chão), `light` (off-white, rosto em cartão), `screen` (precisa de `screen` e `handle` no topo do JSON).
+
+Itens: `tag{icon,text,solid}`, `eyebrow{text}`, `big{text,size,green,ghost}`, `odometer{from,to,label,sub}`, `panel{w,h,tilt,title,lines}`, `wave{y,amp,duration}`, `appwindow{title,apps[{icon,label}],highlight,highlightAt}`, `blocks{total,on}`, `btn{text,doneText,icon,clickAt}`, `head{text,accent}`. Todos aceitam `at`, `out`, `x`, `y`, `scale`, `moveTo`.
+
+Regras: troque de layout a cada 2–4 s; abra com `full` + uma palavra gigante; use `stage` para anunciar tema, `canvas` para definir conceitos, `light` para explicações com números e feche com `btn` de Gostei/Inscrever-se. Sempre confira 4–5 quadros parados antes do render final.

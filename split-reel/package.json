@@ -11,6 +11,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@fontsource/anton": "^5.1.0",
     "@fontsource/instrument-serif": "^5.1.0",
     "@fontsource/inter": "^5.1.0",
     "@fontsource/jetbrains-mono": "^5.1.0",
