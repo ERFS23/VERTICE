@@ -320,7 +320,7 @@ Para trocar a identidade: editar `remotion/theme.ts` (estilo 1) e `remotion/talk
 
 Honestidade sobre o que **não** está neste dossiê ou ficou incerto:
 
-1. **Áudio das referências não foi analisado.** Não sei qual música, efeitos sonoros (whoosh, cliques, notificação) ou mixagem os vídeos usam. O motor mantém só o áudio original do vídeo cru. Se o som faz parte do estilo para você, é um próximo passo.
+1. **Áudio: analisado na Parte H.** Resultado resumido: não encontrei SFX sincronizado às animações em nenhum dos dois vídeos. O motor ainda não gera som; mantém só o áudio original do vídeo cru.
 2. **Nenhuma transcrição das falas.** O modelo de transcrição não pôde ser baixado nesta sessão (rede bloqueada). As frases citadas vêm das legendas lidas nos quadros do estilo 1; no estilo 2 não li o roteiro.
 3. **Amostragem visual:** estilo 1 em 2 quadros por segundo; estilo 2 em 1 quadro a cada 2 s, mais alguns quadros em resolução cheia. **Transições rápidas (menos de 0,5 s) e microanimações podem ter passado.** Tempos de capítulo são aproximados.
 4. **Estilo 2: só os 2 primeiros minutos** dos 9,9 minutos do vídeo.
@@ -331,3 +331,48 @@ Honestidade sobre o que **não** está neste dossiê ou ficou incerto:
 9. **Cores de terceiros:** rosa/roxo (estilo 1) e verde-limão (estilo 2) são das referências. Para a Vértice, troque pelos tokens da sua marca.
 10. **Nada foi enviado ao YouTube/Instagram** e nenhuma conta foi acessada. O motor só gera o arquivo `.mp4`.
 11. **Direitos:** nomes, logos, @ e frases dos vídeos de referência pertencem aos criadores. Use apenas a **técnica**.
+
+
+---
+
+## Parte H — Análise de áudio e efeitos sonoros (SFX)
+
+**Método.** Áudio extraído em 44,1 kHz estéreo (estilo 1: 42,8 s inteiros; estilo 2: primeiros 120 s). Medi (a) loudness, (b) ataques por faixa de frequência (graves 30–120 Hz, graves-médios, médios, agudos 2–6 kHz, "ar" 6–16 kHz), (c) cruzamento desses ataques com **os instantes em que algo muda na tela** (23 eventos visuais no estilo 1, 73 no estilo 2, detectados por diferença de quadros), (d) espectrogramas, (e) o espectro e a periodicidade dos trechos mais quietos, para achar trilha por baixo da voz. Scripts em `scripts/audio/`.
+
+### H.1 Resultado principal: SFX sincronizado não foi detectado
+| Teste | Estilo 1 | Estilo 2 |
+|---|---|---|
+| Ataque sonoro nos instantes de eventos visuais vs. instantes aleatórios (razão mediana, 5 faixas) | 0,83 a 1,22 | 0,83 a 1,00 |
+| Distribuição do atraso entre evento visual e pico de ataque | plana (sem agrupamento) | plana |
+| Quedas secas de nível (cortes de áudio) | 0 | 0 |
+| Espectrograma | só voz (consoantes como linhas verticais largas) | só voz |
+
+**Leitura:** razão próxima de 1,0 e atraso uniforme significam que, estatisticamente, **o som não acompanha a animação**. Se existem whooshes, pops ou cliques, eles estão mais baixos que o piso de ruído da sala ou escondidos atrás da voz. **Não dá para provar que não existem**, mas não há evidência de que o efeito dessas edições dependa de SFX audíveis.
+
+### H.2 Níveis de mixagem
+| | Estilo 1 | Estilo 2 |
+|---|---|---|
+| Loudness integrado | −14,2 LUFS | −13,4 LUFS |
+| Pico | −0,6 dBFS | −1,4 dBFS |
+| Faixa de loudness (LRA) | 3,0 LU | 3,2 LU |
+| Picos de fala (percentil 95) | −11 a −13 dBFS | ≈ −10 dBFS |
+| Piso entre palavras (percentil 10) | −27 a −31 dBFS | 0–40 s: −28 a −33 dBFS; depois de 50 s: −36 a −45 dBFS |
+
+Leitura: áudio **muito comprimido e limitado** (LRA de 3 LU, pico perto de 0 dBFS), no padrão de redes sociais, que costuma ficar entre −14 e −13 LUFS.
+
+### H.3 Trilha por baixo da voz (indício, confiança moderada)
+- **Estilo 2, 0 a ~36 s:** picos tonais estreitos e estáveis em torno de **880, 1110, 1480 e 1660 Hz** nos momentos mais quietos (+4 a +16 dB acima da vizinhança, mais forte entre 20 e 32 s). Essas frequências formam um acorde sustentado, o que é compatível com uma **ambiência/pad musical sem batida** (a periodicidade de batida é desprezível, força 0,06). Depois de ~36–40 s a energia tonal cai a nível de ruído.
+- **Estilo 2, 41,8 s:** **1,25 s de silêncio digital** exatamente na **vinheta da marca** (logo em tela preta). Depois dela o piso de ruído cai 10 a 15 dB e fica assim pelo resto dos 2 minutos: **só voz limpa**, sem trilha detectada.
+  - Interpretação: o **gancho tem ambiência por baixo; a vinheta é um respiro silencioso**; a apresentação e o conteúdo seguem sem trilha.
+- **Estilo 1:** pulso estável de **~83 BPM (0,72 s)** na faixa de 40–200 Hz, o mesmo atraso nas 5 janelas de 8 s (força 0,23 a 0,40). Compatível com **uma trilha rítmica muito baixa** (sem notas sustentadas detectáveis). Confiança moderada: um pulso tão estável não parece ritmo de fala, mas só ouvindo o arquivo para confirmar.
+
+### H.4 O que isso significa para a Vértice
+1. **O efeito dessas referências vem do visual.** Não há evidência de SFX que sustentem o estilo.
+2. Se a sensação de "polimento" que você percebe nessas edições vem do som, o candidato mais provável é a **cama sonora baixa** (pad no estilo 2, pulso no estilo 1) e a **mixagem alta e comprimida**, não os efeitos pontuais.
+3. O motor **ainda não gera áudio**. Se você quiser SFX, é decisão de design nossa, sem referência para copiar. A convenção do mercado (a ser validada por você) é: *whoosh* curto na troca de layout/capítulo, *pop* baixo na entrada de elementos, *tick* na digitação, *click* no clique do cursor, *ding* no check. Tudo gerável sintetizado, sem sample de terceiros, e disparado automaticamente pelos tempos do `scenes.json`.
+
+### H.5 Limites desta análise
+- Detecção por estatística de sinal, **sem ouvir** os arquivos. Cruzamento visual–sonoro usa 30 quadros/s (resolução de ±33 ms).
+- A voz mascara SFX baixos. Um SFX 20 dB abaixo da fala não seria detectado.
+- O arquivo do estilo 1 é um download de rede social; se a música original foi mixada pela plataforma, pode não estar no arquivo.
+- Estilo 2: só os primeiros 120 s dos 591 s.
