@@ -1,0 +1,629 @@
+<title>Dossiê Narrador de Impacto</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800&family=Hanken+Grotesk:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: índice fixo à esquerda + coluna de leitura; mesmo sistema visual do app (claquete, âmbar sobre grafite) */
+:root{
+  --bg:#0A0C11; --panel:#12161F; --panel2:#181D29; --line:#252C3B;
+  --ink:#EEF0F5; --muted:#A3AABB; --faint:#6E7689;
+  --amber:#FFB547; --amber-ink:#1A1205;
+  --good:#4FD18B; --warn:#FFB547; --bad:#FF6B6B; --info:#7AA8FF;
+  --p-direito:#7AA8FF; --p-emp:#FFB547; --p-vendas:#4FD18B; --p-cresc:#C792EA;
+  --f-disp:"Big Shoulders Display","Arial Narrow",Impact,sans-serif;
+  --f-body:"Hanken Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:dark;
+}
+@media (prefers-color-scheme: light){:root:not([data-theme="dark"]){
+  --bg:#F6F4EF; --panel:#FFFFFF; --panel2:#F0EDE5; --line:#E1DCD0;
+  --ink:#151820; --muted:#4D5465; --faint:#80869A;
+  --amber:#B86E00; --amber-ink:#FFFFFF;
+  --good:#18834B; --warn:#A86400; --bad:#C53A3A; --info:#2F5FC4;
+  --p-direito:#2F5FC4; --p-emp:#B86E00; --p-vendas:#18834B; --p-cresc:#8A4FB8;
+  color-scheme:light;}}
+:root[data-theme="light"]{
+  --bg:#F6F4EF; --panel:#FFFFFF; --panel2:#F0EDE5; --line:#E1DCD0;
+  --ink:#151820; --muted:#4D5465; --faint:#80869A;
+  --amber:#B86E00; --amber-ink:#FFFFFF;
+  --good:#18834B; --warn:#A86400; --bad:#C53A3A; --info:#2F5FC4;
+  --p-direito:#2F5FC4; --p-emp:#B86E00; --p-vendas:#18834B; --p-cresc:#8A4FB8;
+  color-scheme:light;}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:16px/1.6 var(--f-body);-webkit-font-smoothing:antialiased}
+a{color:var(--amber)}
+:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+.wrap{display:grid;grid-template-columns:240px minmax(0,1fr);gap:48px;max-width:1240px;margin:0 auto;
+  padding-block:40px 80px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+nav.toc{position:sticky;top:calc(env(safe-area-inset-top,0px) + 24px);align-self:start;max-height:calc(100vh - 48px);overflow:auto;font-size:14px}
+nav.toc .brand{font-family:var(--f-disp);font-weight:800;font-size:22px;letter-spacing:.02em;text-transform:uppercase;line-height:1;margin-bottom:18px}
+nav.toc .brand span{color:var(--amber)}
+nav.toc ol{list-style:none;margin:0;padding:0;display:grid;gap:2px;counter-reset:t}
+nav.toc li a{display:flex;gap:10px;padding:6px 10px;border-radius:6px;color:var(--muted);text-decoration:none}
+nav.toc li a:hover{background:var(--panel);color:var(--ink)}
+nav.toc li a b{font-family:var(--f-mono);font-weight:400;color:var(--faint);font-size:12px;padding-top:2px}
+main{min-width:0}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--amber)}
+h1,h2,h3{font-family:var(--f-disp);text-transform:uppercase;letter-spacing:.01em;line-height:1.02;text-wrap:balance;margin:0}
+h1{font-size:clamp(44px,7vw,84px);font-weight:800}
+h1 em,h2 em{font-style:normal;color:var(--amber)}
+h2{font-size:clamp(32px,4.4vw,48px);font-weight:800;margin-top:6px}
+h3{font-size:24px;font-weight:600;margin-top:28px;margin-bottom:6px}
+p,li{max-width:70ch}
+.lede{font-size:19px;color:var(--muted);max-width:62ch;margin-top:18px}
+section{padding-top:56px;margin-top:56px;border-top:1px solid var(--line);scroll-margin-top:16px}
+section:first-of-type{border-top:0;margin-top:0;padding-top:0}
+.muted{color:var(--muted)} .faint{color:var(--faint)}
+code,.mono{font-family:var(--f-mono);font-size:.86em}
+code{background:var(--panel2);padding:1px 6px;border-radius:4px;border:1px solid var(--line)}
+/* claquete */
+.slate{margin-top:28px;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--panel)}
+.slate .stripes{height:18px;background:repeating-linear-gradient(-45deg,var(--ink) 0 16px,var(--panel) 16px 32px)}
+.slate .cells{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr))}
+.slate .cell{padding:14px 16px;border-right:1px solid var(--line);border-top:1px solid var(--line)}
+.slate .cell .k{font-family:var(--f-mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+.slate .cell .v{font-family:var(--f-disp);font-size:40px;font-weight:800;line-height:1;margin-top:4px;font-variant-numeric:tabular-nums}
+.slate .cell .v small{font-size:15px;color:var(--muted);font-family:var(--f-body);font-weight:600;margin-left:4px}
+/* tabelas */
+.tbl{overflow-x:auto;margin-top:16px;border:1px solid var(--line);border-radius:10px}
+table{border-collapse:collapse;width:100%;font-size:14.5px;min-width:640px}
+th,td{text-align:left;vertical-align:top;padding:10px 14px;border-bottom:1px solid var(--line)}
+th{font-family:var(--f-mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);background:var(--panel);font-weight:400}
+tr:last-child td{border-bottom:0}
+td b{color:var(--ink)}
+/* selos de tipo */
+.t{display:inline-block;font-family:var(--f-mono);font-size:11px;letter-spacing:.04em;padding:2px 8px;border-radius:99px;border:1px solid currentColor;white-space:nowrap;line-height:1.5}
+.t.cap{color:var(--amber)} .t.mcp{color:var(--info)} .t.skill{color:var(--p-cresc)} .t.know{color:var(--good)} .t.local{color:var(--muted)}
+.legend{display:flex;flex-wrap:wrap;gap:8px 16px;margin-top:14px;font-size:13px;color:var(--muted)}
+.legend span{display:flex;gap:6px;align-items:center}
+/* blocos de tela */
+.screen{margin-top:20px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:22px 24px}
+.screen .head{display:flex;flex-wrap:wrap;gap:10px;align-items:baseline;justify-content:space-between}
+.screen .head h3{margin:0}
+.screen .uses{display:flex;flex-wrap:wrap;gap:6px}
+.screen ul{padding-left:20px;margin:10px 0 0}
+.screen li{margin:4px 0}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:16px;margin-top:16px}
+.box{border:1px solid var(--line);border-radius:10px;padding:16px 18px;background:var(--panel);min-width:0}
+.box h4{margin:0 0 6px;font-family:var(--f-mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--amber);font-weight:600}
+.box p,.box ul{margin:0;font-size:14.5px}
+.box ul{padding-left:18px}
+.flow{list-style:none;padding:0;margin:14px 0 0;display:grid;gap:8px;counter-reset:f}
+.flow li{counter-increment:f;display:grid;grid-template-columns:34px minmax(0,1fr);gap:12px;max-width:none}
+.flow li::before{content:counter(f,decimal-leading-zero);font-family:var(--f-mono);font-size:12px;color:var(--amber);padding-top:3px}
+pre.code{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow-x:auto;font:13px/1.55 var(--f-mono);margin-top:12px}
+.swatches{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-top:14px}
+.sw{border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--panel);font-size:12.5px}
+.sw i{display:block;height:44px}
+.sw div{padding:8px 10px;font-family:var(--f-mono)}
+.sw div b{display:block;font-family:var(--f-body);font-size:13px}
+.note{border-left:3px solid var(--amber);padding:10px 16px;background:var(--panel);border-radius:0 8px 8px 0;margin-top:18px}
+.note.bad{border-left-color:var(--bad)}
+.pill{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+@media (max-width:900px){
+  .wrap{grid-template-columns:minmax(0,1fr);gap:24px;padding-block:24px 64px}
+  nav.toc{position:static;max-height:none}
+  nav.toc ol{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+}
+@media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
+</style>
+
+<div class="wrap">
+<nav class="toc" aria-label="Índice">
+  <div class="brand">Narrador <span>de Impacto</span></div>
+  <ol>
+    <li><a href="#visao"><b>00</b>Visão geral</a></li>
+    <li><a href="#pecas"><b>01</b>Conectores e peças</a></li>
+    <li><a href="#estudio"><b>02</b>Estúdio</a></li>
+    <li><a href="#semana"><b>03</b>Semana</a></li>
+    <li><a href="#virais"><b>04</b>Virais</a></li>
+    <li><a href="#kit"><b>05</b>Kit IG</a></li>
+    <li><a href="#ganchos"><b>06</b>Ganchos</a></li>
+    <li><a href="#temas"><b>07</b>Temas</a></li>
+    <li><a href="#formatos"><b>08</b>Formatos</a></li>
+    <li><a href="#biblioteca"><b>09</b>Biblioteca</a></li>
+    <li><a href="#perfil"><b>10</b>Perfil</a></li>
+    <li><a href="#motor"><b>11</b>Motor de IA</a></li>
+    <li><a href="#skills"><b>12</b>Skills</a></li>
+    <li><a href="#design"><b>13</b>Design</a></li>
+    <li><a href="#arquitetura"><b>14</b>Arquitetura</a></li>
+    <li><a href="#recriar"><b>15</b>Recriar em outro lugar</a></li>
+    <li><a href="#limites"><b>16</b>Limites</a></li>
+  </ol>
+</nav>
+
+<main>
+<!-- 00 -->
+<section id="visao">
+  <div class="eyebrow">Dossiê técnico e de uso · versão de outubro de 2026</div>
+  <h1>Narrador de <em>Impacto</em></h1>
+  <p class="lede">Uma sala de roteiro para Reels e carrosséis do Instagram. Ele analisa virais, recria o que funcionou com a sua voz, escreve roteiros com gancho, entrega e motivo para seguir, monta a semana de postagens e aprende com os números que você registra.</p>
+  <p class="muted">Este documento descreve tudo que a ferramenta faz, de onde vem cada função (conector, capacidade, skill ou conhecimento embutido), o sistema visual e o passo a passo para reconstruí-la em outra plataforma.</p>
+
+  <div class="slate" aria-label="Números da ferramenta">
+    <div class="stripes"></div>
+    <div class="cells">
+      <div class="cell"><div class="k">Telas</div><div class="v">9</div></div>
+      <div class="cell"><div class="k">Ferramentas do Kit</div><div class="v">10</div></div>
+      <div class="cell"><div class="k">Ganchos</div><div class="v">263<small>23 cat.</small></div></div>
+      <div class="cell"><div class="k">Temas</div><div class="v">45<small>+ seus</small></div></div>
+      <div class="cell"><div class="k">Formatos</div><div class="v">18</div></div>
+      <div class="cell"><div class="k">Conector MCP</div><div class="v">1<small>vidIQ</small></div></div>
+    </div>
+  </div>
+
+  <h3>Como as telas se conectam</h3>
+  <pre class="mermaid">
+flowchart LR
+  V[Virais<br/>link, prints, vídeo, slides] -->|análise| K[Kit IG<br/>Extrair e recriar]
+  V -->|lições| P[Perfil<br/>DNA e memória]
+  G[Ganchos] --> E[Estúdio<br/>roteiro]
+  T[Temas] --> E
+  F[Formatos] --> E
+  K --> E
+  S[Semana<br/>plano] -->|Roteirizar| E
+  P -->|entra em todo prompt| E
+  E -->|salva| B[Biblioteca<br/>números e score]
+  B -->|lições e score| P
+  B -->|ranking| G
+  </pre>
+</section>
+
+<!-- 01 -->
+<section id="pecas">
+  <div class="eyebrow">O que precisa estar ligado</div>
+  <h2>Conectores, capacidades <em>e peças</em></h2>
+  <p>O Narrador é um artefato do claude.ai. Ele não acessa a internet sozinho. Tudo que ele faz passa por uma destas peças:</p>
+  <div class="legend">
+    <span><i class="t cap">capacidade</i> recurso do artefato no claude.ai</span>
+    <span><i class="t mcp">conector MCP</i> serviço externo ligado à sua conta</span>
+    <span><i class="t skill">skill</i> skill do Claude convertida em ferramenta</span>
+    <span><i class="t know">conhecimento</i> regras escritas dentro dos prompts</span>
+    <span><i class="t local">navegador</i> roda no seu aparelho</span>
+  </div>
+  <div class="tbl"><table>
+    <thead><tr><th>Peça</th><th>Tipo</th><th>Nome técnico</th><th>O que faz</th><th>Usado em</th></tr></thead>
+    <tbody>
+      <tr><td><b>IA do Claude</b></td><td><i class="t cap">capacidade</i></td><td><code>sample</code></td><td>Chama o Claude na conta de quem usa. Gera roteiros, analisa virais, lê imagens (prints, slides, quadros de vídeo) e devolve JSON. Dois níveis: <b>Máxima</b> (<code>complex</code>) e <b>Rápida</b> (<code>default</code>). Consome o limite de uso do plano do usuário, sem custo à parte.</td><td>Todas as telas que geram texto</td></tr>
+      <tr><td><b>Banco na nuvem</b></td><td><i class="t cap">capacidade</i></td><td><code>db</code></td><td>Guarda o estado e as coleções por usuário em <code>data/users/&lt;uid&gt;/estado</code> com subcoleções <code>roteiros</code>, <code>virais</code>, <code>planos</code>, <code>pecas</code>. Sincroniza entre aparelhos.</td><td>Biblioteca, Virais, Semana, Kit, Perfil</td></tr>
+      <tr><td><b>Identidade</b></td><td><i class="t cap">capacidade</i></td><td><code>user</code></td><td>Sabe quem está usando, para separar os dados de cada pessoa.</td><td>Persistência</td></tr>
+      <tr><td><b>Downloads</b></td><td><i class="t cap">capacidade</i></td><td><code>downloads</code></td><td>Entrega arquivos ao usuário: backup <code>.json</code> do perfil e textos exportados.</td><td>Perfil, Estúdio</td></tr>
+      <tr><td><b>vidIQ</b></td><td><i class="t mcp">conector MCP</i></td><td>servidor <code>vidlQ</code></td><td>Puxa dados públicos do Instagram e "assiste" vídeos curtos. É o único conector externo. Cobra créditos da conta vidIQ (ver tabela abaixo).</td><td>Virais → "Puxar dados e assistir"</td></tr>
+      <tr><td><b>Leitura de vídeo local</b></td><td><i class="t local">navegador</i></td><td><code>&lt;video&gt;</code> + <code>&lt;canvas&gt;</code></td><td>Extrai quadros do arquivo de vídeo que você sobe (0 s, 1,5 s, 3 s e depois espaçados) e manda como imagens para a IA. Não gasta crédito do vidIQ.</td><td>Virais, Kit (Achar cortes)</td></tr>
+      <tr><td><b>Armazenamento local</b></td><td><i class="t local">navegador</i></td><td><code>localStorage</code> chave <code>ndi:v1</code></td><td>Modo sem nuvem. Também lembra preferências como o nível de IA (<code>ndi:tier</code>).</td><td>Persistência</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>As 4 ferramentas do vidIQ que o Narrador chama</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Ferramenta</th><th>Custo</th><th>Retorna</th><th>Para que serve aqui</th></tr></thead>
+    <tbody>
+      <tr><td><code>vidiq_ig_profile</code></td><td class="mono">5 créditos</td><td>@, nome, seguidores, seguindo, nº de posts, bio</td><td>Seguidores do autor, base do cálculo "fora da curva"</td></tr>
+      <tr><td><code>vidiq_ig_profile_reels</code></td><td class="mono">5 créditos</td><td>Até 12 Reels recentes: plays, curtidas, comentários, duração, data, legenda, capa</td><td>Números do Reel e média do perfil de origem. Não traz carrosséis.</td></tr>
+      <tr><td><code>vidiq_watch_shortform_content</code></td><td class="mono">10 créditos</td><td>Um <code>mcpJobId</code> (assíncrono)</td><td>Pede ao vidIQ para assistir o Reel</td></tr>
+      <tr><td><code>vidiq_job_poll</code></td><td class="mono">grátis</td><td>Status e resultado do job</td><td>Consulta a cada 6 s, até 150 vezes (15 min). Pode levar mais de 10 min.</td></tr>
+    </tbody>
+  </table></div>
+  <div class="note bad"><b>Atenção.</b> Sem créditos no vidIQ, o botão "Puxar dados e assistir" falha com aviso. O resto da ferramenta continua funcionando com prints, vídeo e slides que você sobe. Compartilhamentos e salvamentos de posts de outras pessoas não são públicos em lugar nenhum: só aparecem se estiverem no print.</div>
+</section>
+
+<!-- 02 -->
+<section id="estudio">
+  <div class="eyebrow">Tela 1 · onde o roteiro nasce</div>
+  <h2><em>Estúdio</em></h2>
+  <p>A tela principal. O topo imita uma claquete com o número do take, data e perfil. Você escolhe os ingredientes, aperta Gerar e recebe um roteiro completo, dividido em seções.</p>
+
+  <div class="screen">
+    <div class="head"><h3>Três modos</h3><div class="uses"><i class="t cap">sample</i><i class="t know">nucleo + VALOR</i></div></div>
+    <ul>
+      <li><b>Criar.</b> Você monta o roteiro pela claquete: tema, formato, gancho, objetivo e detalhes.</li>
+      <li><b>Montar juntos.</b> Conversa com a IA. Você joga uma ideia solta e ela pergunta até ter material, depois escreve. Aceita "Série" (gera episódios em sequência).</li>
+      <li><b>Revisar e melhorar.</b> Você cola um roteiro seu e a IA reescreve com o método, apontando correções.</li>
+    </ul>
+  </div>
+
+  <div class="grid2">
+    <div class="box"><h4>Ingredientes da claquete</h4><ul>
+      <li><b>Tema</b> do banco ou próprio</li>
+      <li><b>Formato</b> (18 opções, com duração ideal)</li>
+      <li><b>Gancho</b>: do banco, escrito por você ou "travado"</li>
+      <li><b>Colchetes</b>: preencher os <code>[slots]</code> do gancho</li>
+      <li><b>Fato e fonte</b>: obrigatórios para ganchos com selo "fato"</li>
+      <li><b>Âncora, próximo vídeo, observações</b></li>
+      <li><b>Objetivo</b>: seguidores, salvamentos, compartilhamentos, comentários ou curtidas</li>
+      <li><b>Nível de IA</b>: Máxima ou Rápida</li>
+      <li><b>Stories</b>: gera sequência de stories junto</li>
+      <li><b>Modelo / inspiração</b>: um viral ou peça vinda do Kit</li>
+    </ul></div>
+    <div class="box"><h4>Seções do roteiro gerado</h4><ul>
+      <li><code>@@CABECALHO</code> título, formato, duração</li>
+      <li><code>@@ABERTURA</code> gancho falado e tarja</li>
+      <li><code>@@ATO</code> blocos com fala e o que aparece na tela</li>
+      <li><code>@@VALOR</code> o bloco "Valor que transforma"</li>
+      <li><code>@@ALTERNATIVOS</code> outras versões do gancho</li>
+      <li><code>@@EDICAO</code> cortes, legendas, ritmo</li>
+      <li><code>@@LEGENDA</code> texto do post</li>
+      <li><code>@@STORIES</code>, <code>@@PROXIMO</code>, <code>@@PILARES</code></li>
+      <li><code>@@ANTES_DE_POSTAR</code> checklist</li>
+    </ul></div>
+  </div>
+
+  <div class="screen">
+    <div class="head"><h3>Valor que transforma</h3><div class="uses"><i class="t know">E.VALOR</i><i class="t skill">ig-humanizer</i></div></div>
+    <p>Todo roteiro precisa passar em 5 provas. A IA preenche e dá nota; a tela mostra o resultado em destaque.</p>
+    <ol class="flow">
+      <li><span><b>Transformação</b>: o antes e depois de quem assiste.</span></li>
+      <li><span><b>Aplicável hoje</b>: algo que a pessoa usa no mesmo dia.</span></li>
+      <li><span><b>Ganho concreto</b>: dinheiro, tempo, risco evitado, clareza.</span></li>
+      <li><span><b>Digno de mandar</b>: para quem a pessoa encaminharia.</span></li>
+      <li><span><b>Motivo para seguir</b>: por que o próximo vídeo vale o follow.</span></li>
+    </ol>
+  </div>
+
+  <div class="screen">
+    <div class="head"><h3>Depois de gerar</h3></div>
+    <ul>
+      <li><b>Checagem automática</b>: duração, palavras proibidas, vícios de IA, fatos sem fonte. Botão "Corrigir tudo".</li>
+      <li><b>Ajustar</b>: pedidos rápidos ("mais curto", "mais emoção") ou livres; ditado por voz.</li>
+      <li><b>Melhorar gancho</b> e <b>Melhorar CTA</b> separados.</li>
+      <li><b>Usar abertura alternativa</b> com um toque.</li>
+      <li><b>Teleprompter</b>: rolagem automática, velocidade, tamanho, espelhar, contagem regressiva.</li>
+      <li><b>Próxima parte</b>: continua a série a partir do roteiro atual.</li>
+      <li><b>Virar carrossel</b>: manda o roteiro para o Kit → Carrossel.</li>
+      <li>Copiar seção, copiar falas, copiar tudo, salvar na Biblioteca.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 03 -->
+<section id="semana">
+  <div class="eyebrow">Tela 2 · plano de postagens</div>
+  <h2><em>Semana</em></h2>
+  <p>Monta a semana inteira com um fio condutor, para que cada post puxe o próximo e o perfil faça sentido para quem chega.</p>
+  <div class="grid2">
+    <div class="box"><h4>Você informa</h4><ul>
+      <li>Foco da semana e objetivo</li>
+      <li>Pilares que entram</li>
+      <li>De 3 a 7 posts</li>
+      <li>Formatos permitidos (Reel, carrossel)</li>
+      <li>Se quer stories</li>
+      <li>Segunda-feira de início</li>
+      <li>Oferta ou produto (opcional)</li>
+    </ul></div>
+    <div class="box"><h4>A IA devolve</h4><ul>
+      <li><b>Fio condutor</b> e <b>por que seguir</b> nesta semana</li>
+      <li><b>Meta</b> mensurável</li>
+      <li>Um cartão por dia: tipo, pilar, objetivo, fórmula de gancho, formato, horário, gancho, entrega, ponte para o próximo dia e stories</li>
+    </ul></div>
+  </div>
+  <div class="screen">
+    <div class="head"><h3>Ações em cada dia</h3><div class="uses"><i class="t cap">sample</i><i class="t cap">db · planos</i><i class="t skill">ig-content-planner</i></div></div>
+    <ul>
+      <li><b>Roteirizar no Estúdio</b>: abre o Estúdio já preenchido.</li>
+      <li><b>Montar carrossel</b> e <b>Escrever legenda</b>: abrem a ferramenta do Kit.</li>
+      <li><b>Refazer</b> só aquele dia; marcar <b>Postado</b>.</li>
+      <li>Histórico de semanas e "Copiar plano".</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 04 -->
+<section id="virais">
+  <div class="eyebrow">Tela 3 · modelagem de referência</div>
+  <h2><em>Virais</em></h2>
+  <p>Onde você guarda posts que viralizaram (seus ou de outros) para entender por que funcionaram e recriar.</p>
+
+  <div class="screen">
+    <div class="head"><h3>Adicionar viral</h3><div class="uses"><i class="t mcp">vidlQ</i><i class="t cap">sample + imagens</i><i class="t local">quadros do vídeo</i></div></div>
+    <p>Primeiro escolha o tipo: <b>Reel</b> ou <b>Carrossel</b>. Depois use qualquer combinação das entradas abaixo. Cada uma preenche os campos sozinha.</p>
+    <div class="tbl"><table>
+      <thead><tr><th>Entrada</th><th>Como funciona</th><th>O que preenche</th></tr></thead>
+      <tbody>
+        <tr><td><b>Link + "Puxar dados e assistir"</b></td><td>Chama o vidIQ: perfil, últimos Reels (acha o código do link) e o "assistir". Depois a IA organiza o resultado.</td><td>Seguidores, views, curtidas, comentários, duração, data, legenda, capa, média do perfil, transcrição, texto na tela, edição, título, nicho, áudio. Salva e analisa sozinho.</td></tr>
+        <tr><td><b>Prints do post e do perfil</b></td><td>A IA lê as imagens (<code>promptLerPrints</code>).</td><td>@, seguidores, curtidas, comentários, compartilhamentos, salvamentos, data, título, nicho.</td></tr>
+        <tr><td><b>Vídeo do Reel</b> (arquivo)</td><td>O navegador tira quadros do vídeo.</td><td>A IA "assiste" pelos quadros: gancho visual, cortes, texto na tela.</td></tr>
+        <tr><td><b>Slides do carrossel</b> (prints)</td><td>A IA lê cada slide (<code>lerSlides</code>).</td><td>Texto de cada slide, o visual, a descrição completa do post (do que trata, como aborda, em que formato), padrão de design e números visíveis.</td></tr>
+      </tbody>
+    </table></div>
+    <p class="faint">Para analisar, um carrossel precisa de seguidores e views ou curtidas. O vidIQ não lê carrosséis: nesse caso a ferramenta pede os slides.</p>
+  </div>
+
+  <div class="grid2">
+    <div class="box"><h4>Análise do viral</h4><ul>
+      <li>Fora da curva: views ÷ seguidores e ÷ média do perfil</li>
+      <li>O que era o post (ou o carrossel)</li>
+      <li>O valor que ele entrega</li>
+      <li>Fórmula do gancho (uma das 10)</li>
+      <li>Por que funcionou e lições</li>
+      <li>Guardar lições na memória do Perfil</li>
+    </ul></div>
+    <div class="box"><h4>Recriar este viral</h4><ul>
+      <li>Replicar carrossel</li>
+      <li>Virar Reel</li>
+      <li>Virar carrossel</li>
+      <li>Escrever legenda</li>
+      <li>Extrair o gancho</li>
+    </ul><p class="faint" style="margin-top:8px">Cada botão abre a ferramenta certa do Kit já com o viral carregado.</p></div>
+  </div>
+</section>
+
+<!-- 05 -->
+<section id="kit">
+  <div class="eyebrow">Tela 4 · ferramentas de Instagram</div>
+  <h2>Kit <em>IG</em></h2>
+  <p>Dez ferramentas em abas. Todas usam a IA do Claude (<code>sample</code>), leem o DNA do Perfil e salvam o resultado em <code>db · pecas</code>. Qualquer resultado pode ir para o Estúdio.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Ferramenta</th><th>O que faz</th><th>Origem</th></tr></thead>
+    <tbody>
+      <tr><td><b>Extrair e recriar</b></td><td>Você escolhe um viral salvo (cartões visuais). A IA vê os quadros/slides, extrai a estrutura do gancho e recria para o seu tema, como Reel ou carrossel.</td><td><i class="t skill">ig-hook-extractor</i></td></tr>
+      <tr><td><b>Carrossel</b></td><td>Planeja slide a slide: capa, desenvolvimento, slide de salvar, CTA. Aceita roteiro do Estúdio ou viral.</td><td><i class="t skill">ig-carousel-planner</i></td></tr>
+      <tr><td><b>Lista ranking</b></td><td>Roteiro de lista numerada com revelação crescente.</td><td><i class="t skill">lista-ranking-serrano</i></td></tr>
+      <tr><td><b>React de print</b></td><td>Você sobe um print (notícia, comentário, post) e recebe o roteiro de react.</td><td><i class="t skill">react-print-serrano</i></td></tr>
+      <tr><td><b>Legenda</b></td><td>Legenda com primeira linha forte, corpo e CTA conforme o objetivo.</td><td><i class="t skill">ig-caption-writer</i></td></tr>
+      <tr><td><b>Hashtags</b></td><td>Conjunto em camadas (amplas, de nicho, de marca), sem banidas.</td><td><i class="t skill">ig-hashtag-strategist</i></td></tr>
+      <tr><td><b>Humanizar</b></td><td>Remove marcas de texto de IA. Tem auditoria local que conta vícios antes de chamar a IA.</td><td><i class="t skill">ig-humanizer</i></td></tr>
+      <tr><td><b>Reaproveitar</b></td><td>Transforma uma peça em outros formatos: Reel ↔ carrossel, stories, legenda.</td><td><i class="t skill">ig-repurposer</i></td></tr>
+      <tr><td><b>Achar cortes</b></td><td>Lê a transcrição ou o vídeo longo e aponta trechos com gancho, desenvolvimento e payoff, com nota.</td><td><i class="t skill">corte-viral</i> fase 1</td></tr>
+      <tr><td><b>Revisar perfil</b> (Perfil 360)</td><td>Analisa bio, destaques, fixados, grid e foto e sugere ajustes por objetivo.</td><td><i class="t skill">ig-profile-optimizer</i> + <i class="t skill">ig-audience-insights</i></td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- 06 -->
+<section id="ganchos">
+  <div class="eyebrow">Tela 5 · banco oficial</div>
+  <h2><em>Ganchos</em></h2>
+  <p>263 ganchos em 23 categorias. Cada um tem texto, categoria, notas e selos. Ganchos com <code>[colchetes]</code> pedem que você preencha os slots; ganchos com selo <b>fato</b> exigem um dado com fonte antes de gerar.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>#</th><th>Categoria</th><th>Qtd.</th><th>#</th><th>Categoria</th><th>Qtd.</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">1</td><td>Curiosidade e Mistério</td><td class="mono">10</td><td class="mono">13</td><td>Relacionamentos</td><td class="mono">10</td></tr>
+      <tr><td class="mono">2</td><td>Dor e Identificação</td><td class="mono">15</td><td class="mono">14</td><td>Sentença de Contraste</td><td class="mono">1</td></tr>
+      <tr><td class="mono">3</td><td>Surpresa e Choque</td><td class="mono">15</td><td class="mono">15</td><td>Controversos</td><td class="mono">8</td></tr>
+      <tr><td class="mono">4</td><td>Autoridade e Credibilidade</td><td class="mono">10</td><td class="mono">16</td><td>Intriga e Tensão</td><td class="mono">12</td></tr>
+      <tr><td class="mono">5</td><td>Urgência e Escassez</td><td class="mono">10</td><td class="mono">17</td><td>Emocionais</td><td class="mono">6</td></tr>
+      <tr><td class="mono">6</td><td>Provocação e Controvérsia</td><td class="mono">15</td><td class="mono">18</td><td>Lição e Erros</td><td class="mono">8</td></tr>
+      <tr><td class="mono">7</td><td>Promessa de Valor Direto</td><td class="mono">15</td><td class="mono">19</td><td>Velocidade e Resultado Rápido</td><td class="mono">4</td></tr>
+      <tr><td class="mono">8</td><td>Storytelling e Jornada</td><td class="mono">10</td><td class="mono">20</td><td>Curiosidade Curta (open loop)</td><td class="mono">20</td></tr>
+      <tr><td class="mono">9</td><td>Números e Dados</td><td class="mono">10</td><td class="mono">21</td><td>Moldes de Gancho [complete]</td><td class="mono">25</td></tr>
+      <tr><td class="mono">10</td><td>Mito vs. Realidade</td><td class="mono">10</td><td class="mono">22</td><td>Crença Invertida (não é X, é Y)</td><td class="mono">9</td></tr>
+      <tr><td class="mono">11</td><td>Série e Continuidade</td><td class="mono">10</td><td class="mono">23</td><td>Apresentação de Produto (#244 a #263)</td><td class="mono">20</td></tr>
+      <tr><td class="mono">12</td><td>Reflexão e Propósito</td><td class="mono">10</td><td></td><td></td><td></td></tr>
+    </tbody>
+  </table></div>
+  <ul>
+    <li><b>Filtros</b>: categoria, pilar, ganchos livres (sem colchete), "encaixa no tema".</li>
+    <li><b>Seu score</b> por gancho e categoria, calculado dos números da Biblioteca. A tela mostra "Ganchos que funcionaram" e "Parecidos pra testar agora".</li>
+    <li><b>Adaptar</b> ao seu tema com IA, <b>Usar</b> (vai para o Estúdio) e <b>Copiar</b>.</li>
+  </ul>
+</section>
+
+<!-- 07 -->
+<section id="temas">
+  <div class="eyebrow">Tela 6 · banco de assuntos</div>
+  <h2><em>Temas</em></h2>
+  <p>45 temas oficiais divididos em 4 pilares, cada um com nome, frase-tese e nota de abordagem. Você pode criar os seus (até 60 no total). A tela mostra seu score por pilar e quais temas você ainda não usou.</p>
+  <div class="grid2">
+    <div class="box"><h4 style="color:var(--p-direito)">Direito</h4><p>Ex.: "O custo da omissão": o contrato que você não leu vai custar mais caro do que o advogado que você não contratou.</p></div>
+    <div class="box"><h4 style="color:var(--p-emp)">Empreendedorismo</h4><p>Gestão, caixa, decisões de dono.</p></div>
+    <div class="box"><h4 style="color:var(--p-vendas)">Vendas</h4><p>Oferta, objeção, conversão.</p></div>
+    <div class="box"><h4 style="color:var(--p-cresc)">Crescimento Pessoal</h4><p>Hábito, mentalidade, carreira.</p></div>
+  </div>
+  <p class="faint">Os pilares e temas vêm do perfil de exemplo (Serrano). Para outro nicho, troque-os em <code>data.js</code> ou crie temas próprios na tela.</p>
+</section>
+
+<!-- 08 -->
+<section id="formatos">
+  <div class="eyebrow">Tela 7 · manual do viral</div>
+  <h2><em>Formatos</em></h2>
+  <p>18 formatos de vídeo com duração ideal, estrutura, quando usar e exemplos. O selo <b>Validado pro seu perfil</b> aparece quando um formato tem 3 vídeos ou mais com score na média ou acima.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Formato</th><th>Duração</th><th>Formato</th><th>Duração</th></tr></thead>
+    <tbody>
+      <tr><td>Tela Dividida</td><td class="mono">20–45 s</td><td>Ruim, Bom e Perfeito</td><td class="mono">20–40 s</td></tr>
+      <tr><td>React</td><td class="mono">15–40 s</td><td>Frase de Manchete</td><td class="mono">10–30 s</td></tr>
+      <tr><td>Novelinha (Esquete)</td><td class="mono">20–45 s</td><td>Relato Íntimo</td><td class="mono">30–60 s</td></tr>
+      <tr><td>Comparativo</td><td class="mono">15–35 s</td><td>Desafio Interativo</td><td class="mono">30–60 s</td></tr>
+      <tr><td>Vídeo Narrado</td><td class="mono">30–60 s</td><td>Experimento ao Vivo</td><td class="mono">30–45 s</td></tr>
+      <tr><td>Trend com Texto</td><td class="mono">5–8 s</td><td>Curadoria Regressiva com Prova</td><td class="mono">45–75 s</td></tr>
+      <tr><td>Conversa</td><td class="mono">15–40 s</td><td><b>Apresentação de Produto</b> (novo)</td><td class="mono">15–45 s</td></tr>
+      <tr><td>Lista</td><td class="mono">20–45 s</td><td>Bastidor Performático</td><td class="mono">20–45 s</td></tr>
+      <tr><td>Lista com Contagem Revelada</td><td class="mono">20–45 s</td><td>Pergunta e Resposta em Cascata</td><td class="mono">10–25 s</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- 09 -->
+<section id="biblioteca">
+  <div class="eyebrow">Tela 8 · o que o perfil aprende</div>
+  <h2><em>Biblioteca</em></h2>
+  <p>Todos os roteiros salvos (seus takes). É daqui que sai o aprendizado da ferramenta.</p>
+  <ul>
+    <li><b>Painel</b>: roteiros, postados, score médio, melhor formato, formatos no seu perfil.</li>
+    <li><b>Registrar desempenho</b>: views, curtidas, comentários, compartilhamentos, salvamentos, seguidores ganhos. Aceita print das métricas, lido pela IA (<code>promptMetricas</code>).</li>
+    <li><b>Score 0 a 100</b> por vídeo: verde a partir de 70, âmbar de 40 a 69, vermelho abaixo de 40.</li>
+    <li><b>Análise e lições</b>: a IA explica o resultado e você escolhe quais lições guardar na memória.</li>
+    <li>Abrir no Estúdio, editar, abrir no teleprompter, copiar, apagar.</li>
+  </ul>
+  <div class="note">O score alimenta o ranking de ganchos, categorias, pilares e formatos. Quanto mais números você registra, mais as sugestões ficam do seu perfil.</div>
+</section>
+
+<!-- 10 -->
+<section id="perfil">
+  <div class="eyebrow">Tela 9 · DNA do perfil e memória da IA</div>
+  <h2><em>Perfil</em></h2>
+  <p>Tudo que está aqui entra em todo roteiro. É a peça que deixa o texto com a sua cara.</p>
+  <div class="grid2">
+    <div class="box"><h4>DNA</h4><p>Nome, @, nicho, público, promessa, tom, palavras proibidas, CTA padrão, oferta.</p></div>
+    <div class="box"><h4>Bio</h4><p>Gera opções de bio com IA (<code>promptBio</code>).</p></div>
+    <div class="box"><h4>Lições</h4><p>Aprendizados vindos da Biblioteca e dos Virais. Liga, desliga ou apaga cada uma.</p></div>
+    <div class="box"><h4>Sua voz</h4><p>Cole textos seus; a IA extrai seu jeito de falar (<code>promptVoz</code>) e você guarda ou descarta.</p></div>
+    <div class="box"><h4>Fatos conferidos</h4><p>Dados com fonte que a IA pode citar sem inventar.</p></div>
+    <div class="box"><h4>Preferências e dados</h4><p>Modo do CTA, duração, novo perfil, carregar exemplo Serrano, exportar e importar backup <code>.json</code>.</p></div>
+  </div>
+</section>
+
+<!-- 11 -->
+<section id="motor">
+  <div class="eyebrow">O cérebro</div>
+  <h2>Motor de <em>IA</em></h2>
+  <p>Fica em <code>engine.js</code>. Monta os prompts, lê as respostas e checa a qualidade.</p>
+  <div class="grid2">
+    <div class="box"><h4>Prompt mestre · nucleo()</h4><p>Junta DNA, voz, lições, fatos, regras do formato, do gancho e do objetivo, as 5 provas de valor e o formato de saída com seções <code>@@</code>.</p></div>
+    <div class="box"><h4>Prompts especializados</h4><p>Roteiro, Revisar, Juntos, Viral (Reel e carrossel), Ler prints, Ideia, Melhorar gancho, Melhorar CTA, Stories, Métricas, Bio, Voz.</p></div>
+    <div class="box"><h4>Leitura da resposta</h4><p>Divide por <code>@@</code>, lê o bloco de valor (aceita "8.5", "7 de 10", negrito), roda a checagem e mantém o prompt abaixo de 58 KB ao ajustar.</p></div>
+  </div>
+  <h3>10 fórmulas de gancho</h3>
+  <p class="pill">numero · contraria · cena · confissao · lista · antesdepois · mito · framework · quebra · comoeu</p>
+  <h3>5 objetivos</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Objetivo</th><th>O que muda no roteiro</th></tr></thead>
+    <tbody>
+      <tr><td><b>Ganhar seguidores</b></td><td>CTA do próximo problema e promessa específica do próximo vídeo.</td></tr>
+      <tr><td><b>Salvamentos</b></td><td>Tutorial, passo a passo ou lista para consultar depois, com prova na tela.</td></tr>
+      <tr><td><b>Compartilhamentos</b></td><td>Algo que a pessoa sente e não diria sozinha, ou um alerta para mandar a alguém.</td></tr>
+      <tr><td><b>Comentários</b></td><td>Assunto do momento, opinião que divide, teste com resultado pessoal.</td></tr>
+      <tr><td><b>Curtidas</b></td><td>Opinião firme de posicionamento, curta.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- 12 -->
+<section id="skills">
+  <div class="eyebrow">De onde veio o conhecimento</div>
+  <h2><em>Skills</em> do Claude</h2>
+  <p>Skills do Claude não rodam dentro de um artefato. Por isso o conteúdo delas foi convertido em prompts e ferramentas. O Narrador não depende das skills estarem instaladas para funcionar.</p>
+  <h3>Skills de Instagram (sergebulaev/instagram-skills)</h3>
+  <p class="muted">Instaladas em <code>VERTICE/.claude/skills</code>. O conhecimento está em <code>ig-saber.js</code> (<code>X.K</code>).</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Skill</th><th>Virou</th></tr></thead>
+    <tbody>
+      <tr><td><code>ig-hook-extractor</code></td><td>Kit → Extrair e recriar; fórmulas de gancho</td></tr>
+      <tr><td><code>ig-carousel-planner</code></td><td>Kit → Carrossel; replicar e converter carrosséis</td></tr>
+      <tr><td><code>ig-caption-writer</code></td><td>Kit → Legenda; seção <code>@@LEGENDA</code></td></tr>
+      <tr><td><code>ig-hashtag-strategist</code></td><td>Kit → Hashtags</td></tr>
+      <tr><td><code>ig-humanizer</code></td><td>Kit → Humanizar; auditoria de vícios em todo roteiro</td></tr>
+      <tr><td><code>ig-repurposer</code></td><td>Kit → Reaproveitar; Reel ↔ carrossel</td></tr>
+      <tr><td><code>ig-content-planner</code></td><td>Tela Semana</td></tr>
+      <tr><td><code>ig-profile-optimizer</code></td><td>Kit → Revisar perfil; bio do Perfil</td></tr>
+      <tr><td><code>ig-audience-insights</code></td><td>Sinais de público usados no Perfil 360 e na Semana</td></tr>
+    </tbody>
+  </table></div>
+  <h3>Suas skills (Método Serrano)</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Skill</th><th>Virou</th></tr></thead>
+    <tbody>
+      <tr><td><code>metodo-serrano</code>, <code>roteiro-viral-serrano</code></td><td>Regras do prompt mestre, perfil de exemplo, série "Reviralização"</td></tr>
+      <tr><td><code>lista-ranking-serrano</code></td><td>Kit → Lista ranking</td></tr>
+      <tr><td><code>react-print-serrano</code></td><td>Kit → React de print</td></tr>
+      <tr><td><code>corte-viral</code></td><td>Kit → Achar cortes (fase 1: encontrar os trechos)</td></tr>
+    </tbody>
+  </table></div>
+  <div class="note">Não existe uma skill "/watch". A função de assistir Reels vem do conector vidIQ (<code>vidiq_watch_shortform_content</code>) ou dos quadros extraídos do vídeo que você sobe.</div>
+</section>
+
+<!-- 13 -->
+<section id="design">
+  <div class="eyebrow">Sistema visual</div>
+  <h2><em>Design</em></h2>
+  <p>Escuro por padrão, com tema claro. Visual de set de filmagem: claquete no topo do Estúdio, número de take, listras diagonais, âmbar como luz de gravação.</p>
+  <h3>Cores (tema escuro)</h3>
+  <div class="swatches">
+    <div class="sw"><i style="background:#0A0C11"></i><div><b>Fundo</b>--bg #0A0C11</div></div>
+    <div class="sw"><i style="background:#12161F"></i><div><b>Painel</b>--panel #12161F</div></div>
+    <div class="sw"><i style="background:#EEF0F5"></i><div><b>Texto</b>--ink #EEF0F5</div></div>
+    <div class="sw"><i style="background:#FFB547"></i><div><b>Destaque</b>--amber #FFB547</div></div>
+    <div class="sw"><i style="background:#4FD18B"></i><div><b>Bom</b>--good</div></div>
+    <div class="sw"><i style="background:#FF6B6B"></i><div><b>Ruim</b>--bad</div></div>
+  </div>
+  <p class="faint">Cada pilar tem sua cor: <code>--p-direito</code>, <code>--p-empreendedorismo</code>, <code>--p-vendas</code>, <code>--p-crescimento</code>.</p>
+  <h3>Tipografia</h3>
+  <div class="grid2">
+    <div class="box"><h4>Títulos</h4><p style="font-family:var(--f-disp);font-size:30px;font-weight:800;text-transform:uppercase;line-height:1">Big Shoulders Display</p></div>
+    <div class="box"><h4>Texto</h4><p style="font-size:18px">Hanken Grotesk</p></div>
+    <div class="box"><h4>Dados e rótulos</h4><p style="font-family:var(--f-mono)">JetBrains Mono</p></div>
+  </div>
+  <h3>Layout e componentes</h3>
+  <ul>
+    <li>Barra lateral de 252 px com as 9 telas + conteúdo. No celular vira barra inferior com rolagem lateral.</li>
+    <li>Componentes: <code>.btn</code>, <code>.chip</code>, <code>.tag</code> (good/amber/bad), <code>.card</code>, claquete do Estúdio, prévia em celular, bloco <code>.valor</code>, modais em folha (sheet), toasts.</li>
+    <li>Ícones em SVG próprios, sem biblioteca.</li>
+  </ul>
+</section>
+
+<!-- 14 -->
+<section id="arquitetura">
+  <div class="eyebrow">Por dentro</div>
+  <h2><em>Arquitetura</em> e arquivos</h2>
+  <p>JavaScript puro, sem build e sem bibliotecas. Cerca de 810 KB no total. A ordem de carga importa: as extensões <code>ig-*</code> se registram antes de <code>app.js</code>.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Arquivo</th><th>Papel</th></tr></thead>
+    <tbody>
+      <tr><td><code>index.html</code></td><td>Estrutura, todo o CSS (tokens, componentes) e a ordem dos scripts</td></tr>
+      <tr><td><code>data.js</code></td><td><code>window.NDI</code>: pilares, temas, formatos, categorias, ganchos, objetivos, série, perfil de exemplo, manual</td></tr>
+      <tr><td><code>engine.js</code></td><td><code>window.NDE</code>: prompts, leitura das respostas, checagem, score, recomendações</td></tr>
+      <tr><td><code>ig-base.js</code></td><td><code>window.NDX</code>: registro de telas, ferramentas, ações, ganchos de extensão; casca da tela Kit</td></tr>
+      <tr><td><code>ig-saber.js</code></td><td>Conhecimento das skills de Instagram em português</td></tr>
+      <tr><td><code>ig-semana.js</code></td><td>Tela Semana</td></tr>
+      <tr><td><code>ig-kit-conteudo.js</code></td><td>Carrossel, Legenda, Hashtags, Humanizar</td></tr>
+      <tr><td><code>ig-kit-crescer.js</code></td><td>Extrair e recriar, Reaproveitar, Revisar perfil, bloco "Recriar este viral"</td></tr>
+      <tr><td><code>ig-kit-serrano.js</code></td><td>Lista ranking, React de print, Achar cortes</td></tr>
+      <tr><td><code>ig-link.js</code></td><td>Integração vidIQ: puxar dados, assistir, parsers</td></tr>
+      <tr><td><code>app.js</code></td><td>Telas principais, estado, persistência, ponte <code>window.NDA</code> para as extensões</td></tr>
+      <tr><td><code>CONTRATO.md</code></td><td>Como escrever uma nova extensão</td></tr>
+      <tr><td><code>teste/</code></td><td>Testes Playwright com IA simulada (cerca de 190 verificações)</td></tr>
+    </tbody>
+  </table></div>
+  <h3>Declaração do artefato</h3>
+<pre class="code">capabilities: {
+  sample: {}, db: {}, user: {}, downloads: {},
+  mcp: { servers: [{ server: 'vidlQ', tools: [
+    'vidiq_ig_profile', 'vidiq_ig_profile_reels',
+    'vidiq_watch_shortform_content', 'vidiq_job_poll' ] }] }
+}
+// versão do runtime: 0.2.54</pre>
+  <p class="faint">Código-fonte: repositório <code>ERFS23/VERTICE</code>, pasta <code>narrador/</code>, branch <code>claude/instagram-skills</code>.</p>
+</section>
+
+<!-- 15 -->
+<section id="recriar">
+  <div class="eyebrow">Levar para outra plataforma</div>
+  <h2>Como <em>recriar</em></h2>
+  <p>A lógica é portátil. Só as peças do claude.ai precisam de substituto.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Peça no claude.ai</th><th>Substituto fora dele</th></tr></thead>
+    <tbody>
+      <tr><td><code>sample</code></td><td>API da Anthropic (Messages API) com visão, num backend seu para não expor a chave. Qualquer modelo com imagem serve; mantenha um nível "rápido" e um "máximo".</td></tr>
+      <tr><td><code>db</code> + <code>user</code></td><td>Supabase, Firebase ou Postgres com login. Mesmas coleções: estado, roteiros, virais, planos, peças.</td></tr>
+      <tr><td>vidIQ MCP</td><td>A própria API/MCP do vidIQ, ou um coletor de dados do Instagram (por exemplo Apify) para perfil e Reels, mais transcrição de vídeo (Whisper) para o "assistir".</td></tr>
+      <tr><td><code>downloads</code></td><td>Download normal do navegador.</td></tr>
+      <tr><td>Quadros do vídeo, localStorage</td><td>Iguais: são recursos padrão do navegador.</td></tr>
+    </tbody>
+  </table></div>
+  <h3>Passo a passo</h3>
+  <ol class="flow">
+    <li><span>Copie a pasta <code>narrador/</code>. <code>data.js</code>, <code>engine.js</code> e <code>ig-saber.js</code> funcionam sem mudança.</span></li>
+    <li><span>Crie um backend com uma rota <code>/ia</code> que recebe texto, imagens e nível, chama o modelo e devolve <code>{text}</code> ou JSON.</span></li>
+    <li><span>Troque <code>window.claude.sample</code> por essa rota, e <code>Store</code> pelo seu banco.</span></li>
+    <li><span>Em <code>ig-link.js</code>, troque as chamadas MCP pela API escolhida, mantendo os parsers.</span></li>
+    <li><span>Para outro nicho, troque pilares, temas e perfil de exemplo em <code>data.js</code>.</span></li>
+    <li><span>Rode os testes de <code>teste/</code> apontando para a nova IA simulada.</span></li>
+  </ol>
+</section>
+
+<!-- 16 -->
+<section id="limites">
+  <div class="eyebrow">O que ele não faz</div>
+  <h2><em>Limites</em></h2>
+  <ul>
+    <li>Não acessa a internet sozinho. Links só funcionam pelo vidIQ.</li>
+    <li>O vidIQ cobre só Reels (até os 12 mais recentes do perfil). Carrosséis precisam de prints dos slides.</li>
+    <li>Compartilhamentos e salvamentos de posts alheios só vêm por print.</li>
+    <li>O "assistir" do vidIQ pode passar de 10 minutos e consome 10 créditos.</li>
+    <li>Não publica no Instagram nem agenda posts.</li>
+    <li>A qualidade das sugestões depende de você registrar os números na Biblioteca.</li>
+    <li>O uso da IA conta no limite do plano Claude de quem usa.</li>
+  </ul>
+</section>
+</main>
+</div>
